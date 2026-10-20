@@ -2,3 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 :root{color-scheme:light}body{background:#f6f8f7;color:#12241b;font-family:Arial,Helvetica,sans-serif}button,input,select{transition:border-color .15s,background-color .15s}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.45}.field{width:100%;border:1px solid #dce5df;border-radius:10px;padding:12px;background:white;outline:none}.field:focus{border-color:#169447}.panel{background:#fff;border:1px solid #e4eae6;border-radius:16px;padding:24px}.btn{background:#138844;color:white;border-radius:10px;padding:11px 18px;font-weight:600}.btn-outline{border:1px solid #dae5dc;border-radius:10px;padding:10px 16px;background:white}.qty-btn{height:34px;width:34px;border:1px solid #dce5df;border-radius:8px;background:white;font-size:19px}.qty-input{width:62px;text-align:center;border:1px solid #dce5df;border-radius:8px;height:34px}.small-label{font-size:12px;color:#65766d;display:block;margin-bottom:6px}.print-only{display:none}@media print{@page{margin:14mm}body{background:white!important}.no-print{display:none!important}.print-only{display:block!important}.panel{break-inside:avoid;border:1px solid #ddd!important;box-shadow:none!important}.print-break{break-before:page}input{border:0!important;padding:0!important}header{border-bottom:1px solid #ddd}.max-w-6xl{max-width:none!important}}
+
+
+/* Phone-first refinements */
+html{overflow-x:hidden;-webkit-text-size-adjust:100%}
+body{min-width:0;overflow-x:hidden}
+.field{min-width:0;max-width:100%;font-size:16px;min-height:46px}
+.btn,.btn-outline{min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-align:center}
+.qty-btn{height:44px;width:44px;flex:none}
+.qty-input{width:70px;height:44px;font-size:16px}
+.panel{min-width:0}
+@media(max-width:639px){
+ .panel{padding:16px;border-radius:14px}
+ .max-w-6xl.mx-auto.p-5{padding:14px}
+ header .max-w-6xl{padding:12px 14px}
+ header .no-print{display:grid;grid-template-columns:1fr 1fr;width:100%}
+ header .no-print>*{font-size:13px!important;padding:11px 8px}
+ .panel .flex.flex-wrap.gap-2.no-print.mb-4,
+ .panel .flex.gap-2.flex-wrap.mb-4.no-print,
+ .panel .flex.gap-2.flex-wrap.no-print.mb-4{display:grid;grid-template-columns:minmax(0,1fr);width:100%}
+ .panel select.field{width:100%;min-width:0}
+ .panel .flex.gap-2.flex-wrap,
+ .panel .flex.flex-wrap.gap-2{min-width:0}
+ .panel .flex.gap-2.flex-wrap>select,
+ .panel .flex.flex-wrap.gap-2>select{flex-basis:100%}
+ .panel .flex.gap-2.flex-wrap>button,
+ .panel .flex.flex-wrap.gap-2>button{width:100%}
+ .panel .rounded-xl.border.p-4{padding:13px}
+ .panel .rounded-xl.border.p-4>.flex.flex-wrap{align-items:flex-start}
+ .panel .rounded-xl.border.p-4>.flex.flex-wrap>div:first-child{flex:1 1 100%;min-width:0;overflow-wrap:anywhere}
+ .panel .rounded-xl.border.p-4>.flex.flex-wrap>strong,
+ .panel .rounded-xl.border.p-4>.flex.flex-wrap>b{margin-left:auto}
+ .grid.grid-cols-2.md\\:grid-cols-4{gap:8px}
+ .grid.grid-cols-2.md\\:grid-cols-4>div{padding:12px}
+ .grid.grid-cols-2.md\\:grid-cols-4 b{font-size:17px;overflow-wrap:anywhere}
+ .no-print.flex.justify-end.gap-2{display:grid;grid-template-columns:1fr 1fr}
+}
+@media print{
+ html,body{overflow:visible!important}
+ .field{min-height:0}
+ .panel{padding:14px}
+ .qty-btn,.qty-input{display:none!important}
+}

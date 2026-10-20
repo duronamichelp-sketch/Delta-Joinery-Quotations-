@@ -197,3 +197,23 @@ button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.
 .rev-saved-row p{font-size:11px!important;color:#8a968b!important}
 .rev-saved-bottom{margin-top:16px;border-top:1px solid #edf1ec;padding-top:13px}
 .rev-saved-bottom strong{font-size:16px}.rev-saved-bottom span{font-size:11px;color:#3c8656;font-weight:800}
+
+
+/* Clickable visual prototype controls */
+.rev-nav a{font-size:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;gap:6px;color:#b8cbbd;text-decoration:none}
+.rev-nav a.rev-nav-current{color:#93dfad}
+.rev-tile{display:block;color:#17221c;text-decoration:none}
+.rev-hero-button,.rev-circle,.rev-view-all,.rev-recent-card{cursor:pointer;text-decoration:none}
+.rev-recent-card{color:#17221c}
+.rev-back-link{font-size:30px;color:#fff;text-decoration:none}
+.rev-inline-notice{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#e7f4e9;border:1px solid #add0b7;color:#246a3b;padding:13px 14px;font-size:12px;border-radius:11px;margin-top:12px}
+.rev-inline-notice button{font-weight:900;font-size:19px}
+.rev-toggle-off{background:#bfc9c1}
+.rev-toggle-off:after{left:3px;right:auto}
+button.rev-add-control,button.rev-save-sample{display:block;width:100%;cursor:pointer}
+.rev-tab-strip button,.rev-tabs-secondary button{flex:1;text-align:center;padding:10px 4px;font-weight:750;font-size:11px;color:#7e8980;border-radius:9px}
+.rev-tab-strip button.rev-tab-active,.rev-tabs-secondary button.active{background:#1e3426;color:#fff}
+.rev-block-link{display:block;text-decoration:none}
+.rev-saved-bottom button{color:#3c8656;font-weight:800;font-size:11px}
+.rev-search-input{width:100%;outline:none}
+.rev-nav a:focus-visible,.rev-tile:focus-visible,.rev-hero-button:focus-visible,button:focus-visible{outline:3px solid #9ed9ad;outline-offset:2px}

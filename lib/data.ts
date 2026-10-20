@@ -12,3 +12,5 @@ export const read=<T,>(key:string,fallback:T):T=>{try{const x=localStorage.getIt
 export type Labour={id:string;name:string;price:number;unit:string;image?:string};
 export type QuoteLabour={id:string;qty:number};
 export const DEFAULT_LABOUR:Labour[]=[];
+
+export type ExtraCost={id:string;name:string;price:number;image?:string};

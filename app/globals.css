@@ -387,3 +387,22 @@ button.rev-tile{cursor:pointer;text-align:left;display:block;width:100%}
 
 /* Sidebar green continues for the full page, including short and tall pages */
 @media(min-width:900px){.dj-shared-sidebar{height:100vh!important;min-height:100vh!important;align-self:stretch!important;background:#092719!important}.rev-shell.dj-full-desktop{min-height:100vh!important}.dj-preview-desktop{min-height:100vh!important}}
+
+
+/* Fixed full-height desktop sidebar: unaffected by page content height */
+@media (min-width:900px){
+  body .rev-shell.dj-full-desktop{display:block!important;position:relative!important;padding-left:258px!important;min-height:100vh!important;width:100%!important}
+  body .rev-shell.dj-full-desktop>.dj-shared-sidebar{display:flex!important;position:fixed!important;left:0!important;top:0!important;bottom:0!important;height:100vh!important;height:100dvh!important;min-height:100vh!important;width:258px!important;min-width:258px!important;max-width:258px!important;margin:0!important;border-radius:0!important;background:#092719!important;z-index:80!important}
+  body .rev-shell.dj-full-desktop>.rev-phone{width:100%!important;max-width:none!important;min-width:0!important;margin:0!important}
+  body .dj-preview-desktop{padding-left:258px!important;display:block!important}
+  body .dj-preview-desktop>.dj-shared-sidebar{display:flex!important;position:fixed!important;top:0!important;bottom:0!important;left:0!important;width:258px!important;height:100dvh!important;background:#092719!important;z-index:80!important}
+}
+@media (min-width:900px) and (max-width:1120px){
+  body .rev-shell.dj-full-desktop{padding-left:215px!important}
+  body .rev-shell.dj-full-desktop>.dj-shared-sidebar,body .dj-preview-desktop>.dj-shared-sidebar{width:215px!important;min-width:215px!important;max-width:215px!important}
+  body .dj-preview-desktop{padding-left:215px!important}
+}
+@media print{
+ body .rev-shell.dj-full-desktop,body .dj-preview-desktop{padding-left:0!important}
+ body .rev-shell.dj-full-desktop>.dj-shared-sidebar,body .dj-preview-desktop>.dj-shared-sidebar{display:none!important}
+}

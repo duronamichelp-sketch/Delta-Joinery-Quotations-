@@ -384,3 +384,6 @@ button.rev-tile{cursor:pointer;text-align:left;display:block;width:100%}
  .rev-shell.dj-full-desktop .rev-screen-body,.rev-shell.dj-full-desktop .rev-home-area{padding:25px!important}
 }
 @media print{.dj-shared-sidebar{display:none!important}.dj-preview-desktop>.dj-preview-body{padding:0!important}.dj-preview-desktop{display:block!important}}
+
+/* Sidebar green continues for the full page, including short and tall pages */
+@media(min-width:900px){.dj-shared-sidebar{height:100vh!important;min-height:100vh!important;align-self:stretch!important;background:#092719!important}.rev-shell.dj-full-desktop{min-height:100vh!important}.dj-preview-desktop{min-height:100vh!important}}

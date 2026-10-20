@@ -414,3 +414,13 @@ button.rev-tile{cursor:pointer;text-align:left;display:block;width:100%}
 .rev-shell.dj-full-desktop .rev-hero-button .dj-btn-plus{font-size:21px!important;line-height:1!important}
 .rev-shell.dj-full-desktop .rev-hero-button .dj-chevron{font-size:18px!important;margin-left:5px!important}
 }
+
+
+.dj-cloud-widget{position:fixed;bottom:18px;right:18px;z-index:200;font:14px Arial,Helvetica,sans-serif}
+.dj-cloud-button{background:#103b27;color:white;padding:12px 17px;border-radius:12px;box-shadow:0 6px 24px #071f1460;border:1px solid #77b18a;cursor:pointer;font-weight:700}
+.dj-cloud-panel{position:absolute;bottom:54px;right:0;width:min(350px,calc(100vw - 28px));background:white;border:1px solid #dae5dd;box-shadow:0 10px 38px #122a1e4d;border-radius:14px;padding:18px;color:#14301f;display:flex;flex-direction:column;gap:10px}
+.dj-cloud-panel strong{font-size:16px}.dj-cloud-panel p{margin:0;color:#52695a;font-size:12px;overflow-wrap:anywhere;line-height:1.5}
+.dj-cloud-panel input{padding:11px;width:100%;min-height:44px;border:1px solid #c9d9cb;border-radius:8px}
+.dj-cloud-panel button{border:0;border-radius:8px;background:#176438;color:white;padding:10px 14px;cursor:pointer;font-weight:700}
+.dj-cloud-actions{display:flex;gap:8px}.dj-cloud-actions button{flex:1}
+@media print{.dj-cloud-widget{display:none!important}}

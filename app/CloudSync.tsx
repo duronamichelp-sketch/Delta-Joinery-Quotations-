@@ -3,8 +3,8 @@ import {useEffect,useRef,useState} from 'react';
 import {createClient, type SupabaseClient} from '@supabase/supabase-js';
 const KEYS=['dj_units','dj_hardware','dj_labour','dj_electrics','dj_finishes','dj_door_rates','dj_quote','dj_saved_quotes','dj_quotation_tasks'];
 type Profile={id:string;email?:string};
-export default function CloudSync(){
- const [client,setClient]=useState<SupabaseClient|null>(null),[person,setPerson]=useState<Profile|null>(null),[open,setOpen]=useState(false),[email,setEmail]=useState(''),[password,setPassword]=useState(''),[message,setMessage]=useState('');
+export default function CloudSync({children}:{children:React.ReactNode}){
+ const [checking,setChecking]=useState(true);const [client,setClient]=useState<SupabaseClient|null>(null),[person,setPerson]=useState<Profile|null>(null),[open,setOpen]=useState(false),[email,setEmail]=useState(''),[password,setPassword]=useState(''),[message,setMessage]=useState('');
  const personRef=useRef<Profile|null>(null),clientRef=useRef<SupabaseClient|null>(null),pause=useRef(false),pending=useRef<Record<string,ReturnType<typeof setTimeout>>>({});
  useEffect(()=>{
   const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -33,8 +33,8 @@ export default function CloudSync(){
    }catch(e){setMessage('Could not load cloud data: '+(e instanceof Error?e.message:'Unknown error'))}
    finally{pause.current=false}
   };
-  supabase.auth.getUser().then(({data})=>{const u=data.user;if(u){setUser({id:u.id,email:u.email});void pull(u.id)}});
-  const {data:listener}=supabase.auth.onAuthStateChange((event,session)=>{const u=session?.user;if(event==='SIGNED_IN'&&u){if(personRef.current?.id!==u.id){setUser({id:u.id,email:u.email});setTimeout(()=>void pull(u.id),0)}}else if(event==='SIGNED_OUT')setUser(null)});
+  supabase.auth.getUser().then(({data})=>{const u=data.user;if(u){setUser({id:u.id,email:u.email});void pull(u.id)}setChecking(false)}).catch(()=>setChecking(false));
+  const {data:listener}=supabase.auth.onAuthStateChange((event,session)=>{const u=session?.user;if(event==='SIGNED_IN'&&u){if(personRef.current?.id!==u.id){setUser({id:u.id,email:u.email});setTimeout(()=>void pull(u.id),0)}}else if(event==='SIGNED_OUT'){setUser(null);for(const k of KEYS)localStorage.removeItem(k);window.location.href='/'}});
   const original=Storage.prototype.setItem;
   Storage.prototype.setItem=function(k:string,v:string){original.call(this,k,v);if(this===localStorage&&KEYS.includes(k))window.dispatchEvent(new CustomEvent('dj-cloud-change',{detail:k}))};
   const save=(event:Event)=>{
@@ -58,8 +58,5 @@ export default function CloudSync(){
   setMessage(create&&!res.data.session?'Check your email to confirm your account.':'Signed in successfully');
   if(res.data.session)setOpen(false);
  }
- return <div className="dj-cloud-widget">
-  <button type="button" className="dj-cloud-button" onClick={()=>setOpen(v=>!v)}>{person?'☁ Cloud connected':'☁ Cloud sign in'}</button>
-  {open&&<div className="dj-cloud-panel"><strong>Delta Joinery Cloud</strong>{person?<><p>Signed in as {person.email||'team member'}</p><p>{message}</p><button onClick={async()=>{await client?.auth.signOut();setOpen(false)}}>Sign out</button></>:<><p>Sign in to save quotations and price lists across your devices.</p><input type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)}/><input type="password" placeholder="Password (min. 6 characters)" value={password} onChange={e=>setPassword(e.target.value)}/><div className="dj-cloud-actions"><button onClick={()=>void login(false)}>Sign in</button><button onClick={()=>void login(true)}>Create account</button></div><p>{message}</p></>}</div>}
- </div>
+ return <>{person? <>{children}<button type="button" className="dj-account-link" onClick={()=>setOpen(v=>!v)}>Account · {person.email||'Signed in'}</button>{open&&<div className="dj-cloud-panel dj-account-panel"><strong>Delta Joinery account</strong><p>{person.email}</p><p>{message}</p><button onClick={async()=>{await client?.auth.signOut()}}>Sign out</button></div>}</>:<main className="dj-auth-screen"><div className="dj-auth-card"><div className="dj-auth-symbol">DJ</div><p className="dj-auth-eyebrow">DELTA JOINERY</p><h1>Quotation Workspace</h1><p>Sign in with your business email to access your quotations, prices and saved jobs on any device.</p>{checking?<p>Checking your account...</p>:<><form onSubmit={e=>{e.preventDefault();void login(false)}}><label>Business email<input type="email" required autoComplete="email" placeholder="you@yourbusiness.com" value={email} onChange={e=>setEmail(e.target.value)}/></label><label>Password<input type="password" required minLength={6} autoComplete="current-password" placeholder="Enter password" value={password} onChange={e=>setPassword(e.target.value)}/></label><button type="submit">Sign in</button></form><button type="button" className="dj-auth-register" onClick={()=>void login(true)}>First time here? Create account</button><p role="status" className="dj-auth-message">{message}</p></>}</div></main>}</>;
 }

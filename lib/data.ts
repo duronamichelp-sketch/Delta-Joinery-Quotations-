@@ -1,5 +1,5 @@
-export type Unit={id:string;name:string;width:number;height:number;depth:number;sqm:number;price:number;doorCost?:number;hingesPerUnit?:number;hingePrice?:number};
-export type Hardware={id:string;name:string;category:string;price:number};
+export type Unit={id:string;name:string;width:number;height:number;depth:number;sqm:number;price:number;doorCost?:number;hingesPerUnit?:number;hingePrice?:number;image?:string};
+export type Hardware={id:string;name:string;category:string;price:number;image?:string};
 export type DoorMaterial='MFC'|'Veneer'|'Painted MDF';
 export type QuoteUnit={id:string;qty:number;hasDoors:boolean;doorMaterial:DoorMaterial;doorCount:number;doorSqm:number;adc?:boolean};
 export type QuoteHardware={id:string;qty:number};
@@ -9,6 +9,6 @@ export const currency=(v:number)=>new Intl.NumberFormat('en-IE',{style:'currency
 export const positive=(v:number)=>Number.isFinite(v)?Math.max(0,v):0;
 export const read=<T,>(key:string,fallback:T):T=>{try{const x=localStorage.getItem(key);return x?JSON.parse(x) as T:fallback;}catch{return fallback;}};
 
-export type Labour={id:string;name:string;price:number;unit:string};
+export type Labour={id:string;name:string;price:number;unit:string;image?:string};
 export type QuoteLabour={id:string;qty:number};
 export const DEFAULT_LABOUR:Labour[]=[];

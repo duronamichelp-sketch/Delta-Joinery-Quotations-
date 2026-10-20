@@ -19,15 +19,75 @@ export default function Preview(){
  const all=[...rows,...hw,...work,...er,...fr];
  const total=all.reduce((sum,x)=>sum+x.qty*x.price,0);
 
- function printA4(){
-  const safe=(v:unknown)=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]||ch));
-  const items=all.map(item=>'<tr><td><strong>'+safe(item.label)+'</strong><small>'+safe(item.detail)+'</small></td><td class="center">'+item.qty+'</td><td class="right">'+currency(item.price)+'</td><td class="right"><b>'+currency(item.qty*item.price)+'</b></td></tr>').join('');
-  const css='@page{size:A4 portrait;margin:15mm 14mm}*{box-sizing:border-box}html,body{margin:0;padding:0;width:100%;font-family:Arial,Helvetica,sans-serif;font-size:12pt;color:#182a20;background:#fff}.sheet{width:100%;margin:0;padding:0}header{display:flex;justify-content:space-between;align-items:center;padding:0 0 19px;border-bottom:2px solid #14532d}header img{width:175px;height:auto;max-height:65px;object-fit:contain}h1{font-size:21pt;margin:0;text-align:right;letter-spacing:1px}header p{text-align:right;margin:5px 0 0;color:#637367;font-size:9pt}.meta{display:flex;justify-content:space-between;gap:30px;margin:30px 0 34px}.meta>div{width:50%}.meta .right{text-align:right}.kicker{font-size:9pt;text-transform:uppercase;color:#698074;letter-spacing:.7px}.meta b{display:block;margin:9px 0;font-size:12pt}.meta p{margin:6px 0}h2{font-size:15pt;margin:0 0 14px}table{width:100%;border-collapse:collapse;font-size:10.5pt}thead{display:table-header-group}th{background:#14532d;color:white;text-align:left;padding:12px 10px;-webkit-print-color-adjust:exact;print-color-adjust:exact}td{padding:12px 10px;border-bottom:1px solid #e2e9e3;vertical-align:top}td small{display:block;color:#6b7e71;margin-top:5px;font-size:9pt}.right{text-align:right}.center{text-align:center}tr{break-inside:avoid;page-break-inside:avoid}.total{display:flex;justify-content:space-between;gap:35px;border-top:2px solid #14532d;padding-top:15px;margin:35px 0 0 auto;width:50%;font-size:13pt;break-inside:avoid}.total b:last-child{color:#14532d;font-size:17pt}footer{border-top:1px solid #dde5dd;margin-top:65px;padding-top:15px;color:#64766a;font-size:9.5pt;line-height:1.5}footer p{margin:3px 0}@media screen{body{background:#e9eeea;padding:28px}.sheet{max-width:210mm;min-height:297mm;margin:auto;background:white;box-shadow:0 12px 40px #0002;padding:15mm 14mm}}@media print{body{background:white!important;padding:0!important}.sheet{width:100%!important;max-width:none!important;min-height:0!important;padding:0!important;margin:0!important;box-shadow:none!important}}';
-  const markup='<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Delta Joinery Quotation '+safe(q.number)+'</title><style>'+css+'</style></head><body><article class="sheet"><header><img src="'+window.location.origin+'/delta-logo.png" alt="Delta Joinery"><div><h1>QUOTATION</h1><p>DELTA JOINERY</p></div></header><section class="meta"><div><span class="kicker">Prepared for</span><b>'+safe(q.client||'Client not entered')+'</b><p>'+safe(q.project||'')+'</p></div><div class="right"><p>Quotation No. <strong>'+safe(q.number||'-')+'</strong></p><p>Date '+safe(q.date||'-')+'</p></div></section><h2>Quotation details</h2><table><thead><tr><th>Description</th><th class="center">Qty</th><th class="right">Price</th><th class="right">Total</th></tr></thead><tbody>'+(items||'<tr><td colspan="4" class="center">No items added to this quotation</td></tr>')+'</tbody></table><div class="total"><b>Total quotation</b><b>'+currency(total)+'</b></div><footer><p>Thank you for considering Delta Joinery.</p><p>Quotation based on the selected specifications. VAT, where applicable, is not included unless stated in the rates.</p></footer></article></body></html>';
-  const printWindow=window.open('','_blank');
-  if(!printWindow){alert('Please allow pop-ups for this website to print your quotation.');return}
-  printWindow.document.open();printWindow.document.write(markup);printWindow.document.close();
-  printWindow.onload=()=>{printWindow.focus();printWindow.print()};
+
+ async function printA4(){
+  try{
+   const {jsPDF}=await import('jspdf');
+   const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
+   const money=(n:number)=>'EUR '+(Number(n)||0).toLocaleString('en-IE',{minimumFractionDigits:2,maximumFractionDigits:2});
+   const green:[number,number,number]=[16,80,45];
+   const dark:[number,number,number]=[25,38,30];
+   const left=18,right=192,pageWidth=174;
+   let y=19;
+   const newPage=()=>{pdf.addPage();y=22;};
+   const line=(x1:number,yy:number,x2:number)=>{pdf.setDrawColor(210,222,213);pdf.setLineWidth(.3);pdf.line(x1,yy,x2,yy)};
+   const write=(t:string,x:number,yy:number,sz=10,style:'normal'|'bold'='normal')=>{pdf.setFont('helvetica',style);pdf.setFontSize(sz);pdf.setTextColor(...dark);pdf.text(t,x,yy)};
+   try{
+    const response=await fetch('/delta-logo.png');
+    if(response.ok){
+     const blob=await response.blob();
+     const data=await new Promise<string>((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result));r.onerror=()=>reject(new Error('Image load failed'));r.readAsDataURL(blob)});
+     pdf.addImage(data,blob.type.includes('png')?'PNG':'JPEG',left,19,46,14,undefined,'FAST');
+    }else{write('DELTA JOINERY',left,29,17,'bold')}
+   }catch{write('DELTA JOINERY',left,29,17,'bold')}
+   pdf.setTextColor(...green);pdf.setFont('helvetica','bold');pdf.setFontSize(22);pdf.text('QUOTATION',right,27,{align:'right'});
+   pdf.setDrawColor(...green);pdf.setLineWidth(.8);pdf.line(left,38,right,38);
+   y=49;
+   pdf.setFont('helvetica','bold');pdf.setTextColor(91,117,101);pdf.setFontSize(8);
+   pdf.text('PREPARED FOR',left,y);pdf.text('QUOTATION DETAILS',113,y);
+   y+=7;
+   write(q.client||'Client not entered',left,y,12,'bold');
+   write('No. '+(q.number||'-'),113,y,10,'bold');
+   y+=7;
+   write(q.project||'',left,y,10);
+   write('Date: '+(q.date||'-'),113,y,10);
+   y+=17;
+   write('Quotation breakdown',left,y,15,'bold');
+   y+=8;
+   const header=()=>{pdf.setFillColor(...green);pdf.rect(left,y,pageWidth,11,'F');pdf.setTextColor(255,255,255);pdf.setFont('helvetica','bold');pdf.setFontSize(9);pdf.text('ITEM / DESCRIPTION',left+4,y+7);pdf.text('QTY',142,y+7,{align:'right'});pdf.text('AMOUNT',right-4,y+7,{align:'right'});y+=11};
+   header();
+   for(const item of all){
+    pdf.setFont('helvetica','normal');pdf.setFontSize(9.5);
+    const labelLines=pdf.splitTextToSize(item.label,102) as string[];
+    const detailLines=pdf.splitTextToSize(item.detail||'',102) as string[];
+    const rowHeight=Math.max(16,7+labelLines.length*4.5+detailLines.length*3.5);
+    if(y+rowHeight>264){newPage();header()}
+    pdf.setTextColor(...dark);pdf.setFont('helvetica','bold');pdf.setFontSize(10);
+    pdf.text(labelLines,left+4,y+6);
+    pdf.setTextColor(110,127,115);pdf.setFont('helvetica','normal');pdf.setFontSize(8);
+    if(item.detail)pdf.text(detailLines,left+4,y+7+labelLines.length*4.5);
+    pdf.setTextColor(...dark);pdf.setFontSize(10);
+    pdf.text(String(item.qty),142,y+6,{align:'right'});
+    pdf.setFont('helvetica','bold');pdf.text(money(item.qty*item.price),right-4,y+6,{align:'right'});
+    y+=rowHeight;line(left,y,right);
+   }
+   if(all.length===0){y+=12;write('No items added to this quotation',left+4,y,10);y+=12;line(left,y,right)}
+   if(y>254)newPage();
+   y+=15;
+   pdf.setDrawColor(...green);pdf.setLineWidth(.7);pdf.line(108,y-9,right,y-9);
+   write('TOTAL QUOTATION',108,y,10,'bold');
+   pdf.setTextColor(...green);pdf.setFont('helvetica','bold');pdf.setFontSize(17);pdf.text(money(total),right,y+1,{align:'right'});
+   y+=28;
+   if(y>264)newPage();
+   line(left,y,right);y+=8;
+   pdf.setTextColor(95,112,101);pdf.setFont('helvetica','normal');pdf.setFontSize(9);
+   pdf.text('Thank you for considering Delta Joinery.',left,y);
+   y+=6;pdf.setFontSize(8);
+   const disclaimer=pdf.splitTextToSize('Quotation based on the selected specifications. VAT, where applicable, is not included unless stated in the rates.',pageWidth);
+   pdf.text(disclaimer,left,y);
+   for(let page=1;page<=pdf.getNumberOfPages();page++){pdf.setPage(page);pdf.setFontSize(8);pdf.setTextColor(130,142,134);pdf.text('Delta Joinery  |  Quotation '+(q.number||''),left,287);pdf.text(page+' / '+pdf.getNumberOfPages(),right,287,{align:'right'})}
+   pdf.save('Delta-Joinery-Quotation-'+(q.number||'draft').replace(/[^a-z0-9_-]/gi,'-')+'.pdf');
+  }catch(error){console.error(error);alert('Unable to generate PDF. Please try again.')}
  }
 
  return <main className="dj-preview-desktop min-h-screen bg-gray-100 text-gray-900"><DesktopSidebar active="preview"/><div className="dj-preview-body">

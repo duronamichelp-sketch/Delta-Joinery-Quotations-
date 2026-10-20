@@ -1,0 +1,14 @@
+'use client';
+import {useEffect,useMemo,useState} from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import {currency,read} from '../../lib/data';
+type Saved={id:string;name?:string;number?:string;date?:string;client?:string;project?:string;chosenUnits?:{id:string;qty:number;adc?:boolean}[];chosenHardware?:{id:string;qty:number}[];chosenLabour?:{id:string;qty:number}[];savedAt?:string};
+export default function SavedQuotes(){
+ const [saved,setSaved]=useState<Saved[]>([]);const [search,setSearch]=useState('');
+ useEffect(()=>setSaved(read('dj_saved_quotes',[])),[]);
+ const filtered=useMemo(()=>saved.filter(x=>[x.number,x.client,x.project,x.name].join(' ').toLowerCase().includes(search.toLowerCase())),[saved,search]);
+ function openQuote(q:Saved){localStorage.setItem('dj_quote',JSON.stringify(q));window.location.href='/'}
+ function removeQuote(id:string){if(!confirm('Delete this saved quotation?'))return;const next=saved.filter(x=>x.id!==id);setSaved(next);localStorage.setItem('dj_saved_quotes',JSON.stringify(next))}
+ return <main className="dj-app"><div className="dj-page-top"><div className="dj-page-top-inner"><Link href="/dashboard" className="dj-back">← Home</Link><Image src="/delta-logo.png" alt="Delta Joinery" width={156} height={46}/></div></div><div className="dj-content"><div className="dj-page-title"><div><div className="dj-eyebrow">YOUR WORK</div><h1>Saved quotations</h1><p>Find a previous job, then reopen it for editing or PDF preview.</p></div><Link href="/" className="dj-primary">＋ New quotation</Link></div><div className="dj-panel"><input className="field" aria-label="Search quotations" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search client, project or quotation number..." /><div className="dj-quote-list">{filtered.length===0?<div className="dj-empty">No saved quotations found.</div>:filtered.map(x=><article className="dj-quote-row" key={x.id}><div className="dj-quote-meta"><b>{x.number||x.id}</b><strong>{x.client||'Unnamed client'}</strong><small>{x.project||'Untitled project'} · {x.date||'No date'}</small></div><div className="dj-quote-actions"><button onClick={()=>openQuote(x)} className="dj-primary">Open quotation</button><button onClick={()=>removeQuote(x.id)} className="dj-danger" aria-label={'Delete '+(x.number||x.id)}>Delete</button></div></article>)}</div></div><p className="dj-note">This page shows jobs saved in the current browser. Cloud syncing is not yet enabled.</p></div><nav className="dj-bottom-nav no-print"><Link href="/dashboard">⌂<small>Home</small></Link><Link href="/">▤<small>Quote</small></Link><Link href="/quotes" aria-current="page">◷<small>Saved</small></Link><Link href="/units">▦<small>Library</small></Link></nav></main>
+}

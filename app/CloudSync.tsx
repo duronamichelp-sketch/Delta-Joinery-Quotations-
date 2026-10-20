@@ -18,23 +18,34 @@ export default function CloudSync({children}:{children:React.ReactNode}){
     const {data,error}=await supabase.from('joinery_data').select('data_key,payload').eq('user_id',userId);
     if(error)throw error;
     const remote=new Map((data||[]).map(x=>[x.data_key,x.payload]));
-    let changed=false;
     for(const k of KEYS){
      if(remote.has(k)){
       const incoming=JSON.stringify(remote.get(k));
-      if(localStorage.getItem(k)!==incoming){localStorage.setItem(k,incoming);changed=true}
+      if(localStorage.getItem(k)!==incoming){localStorage.setItem(k,incoming)}
      }else{
       const local=localStorage.getItem(k);
       if(local!==null){try{await supabase.from('joinery_data').upsert({user_id:userId,data_key:k,payload:JSON.parse(local)},{onConflict:'user_id,data_key'})}catch{}}
      }
     }
     setMessage('Cloud sync connected');
-    if(changed)window.location.reload();
    }catch(e){setMessage('Could not load cloud data: '+(e instanceof Error?e.message:'Unknown error'))}
    finally{pause.current=false}
   };
-  supabase.auth.getUser().then(({data})=>{const u=data.user;if(u){setUser({id:u.id,email:u.email});void pull(u.id)}setChecking(false)}).catch(()=>setChecking(false));
-  const {data:listener}=supabase.auth.onAuthStateChange((event,session)=>{const u=session?.user;if(event==='SIGNED_IN'&&u){if(personRef.current?.id!==u.id){setUser({id:u.id,email:u.email});setTimeout(()=>void pull(u.id),0)}}else if(event==='SIGNED_OUT'){setUser(null);for(const k of KEYS)localStorage.removeItem(k);window.location.href='/'}});
+  // Hydrate local storage before rendering quote pages; never reload on sync.
+  let initialised=false;
+  const activate=async(u:{id:string;email?:string})=>{
+   if(personRef.current?.id===u.id)return;
+   await pull(u.id);
+   setUser({id:u.id,email:u.email});
+  };
+  supabase.auth.getUser().then(async({data})=>{
+   if(data.user)await activate(data.user);
+  }).catch(e=>setMessage('Sign-in check failed: '+String(e))).finally(()=>{initialised=true;setChecking(false)});
+  const {data:listener}=supabase.auth.onAuthStateChange((event,session)=>{
+   const u=session?.user;
+   if(event==='SIGNED_IN'&&u&&initialised){void activate(u)}
+   else if(event==='SIGNED_OUT'){setUser(null);for(const k of KEYS)localStorage.removeItem(k)}
+  });
   const original=Storage.prototype.setItem;
   Storage.prototype.setItem=function(k:string,v:string){original.call(this,k,v);if(this===localStorage&&KEYS.includes(k))window.dispatchEvent(new CustomEvent('dj-cloud-change',{detail:k}))};
   const save=(event:Event)=>{

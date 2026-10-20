@@ -2,6 +2,7 @@
 import {useEffect,useState} from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import DesktopSidebar from '../DesktopSidebar';
 import {Unit,Hardware,Labour,QuoteUnit,QuoteHardware,ExtraCost,DEFAULT_HARDWARE,currency,read} from '../../lib/data';
 type Q={number:string;date:string;client:string;project:string;email:string;phone:string;address:string;notes:string;chosenUnits:QuoteUnit[];chosenHardware:QuoteHardware[];chosenLabour:{id:string;qty:number}[];chosenElectrics:{id:string;qty:number}[];chosenFinishes:{id:string;qty:number}[]};
 const start=():Q=>({number:'DJ-'+String(Date.now()).slice(-5),date:new Date().toISOString().slice(0,10),client:'',project:'',email:'',phone:'',address:'',notes:'',chosenUnits:[],chosenHardware:[],chosenLabour:[],chosenElectrics:[],chosenFinishes:[]});
@@ -28,8 +29,7 @@ const match=(name:string)=>name.toLowerCase().includes(query.toLowerCase());
 const counter=(type:'chosenUnits'|'chosenHardware'|'chosenLabour'|'chosenElectrics'|'chosenFinishes',id:string,value:number)=><div className="dj-count"><button aria-label="Decrease" onClick={()=>qty(type,id,value-1)}>−</button><span>{value}</span><button aria-label="Increase" onClick={()=>qty(type,id,value+1)}>+</button></div>;
 return <main className="dj-desktop">
 <style>{styles}</style>
-<aside className="dj-side"><Link href="/" className="dj-brand"><Image src="/delta-logo.png" width={44} height={44} alt="Delta Joinery logo"/><span><b>DELTA JOINERY</b><small>BESPOKE INTERIORS</small></span></Link>
-<nav className="dj-links"><Link href="/">⌂ <span>Home</span></Link><Link className="active" href="/quote">▤ <span>New Quotation</span></Link><Link href="/quotes">▤ <span>Saved Quotations</span></Link><Link href="/units">▣ <span>Price Library</span></Link><Link href="/quotes">♙ <span>Clients</span></Link><Link href="/units">⚙ <span>Settings</span></Link></nav><div className="dj-help">ⓘ <span><b>Need help?</b><small>Delta Joinery Support</small></span></div></aside>
+<DesktopSidebar active="quote"/>
 <div className="dj-main">
 <header className="dj-top"><div className="dj-search"><span>⌕</span><input aria-label="Search price library" placeholder="Search units, hardware, labour..." value={query} onChange={e=>setQuery(e.target.value)}/></div><div className="dj-top-actions"><span className="dj-sync">☁ Saved locally</span><Link href="/preview" className="dj-outline">Preview</Link><button className="dj-dark" onClick={save}>Save quotation</button><button className="dj-more" onClick={()=>window.print()}>•••</button></div></header>
 <div className="dj-area"><div className="dj-work">
@@ -44,7 +44,7 @@ return <main className="dj-desktop">
 </div><aside className="dj-right"><section className="dj-total"><h2>ESTIMATED QUOTATION</h2><strong className="dj-grand">{currency(grand)}</strong>{[['Units',base],['Doors',doors],['Hinges',hinges],['Hardware',hw],['Labour',lb],['Electrics',electricTotal],['Finishes',finishTotal]].map(([label,n])=><div className="dj-total-line" key={String(label)}><span>{label}</span><span>{currency(Number(n))}</span></div>)}<button onClick={save}>Save quotation</button><Link href="/preview">Preview / PDF →</Link>{status&&<p role="status">{status}</p>}</section><section className="dj-card dj-mini"><div className="dj-title"><h2>Client details</h2><span>Edit</span></div><label>♙ <input placeholder="Client name" value={q.client} onChange={e=>set('client',e.target.value)}/></label><label>✉ <input type="email" placeholder="Enter email" value={q.email} onChange={e=>set('email',e.target.value)}/></label><label>☎ <input type="tel" placeholder="Enter phone number" value={q.phone} onChange={e=>set('phone',e.target.value)}/></label><label>⌖ <input placeholder="Enter address" value={q.address} onChange={e=>set('address',e.target.value)}/></label></section><section className="dj-card dj-mini"><div className="dj-title"><h2>Notes</h2><span>Edit</span></div><textarea rows={4} placeholder="Enter any notes for this quotation..." value={q.notes} onChange={e=>set('notes',e.target.value)}/></section></aside></div>
 </div></main>
 }
-const styles=`
+const styles=`\n.dj-desktop .dj-shared-sidebar{display:flex;flex-direction:column;position:sticky;top:0;width:258px;min-width:258px;height:100vh;overflow:auto;z-index:30}\n@media(max-width:900px){.dj-desktop .dj-shared-sidebar{position:relative;width:100%;height:auto;min-height:0}}\n
 .dj-desktop{display:flex;min-height:100vh;background:#f5f8f6;color:#101d16;font:14px Arial,Helvetica,sans-serif}
 .dj-desktop *{box-sizing:border-box}.dj-desktop button,.dj-desktop input,.dj-desktop select,.dj-desktop textarea{font:inherit}.dj-desktop button{cursor:pointer}.dj-desktop button:disabled{opacity:.5;cursor:not-allowed}
 .dj-side{width:258px;min-width:258px;background:linear-gradient(135deg,#072b1a,#0b2419);color:white;display:flex;flex-direction:column;min-height:100vh;padding:20px 16px;position:sticky;top:0;height:100vh}

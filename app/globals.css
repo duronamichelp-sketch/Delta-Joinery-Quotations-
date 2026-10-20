@@ -217,3 +217,34 @@ button.rev-add-control,button.rev-save-sample{display:block;width:100%;cursor:po
 .rev-saved-bottom button{color:#3c8656;font-weight:800;font-size:11px}
 .rev-search-input{width:100%;outline:none}
 .rev-nav a:focus-visible,.rev-tile:focus-visible,.rev-hero-button:focus-visible,button:focus-visible{outline:3px solid #9ed9ad;outline-offset:2px}
+
+
+/* Delta Joinery internal work tracker */
+.dj-work-hero{min-height:405px}.dj-work-hero .rev-kicker{margin-top:43px!important}.dj-work-hero h1{font-size:38px}.dj-work-hero .rev-hero-button{margin-top:19px}.dj-chevron{font-size:22px!important;font-weight:600!important}.dj-btn-plus{font-size:24px}
+.dj-stats{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:12px}
+.dj-stat{border:1px solid #dbe9dd;background:#fff;border-radius:15px;padding:16px 12px;text-align:left;min-height:112px;box-shadow:0 5px 12px #142a1708;display:flex;flex-direction:column}
+.dj-stat>span{font-size:11px;color:#597464;font-weight:750}.dj-stat strong{font-size:34px;font-weight:850;line-height:1.3;color:#1c3425}.dj-stat small{font-size:10px;color:#87958b}
+.dj-next-due{background:#e9f3eb;border:1px solid #d5e6d8;border-radius:13px;display:flex;align-items:center;gap:12px;padding:12px 15px}
+.dj-small-icon{display:grid;place-items:center;width:37px;height:37px;background:#fff;border-radius:10px;color:#3b8356;font-size:23px}.dj-next-due small{display:block;font-size:9px;color:#66876f;font-weight:800;letter-spacing:.08em}.dj-next-due b{font-size:13px;font-weight:800}
+button.rev-tile{cursor:pointer;text-align:left;display:block;width:100%}
+.rev-tile .dj-tile-arrow{position:absolute;top:14px;right:15px;display:grid;place-items:center;border-radius:50%;background:#edf4ee;color:#368456;width:25px;height:25px;font-size:18px;font-weight:700}
+.dj-create-task{border-radius:10px;background:#23573a;color:white;padding:10px 11px;font-size:11px;font-weight:800;white-space:nowrap}
+.dj-filter{display:grid;grid-template-columns:1fr 1fr;background:#e8eee9;border-radius:12px;padding:4px;margin:12px 0;gap:5px}
+.dj-filter button{font-size:12px;font-weight:800;border-radius:9px;padding:11px 7px;color:#687e6b}
+.dj-filter button.active{background:#fff;box-shadow:0 1px 6px #0a26151b;color:#17482a}
+.dj-filter span{font-size:10px;margin-left:4px;opacity:.75}
+.dj-task-form,.dj-job-card,.dj-empty-task{background:#fff;border:1px solid #e0eae2;border-radius:15px;padding:17px;margin:12px 0}
+.dj-task-form h3{font-size:16px;font-weight:800;margin-bottom:13px}
+.dj-task-form label{display:block;font-size:11px;font-weight:750;color:#63796b;margin:11px 0}
+.dj-task-form input,.dj-task-form textarea{display:block;width:100%;border:1px solid #dce6df;border-radius:9px;background:#fafcfb;padding:12px;font-size:14px;color:#182a20;margin-top:6px;outline:none}
+.dj-task-form input:focus,.dj-task-form textarea:focus{border-color:#54956c}
+.dj-task-actions{display:flex;gap:8px;margin-top:17px}.dj-task-actions button{padding:12px;font-size:12px;font-weight:800;border-radius:9px}
+.dj-action-primary{flex:1;background:#26744b;color:#fff}.dj-action-secondary{background:#eaf0eb;color:#3a5642}
+.dj-empty-task{text-align:center;padding:28px 15px}.dj-empty-task>span{font-size:25px;display:block;color:#3b8960}.dj-empty-task b{font-size:12px;display:block;margin-top:8px}.dj-empty-task p{font-size:11px;color:#819187;margin-top:6px}
+.dj-job-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.dj-job-top span{background:#e9f3eb;border-radius:20px;padding:5px 9px;font-size:10px;font-weight:800;color:#377c4e}.dj-job-top small{font-size:10px;color:#718474}
+.dj-job-card h3{font-size:16px;font-weight:850;margin:13px 0 3px}.dj-job-card>p{font-size:12px;color:#728276}.dj-job-card .dj-job-notes{font-size:11px;border-top:1px solid #edf0ed;padding-top:9px;margin-top:12px}
+.dj-job-actions{display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid #edf0ed;margin-top:15px;padding-top:13px}.dj-job-actions button{border:1px solid #e1eae3;border-radius:8px;padding:10px 11px;font-size:11px;font-weight:800;color:#355c43}
+.dj-job-actions .dj-job-main{background:#287a4e;color:#fff;flex:1;border-color:#287a4e}.dj-job-actions .dj-remove{color:#ad5959}
+.dj-storage-hint{color:#87958a;font-size:10px;line-height:1.6;margin-top:16px}
+@media(max-width:500px){.dj-work-hero{min-height:385px}.dj-work-hero h1{font-size:36px}.dj-work-hero .rev-kicker{margin-top:39px!important}}

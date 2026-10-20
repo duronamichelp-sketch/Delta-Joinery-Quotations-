@@ -1,0 +1,10 @@
+export type Unit={id:string;name:string;width:number;height:number;depth:number;sqm:number;price:number};
+export type Hardware={id:string;name:string;category:string;price:number};
+export type DoorMaterial='MFC'|'Veneer'|'Painted MDF';
+export type QuoteUnit={id:string;qty:number;hasDoors:boolean;doorMaterial:DoorMaterial;doorCount:number;doorSqm:number};
+export type QuoteHardware={id:string;qty:number};
+export const DEFAULT_HARDWARE:Hardware[]=[{id:'hinge',name:'Blumotion 110° Hinge',category:'Hinges',price:4},{id:'movento',name:'Blum Movento 40kg',category:'Drawer systems',price:120},{id:'tipon',name:'Blum Movento TIP-ON',category:'Drawer systems',price:128},{id:'merivobox',name:'Blum MERIVOBOX',category:'Drawer systems',price:90}];
+export const DEFAULT_DOOR_RATES:Record<DoorMaterial,number>={'MFC':120,'Veneer':240,'Painted MDF':190};
+export const currency=(v:number)=>new Intl.NumberFormat('en-IE',{style:'currency',currency:'EUR'}).format(v);
+export const positive=(v:number)=>Number.isFinite(v)?Math.max(0,v):0;
+export const read=<T,>(key:string,fallback:T):T=>{try{const x=localStorage.getItem(key);return x?JSON.parse(x) as T:fallback;}catch{return fallback;}};

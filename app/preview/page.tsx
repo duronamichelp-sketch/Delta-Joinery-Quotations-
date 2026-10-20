@@ -16,7 +16,7 @@ export default function Preview(){
  const all=[...rows,...hw,...work];
  const total=all.reduce((sum,x)=>sum+x.qty*x.price,0);
  return <main className="min-h-screen bg-gray-100 text-gray-900">
- <div className="no-print mx-auto max-w-4xl p-4 flex flex-wrap justify-between items-center gap-3"><Link href="/" className="btn-outline">← Edit quotation</Link><button className="btn" onClick={()=>window.print()}>Print / Save as PDF</button></div>
+ <div className="no-print mx-auto max-w-4xl p-4 flex flex-wrap justify-between items-center gap-3"><Link href="/quote" className="btn-outline">← Edit quotation</Link><button className="btn" onClick={()=>window.print()}>Print / Save as PDF</button></div>
  <article className="mx-auto max-w-4xl bg-white p-7 md:p-12 shadow-sm print:shadow-none print:p-0" style={{minHeight:'90vh'}}>
  <header className="flex items-center justify-between gap-5 border-b-2 border-green-800 pb-7"><Image src="/delta-logo.png" alt="Delta Joinery" width={175} height={50} priority/><div className="text-right"><h1 className="text-xl md:text-2xl font-bold tracking-wide">QUOTATION</h1><p className="text-xs text-gray-500 mt-1">DELTA JOINERY</p></div></header>
  <div className="grid grid-cols-2 gap-5 my-8 text-sm">

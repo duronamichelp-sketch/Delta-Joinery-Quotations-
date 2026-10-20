@@ -84,3 +84,90 @@ body{min-width:0;overflow-x:hidden}
  .quote-section .rounded-xl.border .border-t>div{width:auto}
  .quote-summary .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
+
+
+/* Delta Joinery 2026 interface */
+:root{--dj-ink:#14241e;--dj-green:#2f7954;--dj-soft:#f3f6f3}
+body{background:var(--dj-soft);color:var(--dj-ink)}
+.dj-app{min-height:100vh;padding-bottom:95px}
+.dj-hero{background:linear-gradient(130deg,#111d19 0%,#20382d 70%,#30563e 100%);color:white;position:relative;overflow:hidden}
+.dj-hero:after{content:"";position:absolute;width:420px;height:420px;border:1px solid #ffffff14;border-radius:50%;right:-130px;top:-180px;pointer-events:none}
+.dj-hero-inner{max-width:1050px;margin:auto;padding:38px 26px 45px;position:relative;z-index:1}
+.dj-hero img{max-width:170px;height:auto;object-fit:contain;background:#fff;border-radius:12px;padding:8px}
+.dj-hero-copy{margin:48px 0 27px;max-width:530px}
+.dj-eyebrow{font-size:11px;letter-spacing:.16em;font-weight:800;color:#7a9c84}
+.dj-hero h1{font-size:clamp(32px,5vw,54px);line-height:1.12;letter-spacing:-.04em;font-weight:750;margin:9px 0 16px}
+.dj-hero p{color:#d1dfd3;line-height:1.6;font-size:15px}
+.dj-primary{background:var(--dj-green);color:white;border:0;border-radius:13px;padding:13px 18px;display:inline-flex;align-items:center;justify-content:center;gap:12px;font-weight:700;min-height:46px;text-decoration:none}
+.dj-primary:hover,.btn:hover{background:#236544}
+.dj-hero .dj-primary{width:100%;max-width:390px;justify-content:space-between;background:#69ab83;color:#10231a}
+.dj-dashboard-wrap,.dj-content{max-width:1100px;margin:auto;padding:26px 20px 100px}
+.dj-dashboard-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.dj-dashboard-tile{position:relative;padding:23px 19px;min-height:168px;border:1px solid #dfe7e2;border-radius:19px;background:white;box-shadow:0 6px 28px #1d45300a;display:flex;flex-direction:column;gap:8px;color:var(--dj-ink)}
+.dj-dashboard-tile .dj-tile-icon{height:43px;width:43px;border-radius:12px;background:#e9f3eb;color:#267247;display:flex;align-items:center;justify-content:center;font-size:25px}
+.dj-dashboard-tile b{font-size:17px;margin-top:5px}
+.dj-dashboard-tile small,.dj-recent-row small{font-size:12px;color:#7a8981}
+.dj-tile-arrow{position:absolute;right:19px;top:24px;color:#6a9379}
+.dj-recent{margin-top:27px;background:#fff;border:1px solid #e0e7e1;border-radius:18px;padding:22px}
+.dj-section-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:15px}
+.dj-section-heading h2{font-size:18px;font-weight:750}
+.dj-section-heading a,.dj-saved-label a{color:#278454;font-size:13px;font-weight:650}
+.dj-muted,.dj-note{color:#718076;font-size:13px;line-height:1.6}
+.dj-note{margin:18px 3px}
+.dj-recent-row{display:flex;justify-content:space-between;align-items:center;padding:14px 3px;border-top:1px solid #e9efeb}
+.dj-recent-row div{display:flex;flex-direction:column;gap:4px}
+.dj-bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#14231c;color:#cdd8d0;display:flex;justify-content:space-around;align-items:center;z-index:30;padding:9px 8px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -3px 20px #10201714}
+.dj-bottom-nav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;flex:1;min-height:47px;text-decoration:none;font-size:23px;line-height:1.1;color:#becdc1}
+.dj-bottom-nav a[aria-current=page]{color:#8ad0a0}
+.dj-bottom-nav small{font-size:10px;font-weight:650}
+.dj-page-top,.dj-topbar{background:#15251e;color:white;border:0}
+.dj-page-top-inner{max-width:1100px;margin:auto;display:flex;align-items:center;justify-content:space-between;padding:16px 20px}
+.dj-page-top img,.dj-topbar img{max-width:145px;height:auto;background:#fff;border-radius:9px;padding:6px}
+.dj-back{color:#e7f1e9;font-weight:650}
+.dj-page-title{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:5px;flex-wrap:wrap}
+.dj-page-title h1{font-size:27px;font-weight:800;letter-spacing:-.025em;margin:4px 0}
+.dj-page-title p{color:#6c7d72;font-size:13px}
+.dj-panel,.dj-content .panel{background:#fff;border:1px solid #e0e7e1;border-radius:18px;box-shadow:0 6px 22px #0e311008}
+.dj-panel{padding:18px}
+.dj-content .panel{padding:20px}
+.dj-content .btn{background:#327b54;border-radius:12px}
+.dj-content .btn-outline{border-radius:12px}
+.dj-saved-label{display:flex;justify-content:space-between;margin-bottom:10px;font-size:11px;font-weight:750;letter-spacing:.07em;color:#708076}
+.dj-quote-list{margin-top:16px}
+.dj-quote-row{display:flex;justify-content:space-between;gap:20px;align-items:center;border-top:1px solid #e6ede8;padding:17px 3px}
+.dj-quote-meta{display:flex;flex-direction:column;gap:4px}
+.dj-quote-meta b{font-size:12px;color:#388154}
+.dj-quote-meta strong{font-size:16px}
+.dj-quote-meta small{font-size:12px;color:#75867c}
+.dj-quote-actions{display:flex;gap:9px;align-items:center}
+.dj-danger{color:#b94b4b;font-size:12px;padding:10px}
+.dj-empty{color:#718076;padding:30px 4px;text-align:center}
+.dj-summary{border:1px solid #d0e4d2!important}
+.dj-summary strong.text-3xl{color:#256c47}
+.dj-library-grid .panel{min-width:0}
+.dj-library-grid .panel h2{padding-bottom:12px;border-bottom:1px solid #edf0ed}
+@media(max-width:700px){
+ .dj-hero-inner{padding:24px 20px 34px}
+ .dj-hero-copy{margin:33px 0 25px}
+ .dj-dashboard-wrap,.dj-content{padding:16px 13px 102px}
+ .dj-dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .dj-dashboard-tile{min-height:156px;padding:17px 12px}
+ .dj-dashboard-tile b{font-size:15px}
+ .dj-dashboard-tile:last-child{grid-column:span 2;min-height:125px}
+ .dj-dashboard-tile:last-child .dj-tile-arrow{top:20px}
+ .dj-page-title{align-items:stretch}
+ .dj-page-title .dj-primary{width:100%}
+ .dj-quote-row{align-items:flex-start;flex-direction:column;gap:12px}
+ .dj-quote-actions{width:100%}
+ .dj-quote-actions .dj-primary{flex:1}
+ .dj-content .panel{padding:15px}
+ .dj-topbar .max-w-6xl{display:flex;gap:10px}
+ .dj-topbar .no-print{flex:1;min-width:0}
+ .dj-topbar .no-print>*{min-width:0}
+ .dj-library-grid{display:block}
+ .dj-library-grid>.panel{margin-bottom:14px}
+ .quote-toolbar h1{font-size:25px}
+ .dj-bottom-nav{display:flex}
+}
+@media(min-width:900px){.dj-bottom-nav{position:static;max-width:1100px;margin:25px auto 0;border-radius:15px;padding:6px}.dj-app{padding-bottom:0}}
+@media print{.dj-bottom-nav,.dj-page-top,.dj-note{display:none!important}.dj-content{padding:0!important}.dj-panel{box-shadow:none!important}}

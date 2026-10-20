@@ -3,19 +3,22 @@ import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
 import DesktopSidebar from './DesktopSidebar';
 import Image from 'next/image';
+import {read} from '../lib/data';
+import {savedQuoteTotal,type SavedQuotation} from '../lib/quotationTotals';
 type Task={id:string;client:string;project:string;due:string;notes:string;status:'upcoming'|'finished';created:string;finished?:string;amount?:number};
 const KEY='dj_quotation_tasks';
 const dateToday=()=>new Date().toLocaleDateString('en-CA');
 const formatDate=(v:string)=>v?new Date(v+'T12:00:00').toLocaleDateString('en-IE',{day:'numeric',month:'short',year:'numeric'}):'No deadline';
 export default function Home(){
  const [tasks,setTasks]=useState<Task[]>([]);
+ const [savedQuotes,setSavedQuotes]=useState<SavedQuotation[]>([]);
  const [loaded,setLoaded]=useState(false);
  const [showForm,setShowForm]=useState(false);
  const [filter,setFilter]=useState<'upcoming'|'finished'>('upcoming');
  const [client,setClient]=useState(''),[project,setProject]=useState(''),[due,setDue]=useState(''),[notes,setNotes]=useState('');
  const [amount,setAmount]=useState('');
  const [editing,setEditing]=useState<string|null>(null);
- useEffect(()=>{try{const raw=localStorage.getItem(KEY);if(raw){const data=JSON.parse(raw);if(Array.isArray(data))setTasks(data)}}catch{}setLoaded(true)},[]);
+ useEffect(()=>{try{const raw=localStorage.getItem(KEY);if(raw){const data=JSON.parse(raw);if(Array.isArray(data))setTasks(data)}}catch{}setSavedQuotes(read<SavedQuotation[]>('dj_saved_quotes',[]));setLoaded(true)},[]);
  useEffect(()=>{if(loaded)localStorage.setItem(KEY,JSON.stringify(tasks))},[tasks,loaded]);
  const upcoming=useMemo(()=>tasks.filter(t=>t.status==='upcoming').sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999')),[tasks]);
  const finished=useMemo(()=>tasks.filter(t=>t.status==='finished').sort((a,b)=>(b.finished||'').localeCompare(a.finished||'')),[tasks]);
@@ -29,14 +32,16 @@ export default function Home(){
   setTasks(prev=>prev.map(t=>t.id===id?{...t,amount:quotationAmount,status:done?'finished':'upcoming',finished:done?dateToday():undefined}:t));
  }
  function remove(id:string){if(window.confirm('Delete this quotation task?'))setTasks(prev=>prev.filter(t=>t.id!==id))}
- const finishedTotal=finished.reduce((sum,t)=>sum+(Number(t.amount)||0),0);
+ const finishedSaved=savedQuotes.filter(q=>q.finished);
+ const finishedTotal=finished.reduce((sum,t)=>sum+(Number(t.amount)||0),0)+finishedSaved.reduce((sum,q)=>sum+savedQuoteTotal(q),0);
+ const finishedCount=finished.length+finishedSaved.length;
  const shown=filter==='upcoming'?upcoming:finished;
  return <main className="rev-shell dj-full-desktop"><DesktopSidebar active="home"/><div className="rev-phone">
  <section className="rev-hero dj-work-hero"><div className="rev-brand"><Image src="/delta-logo.png" alt="Delta Joinery" width={150} height={46}/><span className="rev-avatar">DJ</span></div><p className="rev-kicker">DELTA JOINERY · WORKSPACE</p><h1>Quotation<br/><em>dashboard.</em></h1><p className="rev-intro">Manage your jobs, deadlines and completed quotations.</p><Link href="/quote" className="rev-hero-button"><span className="dj-btn-plus">＋</span><span>New Quotation</span><b className="dj-chevron">→</b></Link><div className="rev-hero-glow"/></section>
  <section className="rev-home-area">
  <div className="rev-section-title"><div><p>OVERVIEW</p><h2>Your workspace</h2></div></div>
- <div className="dj-stats"><button type="button" onClick={()=>{setFilter('upcoming');document.getElementById('dj-jobs')?.scrollIntoView({behavior:'smooth'})}} className="dj-stat"><span>Upcoming</span><strong>{upcoming.length}</strong><small>Need quotations</small></button><button type="button" onClick={()=>{setFilter('finished');document.getElementById('dj-jobs')?.scrollIntoView({behavior:'smooth'})}} className="dj-stat"><span>Finished</span><strong>{finished.length}</strong><small>Completed quotations</small></button></div>
- <div className="dj-completed-value" style={{background:'#0d3b27',color:'#fff',padding:'22px 25px',borderRadius:15,margin:'18px 0 20px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:16,flexWrap:'wrap'}}><div><span style={{display:'block',fontSize:12,letterSpacing:'0.12em',fontWeight:800,color:'#a9dbc0'}}>TOTAL VALUE OF FINISHED QUOTATIONS</span><strong style={{display:'block',fontSize:32,marginTop:8}}>{new Intl.NumberFormat('en-IE',{style:'currency',currency:'EUR'}).format(finishedTotal)}</strong><small style={{color:'#cee4d5'}}>{finished.length} finished {finished.length===1?'quotation':'quotations'}</small></div></div>
+ <div className="dj-stats"><button type="button" onClick={()=>{setFilter('upcoming');document.getElementById('dj-jobs')?.scrollIntoView({behavior:'smooth'})}} className="dj-stat"><span>Upcoming</span><strong>{upcoming.length}</strong><small>Need quotations</small></button><button type="button" onClick={()=>{setFilter('finished');document.getElementById('dj-jobs')?.scrollIntoView({behavior:'smooth'})}} className="dj-stat"><span>Finished</span><strong>{finishedCount}</strong><small>Completed quotations</small></button></div>
+ <div className="dj-completed-value" style={{background:'#0d3b27',color:'#fff',padding:'22px 25px',borderRadius:15,margin:'18px 0 20px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:16,flexWrap:'wrap'}}><div><span style={{display:'block',fontSize:12,letterSpacing:'0.12em',fontWeight:800,color:'#a9dbc0'}}>TOTAL VALUE OF FINISHED QUOTATIONS</span><strong style={{display:'block',fontSize:32,marginTop:8}}>{new Intl.NumberFormat('en-IE',{style:'currency',currency:'EUR'}).format(finishedTotal)}</strong><small style={{color:'#cee4d5'}}>{finishedCount} finished {finishedCount===1?'quotation':'quotations'}</small></div></div>
  <div className="dj-next-due"><span className="dj-small-icon">◷</span><div><small>NEXT QUOTATION DUE</small><b>{upcoming.length?formatDate(upcoming[0].due):'No upcoming deadlines'}</b></div></div>
  <div className="rev-section-title rev-recent-heading"><div><p>QUICK ACCESS</p><h2>Your tools</h2></div></div>
  <div className="rev-tiles"><Link href="/quote" className="rev-tile"><span className="rev-tile-icon">▤</span><h3>New quotation</h3><p>Build an estimate</p><span className="dj-tile-arrow">→</span></Link><Link href="/quotes" className="rev-tile"><span className="rev-tile-icon">▤</span><h3>Saved quotations</h3><p>View and reopen previous quotes</p><span className="dj-tile-arrow">→</span></Link><Link href="/units" className="rev-tile rev-tile-wide"><span className="rev-tile-icon">▦</span><h3>Price library</h3><p>Units, doors, hardware and labour</p><span className="dj-tile-arrow">→</span></Link></div>

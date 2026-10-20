@@ -8,3 +8,7 @@ export const DEFAULT_DOOR_RATES:Record<DoorMaterial,number>={'MFC':120,'Veneer':
 export const currency=(v:number)=>new Intl.NumberFormat('en-IE',{style:'currency',currency:'EUR'}).format(v);
 export const positive=(v:number)=>Number.isFinite(v)?Math.max(0,v):0;
 export const read=<T,>(key:string,fallback:T):T=>{try{const x=localStorage.getItem(key);return x?JSON.parse(x) as T:fallback;}catch{return fallback;}};
+
+export type Labour={id:string;name:string;price:number;unit:string};
+export type QuoteLabour={id:string;qty:number};
+export const DEFAULT_LABOUR:Labour[]=[];

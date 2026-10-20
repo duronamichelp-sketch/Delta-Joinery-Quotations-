@@ -248,3 +248,39 @@ button.rev-tile{cursor:pointer;text-align:left;display:block;width:100%}
 .dj-job-actions .dj-job-main{background:#287a4e;color:#fff;flex:1;border-color:#287a4e}.dj-job-actions .dj-remove{color:#ad5959}
 .dj-storage-hint{color:#87958a;font-size:10px;line-height:1.6;margin-top:16px}
 @media(max-width:500px){.dj-work-hero{min-height:385px}.dj-work-hero h1{font-size:36px}.dj-work-hero .rev-kicker{margin-top:39px!important}}
+
+
+/* Fix missing dashboard layout and compact functional forms */
+.rev-shell .dj-stats{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:12px!important;width:100%;margin:0 0 14px}
+.rev-shell .dj-stat{display:flex!important;flex-direction:column!important;gap:4px;min-width:0;background:#fff!important;border:1px solid #dde7df!important;border-radius:15px!important;padding:17px 13px!important;text-align:left!important}
+.rev-shell .dj-stat span{display:block;font-size:12px!important;font-weight:700;color:#587262}
+.rev-shell .dj-stat strong{display:block;font-size:34px!important;line-height:1.1;font-weight:800}
+.rev-shell .dj-stat small{display:block;font-size:11px!important;color:#879388}
+.rev-shell .dj-next-due{display:flex!important;align-items:center!important;gap:12px!important;background:#e7f2e9!important;border:1px solid #d7e8db!important;border-radius:13px!important;padding:13px 15px!important;margin-bottom:12px!important}
+.rev-shell .dj-next-due>div{min-width:0;display:flex;flex-direction:column;gap:5px}
+.rev-shell .dj-next-due small{display:block!important;font-size:10px!important;letter-spacing:.08em;font-weight:800;color:#5c8067}
+.rev-shell .dj-next-due b{display:block!important;font-size:14px!important;line-height:1.4}
+.rev-shell .dj-filter{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;padding:5px!important;background:#e6ede7!important;border-radius:12px!important;margin:15px 0!important}
+.rev-shell .dj-filter button{display:block!important;padding:12px 8px!important;min-width:0!important;border-radius:9px!important;text-align:center!important;font-size:12px!important}
+.rev-shell .dj-filter button.active{background:white!important;color:#174b2b!important;font-weight:800!important}
+.rev-shell .dj-empty-task{display:flex!important;flex-direction:column!important;align-items:center!important;gap:10px!important;padding:25px 14px!important;background:#fff!important;border:1px solid #e2eae3!important;border-radius:15px!important;text-align:center!important}
+.rev-shell .dj-empty-task b{display:block!important;font-size:13px!important;line-height:1.4!important}
+.rev-shell .dj-empty-task p{font-size:12px!important;line-height:1.6!important}
+.rev-shell .dj-storage-hint{font-size:11px!important;line-height:1.6!important;margin-top:18px!important;display:block}
+.dj-functional .rev-phone{width:100%}
+.dj-form{display:flex;flex-direction:column;gap:12px}
+.dj-form h2{font-size:17px!important;font-weight:850;margin:0}
+.dj-form label{display:flex;flex-direction:column;gap:6px;color:#607969;font-size:11px;font-weight:750;min-width:0}
+.dj-form label input,.dj-form label select,.dj-form label textarea,.dj-add-row select{display:block;width:100%;min-width:0;border:1px solid #dbe7dd;background:#fff;border-radius:10px;padding:12px;color:#17291d;font-size:15px;min-height:44px;outline:none}
+.dj-form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.dj-form-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.dj-primary-btn{background:#2c8151;color:#fff;padding:14px;border-radius:11px;font-size:13px;font-weight:800;width:100%;min-height:44px}
+.dj-cost-row{display:flex;align-items:center;gap:10px;border-top:1px solid #e8efe9;padding:12px 0;flex-wrap:wrap}
+.dj-cost-row>div{min-width:0;flex:1}.dj-cost-row b,.dj-cost-row small{display:block}.dj-cost-row b{font-size:12px}.dj-cost-row small{font-size:10px;color:#819185;margin-top:4px}.dj-cost-row strong{font-size:12px}.dj-delete{font-size:11px;color:#ad5353}
+.dj-empty-caption{font-size:12px!important;color:#78877c!important;line-height:1.6!important}
+.dj-add-row{display:flex;gap:7px;margin:12px 0}.dj-add-row select{flex:1;font-size:12px}.dj-add-row button{min-width:75px;padding:8px;background:#338453;border-radius:10px;color:white;font-size:11px;font-weight:800}.dj-add-row button:disabled{opacity:.45}
+.dj-green-link{font-size:10px;color:#338751;font-weight:800}.dj-quote-item{padding:14px 0;border-top:1px solid #e6eee8}.dj-quote-item>b{display:block;font-size:13px}.dj-quote-item>small,.dj-horizontal small{display:block;font-size:10px;color:#819186;margin:5px 0}.dj-quote-item-foot{display:flex;align-items:center;justify-content:space-between;gap:9px;border-top:1px solid #edf2ed;margin-top:11px;padding-top:10px}.dj-quote-item-foot label{font-size:11px;font-weight:750;display:flex;align-items:center;gap:6px}
+.dj-qty{display:flex;align-items:center;gap:8px;white-space:nowrap}.dj-qty button{border:1px solid #dce8df;background:#f8faf8;min-width:29px;min-height:29px;border-radius:8px}.dj-qty span{font-size:12px;font-weight:800}.dj-horizontal{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap}.dj-horizontal>div:first-child{flex:1}.dj-horizontal b{font-size:12px}.dj-horizontal strong{font-size:12px}
+.dj-total-action{display:block;width:100%;margin-top:11px;text-align:center}.dj-success{font-size:12px!important;color:#b6f0c7!important;margin-top:10px!important}
+.rev-home-area{display:block!important}.rev-section-title{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important}.rev-section-title h2{display:block;font-size:21px!important;line-height:1.25!important}.rev-section-title p{display:block;font-size:10px!important;margin:0 0 7px!important}.rev-tiles{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}.rev-tile{position:relative;min-width:0;display:block!important;background:#fff!important;border:1px solid #e2e9e3!important;border-radius:15px!important;padding:15px!important;min-height:158px}
+.rev-tile.rev-tile-wide{grid-column:span 2!important;min-height:100px!important}
+@media(max-width:500px){.rev-shell .rev-home-area{padding:23px 17px 36px!important}.rev-screen-body{padding:23px 16px 35px!important}.dj-form-grid{gap:6px}.dj-form-grid label input{padding:9px;font-size:13px}.rev-shell .dj-next-due{margin-top:8px!important}}

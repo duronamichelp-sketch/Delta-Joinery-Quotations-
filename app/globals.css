@@ -333,3 +333,54 @@ button.rev-tile{cursor:pointer;text-align:left;display:block;width:100%}
  .rev-shell .rev-screen-body{padding-left:11px!important;padding-right:11px!important}
  .rev-shell .dj-qty{gap:3px}
 }
+
+
+/* Delta Joinery: shared desktop layout across dashboard, library, saved, preview */
+.dj-shared-sidebar{display:none}
+@media(min-width:900px){
+ .rev-shell.dj-full-desktop{display:flex!important;align-items:stretch!important;padding:0!important;background:#f4f7f5!important;min-height:100vh!important;overflow:visible!important;width:100%!important;max-width:none!important}
+ .rev-shell.dj-full-desktop>.rev-phone{flex:1!important;width:calc(100% - 258px)!important;max-width:none!important;margin:0!important;min-height:100vh!important;min-width:0!important;border-radius:0!important;box-shadow:none!important;overflow:visible!important;background:#f6f9f7!important}
+ .dj-shared-sidebar{display:flex;flex-direction:column;position:sticky;top:0;height:100vh;width:258px;min-width:258px;overflow:auto;background:linear-gradient(130deg,#072c1a,#0b2118);color:white;padding:21px 16px;font-family:Arial,Helvetica,sans-serif;z-index:30}
+ .dj-shared-brand{display:flex;align-items:center;gap:10px;padding:5px 9px 25px;color:white;text-decoration:none;border-bottom:1px solid #ffffff18}
+ .dj-shared-brand img{background:white;border-radius:8px;padding:3px;object-fit:contain}
+ .dj-shared-brand b{font-size:16px;letter-spacing:.08em;white-space:nowrap}.dj-shared-brand small{display:block;font-size:9px;letter-spacing:.24em;margin-top:5px}
+ .dj-shared-sidebar nav{display:flex;flex-direction:column;gap:5px;padding-top:22px}
+ .dj-shared-sidebar nav>a{display:flex;align-items:center;gap:14px;padding:14px 13px;border-radius:11px;color:#dfebe3;text-decoration:none;font-size:14px}
+ .dj-shared-sidebar nav>a.current{background:#305e45;color:#fff;font-weight:700}
+ .dj-shared-sub{padding:5px 0 12px 43px;display:flex;flex-direction:column;gap:15px}.dj-shared-sub a{color:#d8e8df;text-decoration:none;font-size:13px}
+ .dj-shared-help{margin-top:auto;background:#ffffff13;border:1px solid #ffffff22;border-radius:12px;padding:17px;display:flex;flex-direction:column;gap:4px}
+ .dj-shared-help small{color:#c0d6c8}
+ .rev-shell.dj-full-desktop .rev-nav{display:none!important}
+ .rev-shell.dj-full-desktop .rev-screen-head{display:flex!important;padding:17px 36px!important;width:100%!important;border-radius:0!important}
+ .rev-shell.dj-full-desktop .rev-screen-body{max-width:1500px!important;width:100%!important;margin:0 auto!important;padding:34px 40px 65px!important}
+ .rev-shell.dj-full-desktop .rev-home-area{max-width:1500px!important;width:100%!important;margin:0 auto!important;padding:32px 40px 65px!important}
+ .rev-shell.dj-full-desktop .rev-hero{min-height:260px!important;border-radius:0!important}
+ .rev-shell.dj-full-desktop .rev-hero .rev-brand,.rev-shell.dj-full-desktop .rev-hero .rev-kicker{display:none!important}
+ .rev-shell.dj-full-desktop .rev-hero h1{font-size:44px!important}
+ .rev-shell.dj-full-desktop .rev-hero-button{width:auto!important;max-width:360px}
+ .rev-shell.dj-full-desktop .rev-hero .rev-hero-copy{max-width:750px!important;margin:0!important}
+ .rev-shell.dj-full-desktop .rev-hero{padding:42px!important}
+ .rev-shell.dj-full-desktop .rev-tiles{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:18px!important}
+ .rev-shell.dj-full-desktop .rev-tile.rev-tile-wide{grid-column:auto!important}
+ .rev-shell.dj-full-desktop .dj-task-list{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px!important}
+ .rev-shell.dj-full-desktop .rev-white-panel,.rev-shell.dj-full-desktop .rev-saved-row{width:100%!important;max-width:none!important;border-radius:15px!important}
+ .rev-shell.dj-full-desktop .dj-form{display:block!important}
+ .rev-shell.dj-full-desktop .dj-form label{display:flex;flex-direction:column;gap:7px;margin:12px 0}
+ .rev-shell.dj-full-desktop .dj-form-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important}
+ .rev-shell.dj-full-desktop .dj-form-grid.two{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ .rev-shell.dj-full-desktop input:not([type=checkbox]),.rev-shell.dj-full-desktop select{min-height:44px;border-radius:9px}
+ .rev-shell.dj-full-desktop .rev-tab-strip{display:flex;gap:9px;margin:22px 0}
+ .rev-shell.dj-full-desktop .rev-tab-strip button{min-width:120px;padding:13px 20px}
+ .rev-shell.dj-full-desktop .dj-cost-row{display:flex;align-items:center;gap:15px;justify-content:space-between;padding:14px;border:1px solid #e3ebe5;border-radius:10px;margin:9px 0}
+ .rev-shell.dj-full-desktop .dj-library-item{display:flex;align-items:center;gap:12px;flex:1}
+ .rev-shell.dj-full-desktop .rev-saved-row{max-width:none!important}
+ .dj-preview-desktop{display:flex;align-items:stretch;min-height:100vh}
+ .dj-preview-desktop>.dj-preview-body{flex:1;min-width:0;padding:28px 35px}
+ .dj-preview-desktop .max-w-4xl{max-width:1000px!important}
+}
+@media(min-width:900px) and (max-width:1120px){
+ .dj-shared-sidebar{width:215px;min-width:215px}
+ .rev-shell.dj-full-desktop>.rev-phone{width:calc(100% - 215px)!important}
+ .rev-shell.dj-full-desktop .rev-screen-body,.rev-shell.dj-full-desktop .rev-home-area{padding:25px!important}
+}
+@media print{.dj-shared-sidebar{display:none!important}.dj-preview-desktop>.dj-preview-body{padding:0!important}.dj-preview-desktop{display:block!important}}

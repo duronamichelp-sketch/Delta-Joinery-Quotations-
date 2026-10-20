@@ -6,6 +6,7 @@ import {Unit,Hardware,Labour,DoorMaterial,ExtraCost,DEFAULT_HARDWARE,DEFAULT_DOO
 const blank={name:'',width:'600',height:'720',depth:'550',sqm:'',price:'',doorCost:'',hingesPerUnit:'2',hingePrice:'4',image:''};
 export default function Library(){
 const [tab,setTab]=useState('Units'),[loaded,setLoaded]=useState(false);
+useEffect(()=>{const selected=new URLSearchParams(window.location.search).get('tab');if(selected&&['Units','Doors','Hardware','Labour','Electrics','Finishes'].includes(selected))setTab(selected)},[]);
 const [units,setUnits]=useState<Unit[]>([]),[hardware,setHardware]=useState<Hardware[]>([]),[labour,setLabour]=useState<Labour[]>([]);
 const [electrics,setElectrics]=useState<ExtraCost[]>([]),[finishes,setFinishes]=useState<ExtraCost[]>([]);const [extra,setExtra]=useState({name:'',price:'',image:''});
 const [rates,setRates]=useState<Record<DoorMaterial,number>>(DEFAULT_DOOR_RATES);

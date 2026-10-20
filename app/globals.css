@@ -171,3 +171,47 @@ body{background:var(--dj-soft);color:var(--dj-ink)}
 }
 @media(min-width:900px){.dj-bottom-nav{position:static;max-width:1100px;margin:25px auto 0;border-radius:15px;padding:6px}.dj-app{padding-bottom:0}}
 @media print{.dj-bottom-nav,.dj-page-top,.dj-note{display:none!important}.dj-content{padding:0!important}.dj-panel{box-shadow:none!important}}
+
+
+/* Reference-accurate quotation editor; supersedes older mobile patches */
+.dj-quote-header{background:#14201c!important;color:#fff!important}
+.dj-quote-header-inner{height:68px;max-width:1100px;margin:auto;padding:0 23px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.dj-quote-header-inner>strong{font-size:17px;font-weight:720;letter-spacing:-.01em}
+.dj-quote-back{font-size:24px;color:white;display:flex;align-items:center;gap:5px}
+.dj-quote-back span{font-size:13px}
+.dj-quote-preview{background:#6bac84;color:#102b1a;padding:10px 15px;border-radius:10px;font-size:13px;font-weight:800}
+.dj-content .quote-section .btn{background:#66ab83}
+.dj-content .quote-section .btn:not(:disabled){color:#10291d}
+.dj-content .quote-section .btn:disabled{opacity:.45}
+.dj-content .quote-summary{background:#fff}
+.dj-content .quote-section .rounded-xl.border{background:#fff;border-radius:13px}
+.dj-adc-row{border-color:#e9eeea}
+@media(max-width:700px){
+ .dj-quote-header-inner{height:58px;padding:0 17px}
+ .dj-content{padding:12px 12px 106px!important}
+ .dj-content .quote-toolbar{margin-bottom:4px!important}
+ .dj-content .quote-toolbar .dj-eyebrow{font-size:10px;margin-top:2px}
+ .dj-content .quote-toolbar h1{font-size:21px;margin:3px 0 3px}
+ .dj-content .quote-toolbar p{font-size:12px}
+ .dj-content .quote-toolbar .job-actions{display:none!important}
+ .dj-content .saved-jobs{display:none!important}
+ .dj-content .panel{border-radius:13px;padding:14px!important;margin-top:0!important}
+ .dj-content .panel h2{font-size:15px!important;margin-bottom:12px!important}
+ .dj-content .panel .grid.gap-4{gap:10px}
+ .dj-content .panel input.field,.dj-content .panel select.field{min-height:42px!important;height:43px;padding:9px 12px;font-size:14px!important;border-radius:9px}
+ .dj-content .panel .small-label{font-size:11px;margin-bottom:4px}
+ .dj-content .quote-section>div.no-print{display:grid!important;gap:8px!important}
+ .dj-content .quote-section>div.no-print .btn{min-height:42px;font-size:14px;border-radius:9px}
+ .dj-content .quote-section .rounded-xl.border{padding:11px!important}
+ .dj-content .quote-section .rounded-xl.border>div:first-child{gap:9px}
+ .dj-content .quote-section .rounded-xl.border .qty-btn{width:34px;height:35px}
+ .dj-content .quote-section .rounded-xl.border .qty-input{width:53px;height:35px}
+ .dj-content .quote-section .rounded-xl.border .text-right{width:100%;display:grid;grid-template-columns:1fr auto;text-align:left;gap:3px 10px;padding-top:8px;border-top:1px solid #edf1ee}
+ .dj-content .quote-section .rounded-xl.border .text-right b{grid-column:2;grid-row:1 / span 4;align-self:center;font-size:19px!important}
+ .dj-content .quote-section .rounded-xl.border .text-right .text-xs{font-size:12px}
+ .dj-content .quote-section .dj-adc-row{padding-top:10px;margin-top:10px}
+ .dj-content .quote-section .dj-adc-row label{width:auto!important}
+ .dj-content .quote-section .dj-adc-row>div{font-size:11px!important}
+ .dj-content .quote-summary .grid.grid-cols-2{grid-template-columns:1fr 1fr}
+ .dj-bottom-nav{height:65px;box-sizing:content-box}
+}

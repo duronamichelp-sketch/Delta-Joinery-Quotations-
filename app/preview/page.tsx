@@ -32,24 +32,22 @@ export default function Preview(){
  <div className="mt-16 border-t pt-5 text-xs text-gray-500"><p>Thank you for considering Delta Joinery.</p><p className="mt-1">Quotation based on the selected specifications. VAT, where applicable, is not included unless stated in the rates.</p></div>
  </article>
  <style jsx global>{`
-@page { size: A4 portrait; margin: 13mm 14mm; }
-@media screen {
-  #dj-print-sheet { width: 100%; max-width: 900px; }
-}
+@page { size: A4 portrait; margin: 0; }
+@media screen { #dj-print-sheet { max-width: 900px; width: 100%; } }
 @media print {
-  html, body { width: 100% !important; min-width: 0 !important; height: auto !important; margin: 0 !important; padding: 0 !important; background: #fff !important; overflow: visible !important; }
-  body * { visibility: hidden !important; }
-  #dj-print-sheet, #dj-print-sheet * { visibility: visible !important; }
-  #dj-print-sheet { position: static !important; display: block !important; box-sizing: border-box !important; width: 182mm !important; max-width: 182mm !important; min-height: 0 !important; margin: 0 auto !important; padding: 0 !important; box-shadow: none !important; transform: none !important; font-size: 11pt !important; color: #111 !important; }
-  .dj-preview-desktop, .dj-preview-body { display: block !important; width: 100% !important; max-width: none !important; min-width: 0 !important; height: auto !important; min-height: 0 !important; overflow: visible !important; margin: 0 !important; padding: 0 !important; background: white !important; position: static !important; }
-  .dj-preview-desktop > .dj-shared-sidebar, .dj-preview-body > .no-print, .no-print { display: none !important; }
-  #dj-print-sheet header { display: flex !important; justify-content: space-between !important; align-items: center !important; }
-  #dj-print-sheet table { width: 100% !important; border-collapse: collapse !important; table-layout: auto !important; font-size: 10pt !important; }
-  #dj-print-sheet th, #dj-print-sheet td { padding: 8pt 7pt !important; }
-  #dj-print-sheet thead { display: table-header-group !important; }
-  #dj-print-sheet tr { break-inside: avoid !important; page-break-inside: avoid !important; }
-  #dj-print-sheet header, #dj-print-sheet .border-t-2 { break-inside: avoid !important; }
-  #dj-print-sheet thead th { background: #14532d !important; color: #fff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+ html,body { margin:0!important;padding:0!important;width:210mm!important;min-width:0!important;max-width:none!important;height:auto!important;overflow:visible!important;background:#fff!important; }
+ .dj-preview-desktop { display:block!important;position:static!important;width:210mm!important;min-width:0!important;min-height:0!important;height:auto!important;overflow:visible!important;padding:0!important;margin:0!important;background:#fff!important; }
+ .dj-preview-desktop > .dj-shared-sidebar,.dj-preview-body > .no-print,.no-print { display:none!important; }
+ .dj-preview-desktop > .dj-preview-body { display:block!important;position:static!important;width:210mm!important;max-width:none!important;min-width:0!important;height:auto!important;min-height:0!important;overflow:visible!important;margin:0!important;padding:0!important;background:white!important; }
+ #dj-print-sheet { position:static!important;display:block!important;box-sizing:border-box!important;width:210mm!important;max-width:none!important;min-width:0!important;min-height:0!important;height:auto!important;margin:0!important;padding:18mm 15mm 16mm!important;box-shadow:none!important;transform:none!important;zoom:1!important;color:#17221c!important;font-size:11pt!important;background:#fff!important; }
+ #dj-print-sheet header {display:flex!important;align-items:center!important;justify-content:space-between!important;border-bottom:2px solid #166534!important;padding-bottom:16px!important;break-inside:avoid!important}
+ #dj-print-sheet h1 {font-size:21pt!important} #dj-print-sheet h2 {font-size:14pt!important}
+ #dj-print-sheet table {width:100%!important;border-collapse:collapse!important;table-layout:auto!important;font-size:10.5pt!important}
+ #dj-print-sheet th,#dj-print-sheet td {padding:10px 9px!important}
+ #dj-print-sheet thead {display:table-header-group!important}
+ #dj-print-sheet tr {break-inside:avoid!important;page-break-inside:avoid!important}
+ #dj-print-sheet th {background:#14532d!important;color:white!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+ #dj-print-sheet .border-t-2 {break-inside:avoid!important}
 }
 `}</style>
  </div></main>

@@ -20,7 +20,7 @@ export default function Preview(){
  const total=all.reduce((sum,x)=>sum+x.qty*x.price,0);
  return <main className="dj-preview-desktop min-h-screen bg-gray-100 text-gray-900"><DesktopSidebar active="preview"/><div className="dj-preview-body">
  <div className="no-print mx-auto max-w-4xl p-4 flex flex-wrap justify-between items-center gap-3"><Link href="/quote" className="btn-outline">← Edit quotation</Link><button className="btn" onClick={()=>window.print()}>Print / Save as PDF</button></div>
- <article className="mx-auto max-w-4xl bg-white p-7 md:p-12 shadow-sm print:shadow-none print:p-0" style={{minHeight:'90vh'}}>
+ <article id="dj-print-sheet" className="mx-auto max-w-4xl bg-white p-7 md:p-12 shadow-sm print:shadow-none print:p-0" style={{minHeight:'90vh'}}>
  <header className="flex items-center justify-between gap-5 border-b-2 border-green-800 pb-7"><Image src="/delta-logo.png" alt="Delta Joinery" width={175} height={50} priority/><div className="text-right"><h1 className="text-xl md:text-2xl font-bold tracking-wide">QUOTATION</h1><p className="text-xs text-gray-500 mt-1">DELTA JOINERY</p></div></header>
  <div className="grid grid-cols-2 gap-5 my-8 text-sm">
  <div><p className="text-xs text-gray-500 uppercase tracking-wide">Prepared for</p><p className="font-semibold mt-2">{q.client||'Client not entered'}</p><p className="mt-1 text-gray-600">{q.project||''}</p></div>
@@ -31,6 +31,26 @@ export default function Preview(){
  <div className="flex justify-end mt-8"><div className="w-full max-w-xs border-t-2 border-green-800 pt-4 flex justify-between gap-4"><strong>Total quotation</strong><strong className="text-xl text-green-800">{currency(total)}</strong></div></div>
  <div className="mt-16 border-t pt-5 text-xs text-gray-500"><p>Thank you for considering Delta Joinery.</p><p className="mt-1">Quotation based on the selected specifications. VAT, where applicable, is not included unless stated in the rates.</p></div>
  </article>
- <style jsx global>{`@media print{@page{size:A4;margin:16mm}body{background:white!important}article{box-shadow:none!important;min-height:0!important}thead{print-color-adjust:exact;-webkit-print-color-adjust:exact}tr{break-inside:avoid}}`}</style>
+ <style jsx global>{`
+@page { size: A4 portrait; margin: 13mm 14mm; }
+@media screen {
+  #dj-print-sheet { width: 100%; max-width: 900px; }
+}
+@media print {
+  html, body { width: 100% !important; min-width: 0 !important; height: auto !important; margin: 0 !important; padding: 0 !important; background: #fff !important; overflow: visible !important; }
+  body * { visibility: hidden !important; }
+  #dj-print-sheet, #dj-print-sheet * { visibility: visible !important; }
+  #dj-print-sheet { position: static !important; display: block !important; box-sizing: border-box !important; width: 182mm !important; max-width: 182mm !important; min-height: 0 !important; margin: 0 auto !important; padding: 0 !important; box-shadow: none !important; transform: none !important; font-size: 11pt !important; color: #111 !important; }
+  .dj-preview-desktop, .dj-preview-body { display: block !important; width: 100% !important; max-width: none !important; min-width: 0 !important; height: auto !important; min-height: 0 !important; overflow: visible !important; margin: 0 !important; padding: 0 !important; background: white !important; position: static !important; }
+  .dj-preview-desktop > .dj-shared-sidebar, .dj-preview-body > .no-print, .no-print { display: none !important; }
+  #dj-print-sheet header { display: flex !important; justify-content: space-between !important; align-items: center !important; }
+  #dj-print-sheet table { width: 100% !important; border-collapse: collapse !important; table-layout: auto !important; font-size: 10pt !important; }
+  #dj-print-sheet th, #dj-print-sheet td { padding: 8pt 7pt !important; }
+  #dj-print-sheet thead { display: table-header-group !important; }
+  #dj-print-sheet tr { break-inside: avoid !important; page-break-inside: avoid !important; }
+  #dj-print-sheet header, #dj-print-sheet .border-t-2 { break-inside: avoid !important; }
+  #dj-print-sheet thead th { background: #14532d !important; color: #fff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}
+`}</style>
  </div></main>
 }

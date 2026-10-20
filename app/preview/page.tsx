@@ -1,6 +1,7 @@
 'use client';
 import {useEffect,useState} from 'react';
 import Link from 'next/link';
+import DesktopSidebar from '../DesktopSidebar';
 import Image from 'next/image';
 import {Unit,Hardware,Labour,QuoteUnit,QuoteHardware,DEFAULT_HARDWARE,currency,read} from '../../lib/data';
 type Q={name?:string;number?:string;date?:string;client?:string;project?:string;chosenUnits?:QuoteUnit[];chosenHardware?:QuoteHardware[];chosenLabour?:{id:string;qty:number}[]};
@@ -15,7 +16,7 @@ export default function Preview(){
  const work=(q.chosenLabour||[]).flatMap(x=>{const l=labour.find(z=>z.id===x.id);return l?[{label:l.name,detail:`Labour / ${l.unit}`,qty:x.qty,price:l.price}]:[]});
  const all=[...rows,...hw,...work];
  const total=all.reduce((sum,x)=>sum+x.qty*x.price,0);
- return <main className="min-h-screen bg-gray-100 text-gray-900">
+ return <main className="dj-preview-desktop min-h-screen bg-gray-100 text-gray-900"><DesktopSidebar active="preview"/><div className="dj-preview-body">
  <div className="no-print mx-auto max-w-4xl p-4 flex flex-wrap justify-between items-center gap-3"><Link href="/quote" className="btn-outline">← Edit quotation</Link><button className="btn" onClick={()=>window.print()}>Print / Save as PDF</button></div>
  <article className="mx-auto max-w-4xl bg-white p-7 md:p-12 shadow-sm print:shadow-none print:p-0" style={{minHeight:'90vh'}}>
  <header className="flex items-center justify-between gap-5 border-b-2 border-green-800 pb-7"><Image src="/delta-logo.png" alt="Delta Joinery" width={175} height={50} priority/><div className="text-right"><h1 className="text-xl md:text-2xl font-bold tracking-wide">QUOTATION</h1><p className="text-xs text-gray-500 mt-1">DELTA JOINERY</p></div></header>
@@ -29,5 +30,5 @@ export default function Preview(){
  <div className="mt-16 border-t pt-5 text-xs text-gray-500"><p>Thank you for considering Delta Joinery.</p><p className="mt-1">Quotation based on the selected specifications. VAT, where applicable, is not included unless stated in the rates.</p></div>
  </article>
  <style jsx global>{`@media print{@page{size:A4;margin:16mm}body{background:white!important}article{box-shadow:none!important;min-height:0!important}thead{print-color-adjust:exact;-webkit-print-color-adjust:exact}tr{break-inside:avoid}}`}</style>
- </main>
+ </div></main>
 }

@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import {useEffect,useState} from 'react';
-import {currency,read} from '../../lib/data';
+import {currency,read} from '../lib/data';
 type Saved={id:string;number:string;client:string;project:string;date:string;chosenUnits:{qty:number}[]};
 export default function Dashboard(){
  const [saved,setSaved]=useState<Saved[]>([]);

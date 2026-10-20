@@ -4,7 +4,7 @@ import Link from 'next/link';
 import DesktopSidebar from '../DesktopSidebar';
 import Image from 'next/image';
 import {Unit,Hardware,Labour,ExtraCost,QuoteUnit,QuoteHardware,DEFAULT_HARDWARE,currency,read} from '../../lib/data';
-type Q={includeVat?:boolean;name?:string;number?:string;date?:string;client?:string;project?:string;chosenUnits?:QuoteUnit[];chosenHardware?:QuoteHardware[];chosenLabour?:{id:string;qty:number}[];chosenElectrics?:{id:string;qty:number}[];chosenFinishes?:{id:string;qty:number}[]};
+type Q={includeVat?:boolean;name?:string;number?:string;date?:string;client?:string;project?:string;email?:string;phone?:string;address?:string;chosenUnits?:QuoteUnit[];chosenHardware?:QuoteHardware[];chosenLabour?:{id:string;qty:number}[];chosenElectrics?:{id:string;qty:number}[];chosenFinishes?:{id:string;qty:number}[]};
 export default function Preview(){
  const [q,setQ]=useState<Q>({});
  const [units,setUnits]=useState<Unit[]>([]);
@@ -52,8 +52,16 @@ export default function Preview(){
    write(q.client||'Client not entered',left,y,12,'bold');
    write('No. '+(q.number||'-'),113,y,10,'bold');
    y+=7;
-   write(q.project||'',left,y,10);
+   if(q.project){write('Project: '+q.project,left,y,10)}
    write('Date: '+(q.date||'-'),113,y,10);
+   for(const [label,value] of [['Email',q.email],['Phone',q.phone],['Address',q.address]]){
+    if(value?.trim()){
+     y+=7;
+     const lines=pdf.splitTextToSize(label+': '+value,85) as string[];
+     pdf.setFont('helvetica','normal');pdf.setFontSize(9);pdf.setTextColor(...dark);pdf.text(lines,left,y);
+     y+=(lines.length-1)*4.5;
+    }
+   }
    y+=17;
    write('Quotation breakdown',left,y,15,'bold');
    y+=8;
@@ -99,7 +107,7 @@ export default function Preview(){
  <article id="dj-print-sheet" className="dj-quotation-paper mx-auto max-w-4xl bg-white p-7 md:p-12 shadow-sm print:shadow-none print:p-0" style={{minHeight:'90vh'}}>
  <header className="flex items-center justify-between gap-5 border-b-2 border-green-800 pb-7"><Image src="/delta-logo.png" alt="Delta Joinery" width={175} height={50} priority/><div className="text-right"><h1 className="text-xl md:text-2xl font-bold tracking-wide">QUOTATION</h1><p className="text-xs text-gray-500 mt-1">DELTA JOINERY</p><p className="text-xs font-bold text-red-700 mt-2">INTERNAL QUOTATION ONLY</p></div></header>
  <div className="grid grid-cols-2 gap-5 my-8 text-sm">
- <div><p className="text-xs text-gray-500 uppercase tracking-wide">Prepared for</p><p className="font-semibold mt-2">{q.client||'Client not entered'}</p><p className="mt-1 text-gray-600">{q.project||''}</p></div>
+ <div><p className="text-xs text-gray-500 uppercase tracking-wide">Prepared for</p><p className="font-semibold mt-2">{q.client||'Client not entered'}</p>{q.project&&<p className="mt-1 text-gray-600">Project: {q.project}</p>}{q.email&&<p className="mt-2 text-gray-600 break-words">Email: {q.email}</p>}{q.phone&&<p className="mt-1 text-gray-600">Phone: {q.phone}</p>}{q.address&&<p className="mt-1 text-gray-600 whitespace-pre-wrap break-words">Address: {q.address}</p>}</div>
  <div className="text-right"><p><span className="text-gray-500">Quotation No. </span><b>{q.number||'—'}</b></p><p className="mt-2"><span className="text-gray-500">Date </span>{q.date||'—'}</p>{q.name&&<p className="mt-2 text-gray-600">{q.name}</p>}</div>
  </div>
  <h2 className="font-semibold text-lg mb-3">Quotation breakdown</h2>

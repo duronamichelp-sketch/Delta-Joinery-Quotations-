@@ -4,7 +4,7 @@ import Link from 'next/link';
 import DesktopSidebar from '../DesktopSidebar';
 import Image from 'next/image';
 import {Unit,Hardware,Labour,ExtraCost,QuoteUnit,QuoteHardware,DEFAULT_HARDWARE,currency,read} from '../../lib/data';
-type Q={name?:string;number?:string;date?:string;client?:string;project?:string;chosenUnits?:QuoteUnit[];chosenHardware?:QuoteHardware[];chosenLabour?:{id:string;qty:number}[];chosenElectrics?:{id:string;qty:number}[];chosenFinishes?:{id:string;qty:number}[]};
+type Q={includeVat?:boolean;name?:string;number?:string;date?:string;client?:string;project?:string;chosenUnits?:QuoteUnit[];chosenHardware?:QuoteHardware[];chosenLabour?:{id:string;qty:number}[];chosenElectrics?:{id:string;qty:number}[];chosenFinishes?:{id:string;qty:number}[]};
 export default function Preview(){
  const [q,setQ]=useState<Q>({});
  const [units,setUnits]=useState<Unit[]>([]);
@@ -17,7 +17,9 @@ export default function Preview(){
  const er=(q.chosenElectrics||[]).flatMap(x=>{const y=electrics.find(z=>z.id===x.id);return y?[{label:y.name,detail:'Electrics',qty:x.qty,price:y.price}]:[]});
  const fr=(q.chosenFinishes||[]).flatMap(x=>{const y=finishes.find(z=>z.id===x.id);return y?[{label:y.name,detail:'Finishes / fillers',qty:x.qty,price:y.price}]:[]});
  const all=[...rows,...hw,...work,...er,...fr];
- const total=all.reduce((sum,x)=>sum+x.qty*x.price,0);
+ const subtotal=all.reduce((sum,x)=>sum+x.qty*x.price,0);
+ const vatAmount=q.includeVat?Math.round(subtotal*0.135*100)/100:0;
+ const total=subtotal+vatAmount;
 
 
  async function printA4(){
@@ -41,6 +43,7 @@ export default function Preview(){
     }else{write('DELTA JOINERY',left,29,17,'bold')}
    }catch{write('DELTA JOINERY',left,29,17,'bold')}
    pdf.setTextColor(...green);pdf.setFont('helvetica','bold');pdf.setFontSize(22);pdf.text('QUOTATION',right,27,{align:'right'});
+   pdf.setTextColor(160,47,40);pdf.setFontSize(8);pdf.text('INTERNAL QUOTATION ONLY',right,33,{align:'right'});
    pdf.setDrawColor(...green);pdf.setLineWidth(.8);pdf.line(left,38,right,38);
    y=49;
    pdf.setFont('helvetica','bold');pdf.setTextColor(91,117,101);pdf.setFontSize(8);
@@ -72,10 +75,11 @@ export default function Preview(){
     y+=rowHeight;line(left,y,right);
    }
    if(all.length===0){y+=12;write('No items added to this quotation',left+4,y,10);y+=12;line(left,y,right)}
-   if(y>254)newPage();
+   if(y>(q.includeVat?244:254))newPage();
    y+=15;
+   if(q.includeVat){write('Subtotal (excl. VAT)',108,y,9);pdf.text(money(subtotal),right,y,{align:'right'});y+=8;write('VAT (13.5%) - included',108,y,9);pdf.text(money(vatAmount),right,y,{align:'right'});y+=9;}
    pdf.setDrawColor(...green);pdf.setLineWidth(.7);pdf.line(108,y-9,right,y-9);
-   write('TOTAL QUOTATION',108,y,10,'bold');
+   write(q.includeVat?'TOTAL (VAT INCLUDED)':'TOTAL (EXCL. VAT)',108,y,10,'bold');
    pdf.setTextColor(...green);pdf.setFont('helvetica','bold');pdf.setFontSize(17);pdf.text(money(total),right,y+1,{align:'right'});
    y+=28;
    if(y>264)newPage();
@@ -83,7 +87,7 @@ export default function Preview(){
    pdf.setTextColor(95,112,101);pdf.setFont('helvetica','normal');pdf.setFontSize(9);
    pdf.text('Thank you for considering Delta Joinery.',left,y);
    y+=6;pdf.setFontSize(8);
-   const disclaimer=pdf.splitTextToSize('Quotation based on the selected specifications. VAT, where applicable, is not included unless stated in the rates.',pageWidth);
+   const disclaimer=pdf.splitTextToSize(q.includeVat?'INTERNAL QUOTATION ONLY. VAT at 13.5% has been included in the final total.':'INTERNAL QUOTATION ONLY. VAT has not been included in the final total.',pageWidth);
    pdf.text(disclaimer,left,y);
    for(let page=1;page<=pdf.getNumberOfPages();page++){pdf.setPage(page);pdf.setFontSize(8);pdf.setTextColor(130,142,134);pdf.text('Delta Joinery  |  Quotation '+(q.number||''),left,287);pdf.text(page+' / '+pdf.getNumberOfPages(),right,287,{align:'right'})}
    pdf.save('Delta-Joinery-Quotation-'+(q.number||'draft').replace(/[^a-z0-9_-]/gi,'-')+'.pdf');
@@ -93,15 +97,15 @@ export default function Preview(){
  return <main className="dj-preview-desktop min-h-screen bg-gray-100 text-gray-900"><DesktopSidebar active="preview"/><div className="dj-preview-body">
  <div className="no-print mx-auto max-w-4xl p-4 flex flex-wrap justify-between items-center gap-3"><Link href="/quote" className="btn-outline">← Edit quotation</Link><button className="btn" onClick={printA4}>Download A4 PDF</button></div>
  <article id="dj-print-sheet" className="dj-quotation-paper mx-auto max-w-4xl bg-white p-7 md:p-12 shadow-sm print:shadow-none print:p-0" style={{minHeight:'90vh'}}>
- <header className="flex items-center justify-between gap-5 border-b-2 border-green-800 pb-7"><Image src="/delta-logo.png" alt="Delta Joinery" width={175} height={50} priority/><div className="text-right"><h1 className="text-xl md:text-2xl font-bold tracking-wide">QUOTATION</h1><p className="text-xs text-gray-500 mt-1">DELTA JOINERY</p></div></header>
+ <header className="flex items-center justify-between gap-5 border-b-2 border-green-800 pb-7"><Image src="/delta-logo.png" alt="Delta Joinery" width={175} height={50} priority/><div className="text-right"><h1 className="text-xl md:text-2xl font-bold tracking-wide">QUOTATION</h1><p className="text-xs text-gray-500 mt-1">DELTA JOINERY</p><p className="text-xs font-bold text-red-700 mt-2">INTERNAL QUOTATION ONLY</p></div></header>
  <div className="grid grid-cols-2 gap-5 my-8 text-sm">
  <div><p className="text-xs text-gray-500 uppercase tracking-wide">Prepared for</p><p className="font-semibold mt-2">{q.client||'Client not entered'}</p><p className="mt-1 text-gray-600">{q.project||''}</p></div>
  <div className="text-right"><p><span className="text-gray-500">Quotation No. </span><b>{q.number||'—'}</b></p><p className="mt-2"><span className="text-gray-500">Date </span>{q.date||'—'}</p>{q.name&&<p className="mt-2 text-gray-600">{q.name}</p>}</div>
  </div>
  <h2 className="font-semibold text-lg mb-3">Quotation breakdown</h2>
  <table className="w-full text-sm" style={{borderCollapse:'collapse'}}><thead><tr className="bg-green-900 text-white"><th className="text-left p-3">Description</th><th className="text-center p-3">Qty</th><th className="text-right p-3">Price</th><th className="text-right p-3">Total</th></tr></thead><tbody>{all.map((x,i)=><tr key={i} className="border-b border-gray-200"><td className="p-3"><strong>{x.label}</strong><div className="text-xs text-gray-500">{x.detail}</div></td><td className="text-center p-3">{x.qty}</td><td className="text-right p-3">{currency(x.price)}</td><td className="text-right p-3 font-medium">{currency(x.price*x.qty)}</td></tr>)}{all.length===0&&<tr><td colSpan={4} className="p-8 text-center text-gray-400">No items added to this quotation</td></tr>}</tbody></table>
- <div className="flex justify-end mt-8"><div className="w-full max-w-sm border-t-2 border-green-800 pt-5 flex justify-between gap-4"><strong>Total quotation</strong><strong className="text-xl text-green-800">{currency(total)}</strong></div></div>
- <div className="mt-16 border-t pt-5 text-xs text-gray-500"><p>Thank you for considering Delta Joinery.</p><p className="mt-1">Quotation based on the selected specifications. VAT, where applicable, is not included unless stated in the rates.</p></div>
+ <div className="flex justify-end mt-8"><div className="w-full max-w-sm border-t-2 border-green-800 pt-5">{q.includeVat&&<><div className="flex justify-between gap-4 mb-3"><span>Subtotal (excl. VAT)</span><strong>{currency(subtotal)}</strong></div><div className="flex justify-between gap-4 mb-3"><span>VAT (13.5%)</span><strong>{currency(vatAmount)}</strong></div></>}<div className="flex justify-between gap-4"><strong>Total {q.includeVat?'(VAT included)':'(excl. VAT)'}</strong><strong className="text-xl text-green-800">{currency(total)}</strong></div></div></div>
+ <div className="mt-16 border-t pt-5 text-xs text-gray-500"><p>Thank you for considering Delta Joinery.</p><p className="mt-1">{q.includeVat?'INTERNAL QUOTATION ONLY. VAT at 13.5% has been included in the final total.':'INTERNAL QUOTATION ONLY. VAT has not been included in the final total.'}</p></div>
  </article>
  <style jsx global>{`
 @page { size: A4 portrait; margin: 0; }

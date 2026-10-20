@@ -29,13 +29,14 @@ const base=ur.reduce((a,x)=>a+x.qty*x.item.price,0),doors=ur.reduce((a,x)=>a+(x.
 const vatAmount=q.includeVat?Math.round(grand*0.135*100)/100:0;
 const finalTotal=grand+vatAmount;
 function save(){const entry={...q,id:q.number||String(Date.now()),name:q.project,savedAt:new Date().toISOString()};const all=read<any[]>('dj_saved_quotes',[]);try{localStorage.setItem('dj_saved_quotes',JSON.stringify([entry,...all.filter(x=>x.id!==entry.id)]));setStatus('')}catch{setStatus('Could not save. Browser storage may be full.')}}
+function newQuotation(){if(!window.confirm('Start a new quotation? Your saved quotations will be kept. Save the current quotation first if you want to keep it.'))return;setQ({...start(),number:'DJ-'+Date.now().toString()});setExpanded([]);setUc('');setHc('');setLc('');setEc('');setFc('');setStatus('');window.scrollTo({top:0,behavior:'smooth'});}
 const match=(name:string)=>name.toLowerCase().includes(query.toLowerCase());
 const counter=(type:'chosenUnits'|'chosenHardware'|'chosenLabour'|'chosenElectrics'|'chosenFinishes',id:string,value:number)=><div className="dj-count"><button aria-label="Decrease" onClick={()=>qty(type,id,value-1)}>−</button><span>{value}</span><button aria-label="Increase" onClick={()=>qty(type,id,value+1)}>+</button></div>;
 return <main className="dj-desktop">
 <style>{styles}</style>
 <DesktopSidebar active="quote"/>
 <div className="dj-main">
-<header className="dj-top"><div className="dj-search"><span>⌕</span><input aria-label="Search price library" placeholder="Search units, hardware, labour..." value={query} onChange={e=>setQuery(e.target.value)}/></div><div className="dj-top-actions"><Link href="/preview" className="dj-outline">Preview</Link><button className="dj-dark" onClick={save}>Save quotation</button><button className="dj-more" onClick={()=>window.print()}>•••</button></div></header>
+<header className="dj-top"><div className="dj-search"><span>⌕</span><input aria-label="Search price library" placeholder="Search units, hardware, labour..." value={query} onChange={e=>setQuery(e.target.value)}/></div><div className="dj-top-actions"><button type="button" className="dj-outline" onClick={newQuotation}>+ Start New Quotation</button><Link href="/preview" className="dj-outline">Preview</Link><button className="dj-dark" onClick={save}>Save quotation</button><button className="dj-more" onClick={()=>window.print()}>•••</button></div></header>
 <div className="dj-area"><div className="dj-work">
 <p className="dj-kicker">PROJECT DETAILS</p><h1>Build a quotation</h1><p className="dj-desc">Choose your saved items and calculate costs.</p>
 <section className="dj-card"><h2>Client &amp; project</h2><div className="dj-fields"><label>Quotation number<input value={q.number} onChange={e=>set('number',e.target.value)}/></label><label>Date<input type="date" value={q.date} onChange={e=>set('date',e.target.value)}/></label><label>Client name<input placeholder="Enter client name" value={q.client} onChange={e=>set('client',e.target.value)}/></label><label>Project title<input placeholder="Kitchen, wardrobes..." value={q.project} onChange={e=>set('project',e.target.value)}/></label></div></section>

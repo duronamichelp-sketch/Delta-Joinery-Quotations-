@@ -1,6 +1,7 @@
 'use client';
 import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
+import DesktopSidebar from './DesktopSidebar';
 import Image from 'next/image';
 type Task={id:string;client:string;project:string;due:string;notes:string;status:'upcoming'|'finished';created:string;finished?:string};
 const KEY='dj_quotation_tasks';
@@ -23,7 +24,7 @@ export default function Home(){
  function status(id:string,finished:boolean){setTasks(prev=>prev.map(t=>t.id===id?{...t,status:finished?'finished':'upcoming',finished:finished?dateToday():undefined}:t))}
  function remove(id:string){if(window.confirm('Delete this quotation task?'))setTasks(prev=>prev.filter(t=>t.id!==id))}
  const shown=filter==='upcoming'?upcoming:finished;
- return <main className="rev-shell"><div className="rev-phone">
+ return <main className="rev-shell dj-full-desktop"><DesktopSidebar active="home"/><div className="rev-phone">
  <section className="rev-hero dj-work-hero"><div className="rev-brand"><Image src="/delta-logo.png" alt="Delta Joinery" width={150} height={46}/><span className="rev-avatar">DJ</span></div><p className="rev-kicker">DELTA JOINERY · WORKSPACE</p><h1>Quotation<br/><em>dashboard.</em></h1><p className="rev-intro">Manage your jobs, deadlines and completed quotations.</p><Link href="/quote" className="rev-hero-button"><span className="dj-btn-plus">＋</span><span>New Quotation</span><b className="dj-chevron">→</b></Link><div className="rev-hero-glow"/></section>
  <section className="rev-home-area">
  <div className="rev-section-title"><div><p>OVERVIEW</p><h2>Your workspace</h2></div></div>

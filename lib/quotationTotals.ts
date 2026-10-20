@@ -1,10 +1,11 @@
 import {read, type Unit,type Hardware,type Labour,type ExtraCost,DEFAULT_HARDWARE} from './data';
 export type SavedQuotation={
- id:string;number?:string;date?:string;client?:string;project?:string;name?:string;savedAt?:string;includeVat?:boolean;finished?:boolean;finishedAt?:string;
+ id:string;number?:string;date?:string;client?:string;project?:string;name?:string;savedAt?:string;includeVat?:boolean;totalAmount?:number;finished?:boolean;finishedAt?:string;
  chosenUnits?:{id:string;qty:number;adc?:boolean}[];chosenHardware?:{id:string;qty:number}[];
  chosenLabour?:{id:string;qty:number}[];chosenElectrics?:{id:string;qty:number}[];chosenFinishes?:{id:string;qty:number}[];
 };
 export function savedQuoteTotal(q:SavedQuotation){
+ if(typeof q.totalAmount==='number'&&Number.isFinite(q.totalAmount))return q.totalAmount;
  const units=read<Unit[]>('dj_units',[]);
  const hardware=read<Hardware[]>('dj_hardware',DEFAULT_HARDWARE);
  const labour=read<Labour[]>('dj_labour',[]);

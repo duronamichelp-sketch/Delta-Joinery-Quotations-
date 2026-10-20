@@ -44,3 +44,43 @@ body{min-width:0;overflow-x:hidden}
  .panel{padding:14px}
  .qty-btn,.qty-input{display:none!important}
 }
+
+
+/* Refined compact mobile quotation experience */
+@media(max-width:639px){
+ body{background:#f3f6f4}
+ header .max-w-6xl{gap:9px}
+ header img{max-width:140px;height:auto}
+ .quote-toolbar{gap:12px}
+ .quote-toolbar h1{font-size:22px;line-height:1.2}
+ .quote-toolbar p{font-size:12px;margin-top:5px}
+ .quote-toolbar .job-actions{display:grid;grid-template-columns:1fr 1fr;width:100%;gap:9px}
+ .quote-toolbar .job-actions>*{width:100%;font-size:13px;padding:10px}
+ .saved-jobs{padding:10px 12px}
+ .saved-jobs .flex{display:grid;grid-template-columns:minmax(0,1fr) 64px;gap:8px}
+ .saved-jobs select{min-width:0!important;width:100%;font-size:14px}
+ .saved-jobs button{min-width:0;padding:9px 5px}
+ .quote-section{padding:16px 14px}
+ .quote-section h2{margin-bottom:13px;font-size:17px}
+ .quote-section>div.no-print{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px}
+ .quote-section>div.no-print button{width:100%;min-height:43px}
+ .quote-section .rounded-xl.border{border-color:#e3eae6;box-shadow:0 1px 4px rgba(17,54,32,.04);border-radius:12px}
+ .quote-section .rounded-xl.border>.flex:first-child{gap:9px}
+ .quote-section .rounded-xl.border .text-xs{line-height:1.55}
+ .quote-section .rounded-xl.border .border-t{gap:12px}
+ .quote-section .rounded-xl.border .border-t label{width:100%}
+ .quote-section .rounded-xl.border .border-t>div{font-size:12px;line-height:1.5;width:100%}
+ .quote-summary .grid.grid-cols-2{gap:8px}
+ .quote-summary .grid.grid-cols-2>div{padding:11px;min-width:0}
+ .quote-summary .grid.grid-cols-2 p{font-size:11px;line-height:1.4}
+ .quote-summary .grid.grid-cols-2 b{font-size:17px;line-height:1.35;display:block}
+ .quote-summary strong.text-3xl{font-size:27px}
+ .quote-bottom-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+ .quote-bottom-actions>*{font-size:13px;padding:10px 7px}
+ .panel label{min-width:0}
+ .panel .small-label{font-size:11px}
+}
+@media print{
+ .quote-section .rounded-xl.border .border-t>div{width:auto}
+ .quote-summary .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}

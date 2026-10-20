@@ -284,3 +284,52 @@ button.rev-tile{cursor:pointer;text-align:left;display:block;width:100%}
 .rev-home-area{display:block!important}.rev-section-title{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important}.rev-section-title h2{display:block;font-size:21px!important;line-height:1.25!important}.rev-section-title p{display:block;font-size:10px!important;margin:0 0 7px!important}.rev-tiles{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}.rev-tile{position:relative;min-width:0;display:block!important;background:#fff!important;border:1px solid #e2e9e3!important;border-radius:15px!important;padding:15px!important;min-height:158px}
 .rev-tile.rev-tile-wide{grid-column:span 2!important;min-height:100px!important}
 @media(max-width:500px){.rev-shell .rev-home-area{padding:23px 17px 36px!important}.rev-screen-body{padding:23px 16px 35px!important}.dj-form-grid{gap:6px}.dj-form-grid label input{padding:9px;font-size:13px}.rev-shell .dj-next-due{margin-top:8px!important}}
+
+
+/* Responsive layout: phone, tablet, laptop and desktop */
+.rev-shell{width:100%;min-width:0;overflow-x:hidden}
+.rev-shell .rev-phone{width:100%;min-width:0}
+.rev-shell .rev-screen-body,.rev-shell .rev-home-area{min-width:0}
+.rev-shell input,.rev-shell select,.rev-shell textarea{max-width:100%;min-width:0}
+.rev-shell .rev-nav a{min-width:0}
+.rev-shell .rev-hero-button{display:flex;align-items:center;gap:14px}
+.rev-shell .rev-tiles .rev-tile{min-width:0}
+.rev-shell .dj-quote-item-foot{flex-wrap:wrap}
+@media(min-width:760px){
+ .rev-shell{background:#101c15;padding:32px 26px 64px}
+ .rev-shell .rev-phone{max-width:1140px;border-radius:23px;overflow:hidden;box-shadow:0 26px 70px #0004}
+ .rev-shell .rev-hero{min-height:330px;padding:34px 48px 39px}
+ .rev-shell .rev-hero .rev-kicker{margin-top:30px!important}
+ .rev-shell .rev-hero h1{font-size:clamp(38px,4vw,55px)}
+ .rev-shell .rev-hero .rev-intro{max-width:540px}
+ .rev-shell .rev-hero-button{max-width:440px}
+ .rev-shell .rev-home-area{padding:34px 46px 45px!important}
+ .rev-shell .rev-tiles{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ .rev-shell .rev-tile.rev-tile-wide{grid-column:auto!important;min-height:158px!important}
+ .rev-shell .dj-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important;max-width:750px}
+ .rev-shell .rev-screen-body{max-width:970px;margin:auto;padding:36px 38px 55px!important}
+ .rev-shell .rev-screen-head{padding:0 40px}
+ .rev-shell .rev-screen-body>.rev-white-panel{max-width:none}
+ .rev-shell .dj-form-grid{gap:14px}
+ .rev-shell .rev-nav{position:relative;bottom:auto;display:grid;grid-template-columns:repeat(4,1fr);padding:12px 22px}
+ .rev-shell .dj-task-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+ .rev-shell .dj-job-card{margin:0}
+ .rev-shell .dj-empty-task{grid-column:1/-1}
+ .rev-shell .dj-task-form{max-width:700px}
+ .rev-shell .dj-add-row{max-width:720px}
+ .rev-shell .dj-quote-item{max-width:920px}
+}
+@media(min-width:1080px){
+ .rev-shell .rev-hero{padding:45px 62px}
+ .rev-shell .rev-home-area{padding:40px 62px 55px!important}
+ .rev-shell .dj-stats{max-width:none}
+ .rev-shell .rev-screen-body{padding:46px 52px 60px!important}
+ .rev-shell .dj-form-grid.two{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:380px){
+ .rev-shell .rev-home-area{padding-left:12px!important;padding-right:12px!important}
+ .rev-shell .rev-tile{padding:12px!important}
+ .rev-shell .rev-tile h3{font-size:13px}
+ .rev-shell .rev-screen-body{padding-left:11px!important;padding-right:11px!important}
+ .rev-shell .dj-qty{gap:3px}
+}

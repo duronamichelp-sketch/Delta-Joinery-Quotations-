@@ -28,7 +28,7 @@ const electricTotal=er.reduce((a,x)=>a+x.qty*x.item.price,0),finishTotal=fr.redu
 const base=ur.reduce((a,x)=>a+x.qty*x.item.price,0),doors=ur.reduce((a,x)=>a+(x.adc?x.qty*(x.item.doorCost||0):0),0),hinges=ur.reduce((a,x)=>a+(x.adc?x.qty*(x.item.hingesPerUnit||0)*(x.item.hingePrice||0):0),0),hw=hr.reduce((a,x)=>a+x.qty*x.item.price,0),lb=lr.reduce((a,x)=>a+x.qty*x.item.price,0),grand=base+doors+hinges+hw+lb+electricTotal+finishTotal;
 const vatAmount=q.includeVat?Math.round(grand*0.135*100)/100:0;
 const finalTotal=grand+vatAmount;
-function save(){const entry={...q,id:q.number||String(Date.now()),name:q.project,savedAt:new Date().toISOString()};const all=read<any[]>('dj_saved_quotes',[]);try{localStorage.setItem('dj_saved_quotes',JSON.stringify([entry,...all.filter(x=>x.id!==entry.id)]));setStatus('Quotation saved. Cloud sync runs automatically when connected.')}catch{setStatus('Could not save. Browser storage may be full.')}}
+function save(){const entry={...q,id:q.number||String(Date.now()),name:q.project,savedAt:new Date().toISOString()};const all=read<any[]>('dj_saved_quotes',[]);try{localStorage.setItem('dj_saved_quotes',JSON.stringify([entry,...all.filter(x=>x.id!==entry.id)]));setStatus('')}catch{setStatus('Could not save. Browser storage may be full.')}}
 const match=(name:string)=>name.toLowerCase().includes(query.toLowerCase());
 const counter=(type:'chosenUnits'|'chosenHardware'|'chosenLabour'|'chosenElectrics'|'chosenFinishes',id:string,value:number)=><div className="dj-count"><button aria-label="Decrease" onClick={()=>qty(type,id,value-1)}>−</button><span>{value}</span><button aria-label="Increase" onClick={()=>qty(type,id,value+1)}>+</button></div>;
 return <main className="dj-desktop">

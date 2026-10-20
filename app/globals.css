@@ -443,3 +443,10 @@ button.rev-tile{cursor:pointer;text-align:left;display:block;width:100%}
 .dj-account-panel{position:fixed!important;bottom:65px!important;right:18px!important;z-index:151}
 @media(max-width:560px){.dj-auth-card{padding:25px 20px;border-radius:16px}.dj-auth-card h1{font-size:23px}}
 @media print{.dj-account-link,.dj-account-panel{display:none!important}}
+
+
+.dj-shared-sidebar .dj-sidebar-account{margin:18px 14px 0;padding:16px 12px;border-top:1px solid #ffffff2a;display:flex;flex-direction:column;gap:9px;min-width:0}
+.dj-sidebar-account-label{color:#8fcba7;font:800 10px Arial,sans-serif;letter-spacing:.12em}
+.dj-sidebar-account-email{color:#fff;font:600 12px Arial,sans-serif;overflow-wrap:anywhere;line-height:1.5}
+.dj-sidebar-account button{align-self:flex-start;border:1px solid #ffffff45;background:#ffffff12;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12px}
+@media print{.dj-sidebar-account{display:none!important}}

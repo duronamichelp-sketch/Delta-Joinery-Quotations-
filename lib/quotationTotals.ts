@@ -13,7 +13,7 @@ export function savedQuoteTotal(q:SavedQuotation){
  const electrics=read<ExtraCost[]>('dj_electrics',[]);
  const finishes=read<ExtraCost[]>('dj_finishes',[]);
  let subtotal=0;
- for(const x of q.chosenUnits||[]){const u=units.find(z=>z.id===x.id);if(u)subtotal+=(Number(x.qty)||0)*(Number(u.price||0)+(x.adc?(pricedDoor({...x,hasDoors:!!x.adc,doorMaterial:'MFC',doorCount:x.doorCount||1,doorSqm:x.doorSqm||0},doorRates)+Number(u.hingesPerUnit||0)*Number(u.hingePrice||0)):0))}
+ for(const x of q.chosenUnits||[]){const u=units.find(z=>z.id===x.id);if(u)subtotal+=(Number(x.qty)||0)*(Number(u.price||0)+(x.adc?(pricedDoor({...x,hasDoors:!!x.adc,doorMaterial:'MFC',doorCount:x.doorCount||1,doorSqm:x.doorSqm||0},doorRates,u)+Number(u.hingesPerUnit||0)*Number(u.hingePrice||0)):0))}
  for(const [items,library] of [[q.chosenHardware||[],hardware],[q.chosenLabour||[],labour],[q.chosenElectrics||[],electrics],[q.chosenFinishes||[],finishes]] as const){
   for(const x of items){const row=library.find(z=>z.id===x.id);if(row)subtotal+=(Number(x.qty)||0)*Number(row.price||0)}
  }

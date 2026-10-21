@@ -12,7 +12,7 @@ export default function Preview(){
  const [hardware,setHardware]=useState<Hardware[]>([]);
  const [labour,setLabour]=useState<Labour[]>([]);const [electrics,setElectrics]=useState<ExtraCost[]>([]),[finishes,setFinishes]=useState<ExtraCost[]>([]),[fillers,setFillers]=useState<ExtraCost[]>([]);
  useEffect(()=>{setDoorRates({...DEFAULT_FINISH_RATES,...read<Record<string,number>>('dj_door_rates',{})});setQ(read<Q>('dj_quote',{}));setUnits(read<Unit[]>('dj_units',[]));setHardware(read<Hardware[]>('dj_hardware',DEFAULT_HARDWARE));setLabour(read<Labour[]>('dj_labour',[]));setElectrics(read<ExtraCost[]>('dj_electrics',[]));setFinishes(read<ExtraCost[]>('dj_finishes',[]));setFillers(read<ExtraCost[]>('dj_fillers',[]));},[]);
- const rows=(q.chosenUnits||[]).flatMap(x=>{const u=units.find(z=>z.id===x.id);return u?[{label:u.name+(x.adc?' · With doors':' · Carcass only'),detail:`${u.width} × ${u.height} × ${u.depth} mm${x.adc?` · ${x.doorFinish||'MFC'} · ${doorSqm(x).toFixed(3)} m² · Doors and hinges included`:''}`,qty:x.qty,price:u.price+(x.adc?pricedDoor(x,doorRates,u)+(u.hingesPerUnit||0)*(u.hingePrice||0):0)}]:[]});
+ const rows=(q.chosenUnits||[]).flatMap(x=>{const u=units.find(z=>z.id===x.id);return u?[{label:u.name+(x.adc?' · With doors':' · Carcass only'),detail:`${u.width} × ${u.height} × ${u.depth} mm${x.adc?` · ${x.doorFinish||'MFC'} · ${doorSqm(x).toFixed(3)} m² · Doors included`:''}`,qty:x.qty,price:u.price+(x.adc?pricedDoor(x,doorRates,u):0)}]:[]});
  const hw=(q.chosenHardware||[]).flatMap(x=>{const h=hardware.find(z=>z.id===x.id);return h?[{label:h.name,detail:'Hardware',qty:x.qty,price:h.price}]:[]});
  const work=(q.chosenLabour||[]).flatMap(x=>{const l=labour.find(z=>z.id===x.id);return l?[{label:l.name,detail:`Labour / ${l.unit}`,qty:x.qty,price:l.price}]:[]});
  const er=(q.chosenElectrics||[]).flatMap(x=>{const y=electrics.find(z=>z.id===x.id);return y?[{label:y.name,detail:'Electrics',qty:x.qty,price:y.price}]:[]});
@@ -80,7 +80,7 @@ export default function Preview(){
       const sqm=doorSqm(x);
       const rate=Number(u.doorPrices?.[finish]??doorRates[finish]??0);
       details.push('Door: '+finish+'  |  '+sqm.toFixed(3)+' m2 x '+money(rate)+'/m2');
-      details.push('Door cost: '+money(pricedDoor(x,doorRates,u))+'  |  Hinges: '+money((u.hingesPerUnit||0)*(u.hingePrice||0)));
+      details.push('Door cost: '+money(pricedDoor(x,doorRates,u))+');
      }else{details.push('Carcass only')}
     }else if(item.detail){details.push(item.detail)}
     pdf.setFont('helvetica','bold');pdf.setFontSize(8.5);

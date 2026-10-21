@@ -55,8 +55,10 @@ export default function CloudSync({children}:{children:React.ReactNode}){
    if(!user||!sb||pause.current)return;
    if(pending.current[k])clearTimeout(pending.current[k]);
    pending.current[k]=setTimeout(async()=>{
-    const val=localStorage.getItem(k);if(val===null)return;
+    const val=localStorage.getItem(k);
+    if(val===null){delete pending.current[k];return}
     try{const {error}=await sb.from('joinery_data').upsert({user_id:user.id,data_key:k,payload:JSON.parse(val)},{onConflict:'user_id,data_key'});if(error)throw error;setMessage('Saved to Supabase')}catch(e){setMessage('Cloud save failed: '+(e instanceof Error?e.message:'Unknown error'))}
+    finally{delete pending.current[k]}
    },950);
   };
   // Receive timesheet updates from other devices signed in to this account.

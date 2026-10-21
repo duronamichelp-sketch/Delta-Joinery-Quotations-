@@ -1,6 +1,7 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import DesktopSidebar from '../DesktopSidebar';
+import {useDeltaAccount} from '../CloudSync';
 type Entry={start:string;finish:string;breakMinutes:string;notWorked?:boolean};
 type Records=Record<string,Entry>;
 const weekdays=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
@@ -34,25 +35,61 @@ function duration(e:Entry){
 }
 const blank=():Entry=>({start:'',finish:'',breakMinutes:''});
 export default function HoursPage(){
+ const account=useDeltaAccount();
+ const loadedFromCloud=useRef(false);
  const [week,setWeek]=useState(()=>iso(weekOf(new Date())));
  const [records,setRecords]=useState<Records>({});
  const [ready,setReady]=useState(false);
  const [message,setMessage]=useState('');
  const dirty=useRef(false);
  useEffect(()=>{
-  const load=()=>{try{const value=JSON.parse(localStorage.getItem('dj_timesheets')||'{}');setRecords(value&&typeof value==='object'&&!Array.isArray(value)?value:{})}catch{}};
-  load();setReady(true);
-  const onCloud=(event:Event)=>{if((event as CustomEvent<string>).detail==='dj_timesheets')load()};
-  const onStorage=(event:StorageEvent)=>{if(event.key==='dj_timesheets')load()};
+  let cancelled=false;
+  const local=()=>{try{const data=JSON.parse(localStorage.getItem('dj_timesheets')||'{}');return data&&typeof data==='object'&&!Array.isArray(data)?data as Records:{}}catch{return {} as Records}};
+  const initialize=async()=>{
+   const existing=local();
+   setRecords(existing);
+   if(!account){setReady(true);return}
+   try{
+    const remote=await account.loadHours() as Records|null;
+    if(cancelled)return;
+    const merged={...existing,...(remote||{})};
+    setRecords(merged);
+    if(!remote&&Object.keys(existing).length)await account.saveHours(merged);
+    loadedFromCloud.current=true;setMessage('Cloud hours connected');
+   }catch(e){if(!cancelled)setMessage('Cloud sync error: '+(e instanceof Error?e.message:'Unknown error'))}
+   finally{if(!cancelled)setReady(true)}
+  };
+  void initialize();
+  const onCloud=async(event:Event)=>{
+   if((event as CustomEvent<string>).detail!=='dj_timesheets'||dirty.current||!account)return;
+   try{const remote=await account.loadHours() as Records|null;if(remote&&!cancelled){setRecords(remote);loadedFromCloud.current=true}}catch{}
+  };
   window.addEventListener('dj-cloud-received',onCloud);
-  window.addEventListener('storage',onStorage);
-  return ()=>{window.removeEventListener('dj-cloud-received',onCloud);window.removeEventListener('storage',onStorage)};
- },[]);
+  return ()=>{cancelled=true;window.removeEventListener('dj-cloud-received',onCloud)};
+ },[account?.email]);
  useEffect(()=>{
-  if(!ready||!dirty.current)return;
-  const timeout=window.setTimeout(()=>{try{localStorage.setItem('dj_timesheets',JSON.stringify(records));dirty.current=false;setMessage('Saved automatically')}catch{setMessage('Could not save hours')}},500);
-  return ()=>window.clearTimeout(timeout);
- },[records,ready]);
+  if(!ready||!dirty.current||!account)return;
+  const timer=window.setTimeout(async()=>{
+   try{await account.saveHours(records);dirty.current=false;setMessage('Saved to cloud')}
+   catch(e){setMessage('Cloud save failed: '+(e instanceof Error?e.message:'Unknown error'))}
+  },800);
+  return ()=>window.clearTimeout(timer);
+ },[records,ready,account?.email]);
+ useEffect(()=>{
+  if(!ready||!account)return;
+  let cancelled=false;
+  const refresh=async()=>{
+   if(dirty.current)return;
+   try{
+    const remote=await account.loadHours() as Records|null;
+    if(!cancelled&&remote&&JSON.stringify(remote)!==JSON.stringify(records)){setRecords(remote);setMessage('Updated from cloud')}
+   }catch{}
+  };
+  const onFocus=()=>{if(document.visibilityState==='visible')void refresh()};
+  window.addEventListener('focus',onFocus);
+  const timer=window.setInterval(()=>{if(document.visibilityState==='visible')void refresh()},15000);
+  return ()=>{cancelled=true;window.removeEventListener('focus',onFocus);window.clearInterval(timer)}
+ },[ready,account?.email,records]);
  const monday=weekOf(new Date(week+'T12:00:00'));
  const dates=weekdays.map((_,i)=>iso(offset(monday,i)));
  const entries=dates.map(date=>records[date]||blank());

@@ -80,7 +80,7 @@ export default function Preview(){
       const sqm=doorSqm(x);
       const rate=Number(u.doorPrices?.[finish]??doorRates[finish]??0);
       details.push('Door: '+finish+'  |  '+sqm.toFixed(3)+' m2 x '+money(rate)+'/m2');
-      details.push('Door cost: '+money(pricedDoor(x,doorRates,u))+');
+      details.push('Door cost: '+money(pricedDoor(x,doorRates,u)));
      }else{details.push('Carcass only')}
     }else if(item.detail){details.push(item.detail)}
     pdf.setFont('helvetica','bold');pdf.setFontSize(8.5);

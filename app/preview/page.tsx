@@ -17,7 +17,7 @@ export default function Preview(){
  const work=(q.chosenLabour||[]).flatMap(x=>{const l=labour.find(z=>z.id===x.id);return l?[{label:l.name,detail:`Labour / ${l.unit}`,qty:x.qty,price:l.price}]:[]});
  const er=(q.chosenElectrics||[]).flatMap(x=>{const y=electrics.find(z=>z.id===x.id);return y?[{label:y.name,detail:'Electrics',qty:x.qty,price:y.price}]:[]});
  const fr=(q.chosenFinishes||[]).flatMap(x=>{const y=finishes.find(z=>z.id===x.id);return y?[{label:y.name,detail:'Finishes / fillers',qty:x.qty,price:y.price}]:[]});
- const pr=(q.chosenFillers||[]).flatMap(x=>{const y=fillers.find(z=>z.id===x.id);return y?[{label:y.name,detail:'Fillers & Plinths',qty:x.qty,price:y.price}]:[]});
+ const pr=(q.chosenFillers||[]).flatMap(x=>{const y=fillers.find(z=>z.id===x.id);return y?[{label:y.name,detail:'Filler / Plinths & Coving',qty:x.qty,price:y.price}]:[]});
  const all=[...rows,...hw,...work,...er,...fr,...pr];
  const subtotal=all.reduce((sum,x)=>sum+x.qty*x.price,0);
  const vatAmount=q.includeVat?Math.round(subtotal*0.135*100)/100:0;

@@ -1,0 +1,12 @@
+'use client';
+import {useState} from 'react';
+import Link from 'next/link';
+import {usePathname} from 'next/navigation';
+import {useDeltaAccount} from './CloudSync';
+const links=[{href:'/',label:'Home',icon:'⌂'},{href:'/quote',label:'Quotes',icon:'▤'},{href:'/units',label:'Price List',icon:'▦'},{href:'/hours',label:'Hours',icon:'◷'}];
+export default function MobileNavigation(){
+ const path=usePathname()||'/';
+ const [menu,setMenu]=useState(false);
+ const account=useDeltaAccount();
+ return <><header className="dj-mobile-header"><button type="button" aria-label="Open menu" aria-expanded={menu} onClick={()=>setMenu(x=>!x)}>☰</button><Link href="/" onClick={()=>setMenu(false)}><span className="dj-mobile-logo">△</span> DELTA JOINERY</Link><span className="dj-mobile-header-end">●</span></header><nav className="dj-mobile-tabs" aria-label="Mobile navigation">{links.map(x=><Link key={x.href} href={x.href} className={path===x.href?'active':''}><span aria-hidden="true">{x.icon}</span><small>{x.label}</small></Link>)}<button type="button" aria-label="More pages" onClick={()=>setMenu(x=>!x)}><span>☷</span><small>More</small></button></nav>{menu&&<div className="dj-mobile-menu-backdrop" onClick={()=>setMenu(false)}><aside className="dj-mobile-menu" role="dialog" aria-modal="true" aria-label="Mobile menu" onClick={e=>e.stopPropagation()}><div className="dj-mobile-menu-top"><strong>DELTA JOINERY</strong><button type="button" onClick={()=>setMenu(false)}>✕</button></div>{[...links.slice(0,1),{href:'/quote',label:'New Quotation',icon:'＋'},{href:'/quotes',label:'Saved Quotations',icon:'▤'},...links.slice(2),{href:'/preview',label:'Preview / PDF',icon:'▣'}].map(x=><Link key={x.href+x.label} href={x.href} onClick={()=>setMenu(false)}>{x.icon} &nbsp; {x.label}</Link>)}{account&&<div className="dj-mobile-account"><small>CLOUD ACCOUNT</small><p>{account.email}</p><button type="button" onClick={()=>{setMenu(false);account.signOut()}}>Sign out</button></div>}</aside></div>}</>;
+}

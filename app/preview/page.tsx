@@ -68,28 +68,54 @@ export default function Preview(){
    y+=8;
    const header=()=>{pdf.setFillColor(...green);pdf.rect(left,y,pageWidth,11,'F');pdf.setTextColor(255,255,255);pdf.setFont('helvetica','bold');pdf.setFontSize(9);pdf.text('ITEM / DESCRIPTION',left+4,y+7);pdf.text('QTY',142,y+7,{align:'right'});pdf.text('AMOUNT',right-4,y+7,{align:'right'});y+=11};
    header();
+   const unitRows=(q.chosenUnits||[]).flatMap(x=>{const u=units.find(z=>z.id===x.id);return u?[{x,u}]:[]});
+   let rowIndex=0;
    for(const item of all){
-    pdf.setFont('helvetica','normal');pdf.setFontSize(9.5);
-    const labelLines=pdf.splitTextToSize(item.label,102) as string[];
-    const detailLines=pdf.splitTextToSize(item.detail||'',102) as string[];
-    const rowHeight=Math.max(16,7+labelLines.length*4.5+detailLines.length*3.5);
-    if(y+rowHeight>264){newPage();header()}
-    pdf.setTextColor(...dark);pdf.setFont('helvetica','bold');pdf.setFontSize(10);
-    pdf.text(labelLines,left+4,y+6);
-    pdf.setTextColor(110,127,115);pdf.setFont('helvetica','normal');pdf.setFontSize(8);
-    if(item.detail)pdf.text(detailLines,left+4,y+7+labelLines.length*4.5);
-    pdf.setTextColor(...dark);pdf.setFontSize(10);
-    pdf.text(String(item.qty),142,y+6,{align:'right'});
-    pdf.setFont('helvetica','bold');pdf.text(money(item.qty*item.price),right-4,y+6,{align:'right'});
+    const unitRow=rowIndex<unitRows.length?unitRows[rowIndex]:undefined;
+    rowIndex++;
+    const detailLines:string[]=[];
+    if(unitRow){
+     const {x,u}=unitRow;
+     detailLines.push('Dimensions: '+u.width+' x '+u.height+' x '+u.depth+' mm');
+     detailLines.push('Carcass: '+money(u.price)+' per unit');
+     if(x.adc){
+      const finish=x.doorFinish||'MFC';
+      const sqm=doorSqm(x);
+      const rate=Number(u.doorPrices?.[finish]??doorRates[finish]??0);
+      detailLines.push('Door: '+finish+'  |  '+sqm.toFixed(3)+' m2 x '+money(rate)+'/m2');
+      detailLines.push('Door cost: '+money(pricedDoor(x,doorRates,u))+'  |  Hinges: '+money((u.hingesPerUnit||0)*(u.hingePrice||0)));
+     }else{detailLines.push('Carcass only - no door or hinge charge')}
+    }else if(item.detail){detailLines.push(item.detail)}
+    pdf.setFont('helvetica','bold');pdf.setFontSize(9.5);
+    const labelLines=pdf.splitTextToSize(item.label,99) as string[];
+    const wrappedDetails=detailLines.flatMap(z=>pdf.splitTextToSize(z,102) as string[]);
+    const rowHeight=Math.max(20,10+labelLines.length*4.7+wrappedDetails.length*4.3);
+    if(y+rowHeight>253){newPage();header()}
+    if(rowIndex%2===0){pdf.setFillColor(248,251,249);pdf.rect(left,y,pageWidth,rowHeight,'F')}
+    pdf.setFont('helvetica','bold');pdf.setFontSize(9.5);pdf.setTextColor(...dark);
+    pdf.text(labelLines,left+4,y+7);
+    pdf.setFont('helvetica','normal');pdf.setFontSize(8);pdf.setTextColor(91,111,99);
+    let detailY=y+9+labelLines.length*4.7;
+    for(const detail of wrappedDetails){pdf.text(detail,left+4,detailY);detailY+=4.3}
+    pdf.setFont('helvetica','bold');pdf.setFontSize(9);pdf.setTextColor(...dark);
+    pdf.text(String(item.qty),142,y+7,{align:'right'});
+    pdf.text(money(item.qty*item.price),right-4,y+7,{align:'right'});
     y+=rowHeight;line(left,y,right);
    }
    if(all.length===0){y+=12;write('No items added to this quotation',left+4,y,10);y+=12;line(left,y,right)}
-   if(y>(q.includeVat?244:254))newPage();
-   y+=15;
-   if(q.includeVat){write('Subtotal (excl. VAT)',108,y,9);pdf.text(money(subtotal),right,y,{align:'right'});y+=8;write('VAT (13.5%) - included',108,y,9);pdf.text(money(vatAmount),right,y,{align:'right'});y+=9;}
-   pdf.setDrawColor(...green);pdf.setLineWidth(.7);pdf.line(108,y-9,right,y-9);
-   write(q.includeVat?'TOTAL (VAT INCLUDED)':'TOTAL (EXCL. VAT)',108,y,10,'bold');
-   pdf.setTextColor(...green);pdf.setFont('helvetica','bold');pdf.setFontSize(17);pdf.text(money(total),right,y+1,{align:'right'});
+   const totalsHeight=q.includeVat?41:28;
+   if(y+totalsHeight>257)newPage();
+   y+=12;
+   const summaryLeft=114;
+   const summaryRow=(label:string,amount:number)=>{pdf.setFont('helvetica','normal');pdf.setFontSize(9);pdf.setTextColor(...dark);pdf.text(label,summaryLeft,y);pdf.text(money(amount),right,y,{align:'right'});y+=9;};
+   if(q.includeVat){summaryRow('Subtotal (excl. VAT)',subtotal);summaryRow('VAT (13.5%)',vatAmount)}
+   pdf.setDrawColor(...green);pdf.setLineWidth(.5);pdf.line(summaryLeft,y-3,right,y-3);
+   y+=7;
+   pdf.setFillColor(238,246,240);pdf.roundedRect(left,y-7,pageWidth,17,2,2,'F');
+   pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.setTextColor(...dark);
+   pdf.text(q.includeVat?'TOTAL INCLUDING VAT':'TOTAL EXCLUDING VAT',left+5,y+3);
+   pdf.setFontSize(15);pdf.setTextColor(...green);
+   pdf.text(money(total),right-4,y+4,{align:'right'});
    y+=28;
    if(y>264)newPage();
    line(left,y,right);y+=8;

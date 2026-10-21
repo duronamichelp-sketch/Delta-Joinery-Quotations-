@@ -59,8 +59,21 @@ export default function CloudSync({children}:{children:React.ReactNode}){
     try{const {error}=await sb.from('joinery_data').upsert({user_id:user.id,data_key:k,payload:JSON.parse(val)},{onConflict:'user_id,data_key'});if(error)throw error;setMessage('Saved to Supabase')}catch(e){setMessage('Cloud save failed: '+(e instanceof Error?e.message:'Unknown error'))}
    },950);
   };
+  // Receive timesheet updates from other devices signed in to this account.
+  const timesheetChannel=supabase.channel('dj-timesheets-sync').on('postgres_changes',{
+   event:'*',schema:'public',table:'joinery_data',filter:'data_key=eq.dj_timesheets'
+  },payload=>{
+   const row=payload.new as {user_id?:string;data_key?:string;payload?:unknown};
+   if(!personRef.current||row.user_id!==personRef.current.id||row.data_key!=='dj_timesheets')return;
+   const received=JSON.stringify(row.payload??{});
+   if(localStorage.getItem('dj_timesheets')===received)return;
+   pause.current=true;
+   localStorage.setItem('dj_timesheets',received);
+   pause.current=false;
+   window.dispatchEvent(new CustomEvent('dj-cloud-received',{detail:'dj_timesheets'}));
+  }).subscribe();
   window.addEventListener('dj-cloud-change',save);
-  return ()=>{listener.subscription.unsubscribe();Storage.prototype.setItem=original;window.removeEventListener('dj-cloud-change',save);Object.values(pending.current).forEach(clearTimeout)};
+  return ()=>{listener.subscription.unsubscribe();void supabase.removeChannel(timesheetChannel);Storage.prototype.setItem=original;window.removeEventListener('dj-cloud-change',save);Object.values(pending.current).forEach(clearTimeout)};
  },[]);
  async function login(create:boolean){
   if(!client)return;

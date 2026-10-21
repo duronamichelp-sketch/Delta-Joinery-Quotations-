@@ -1,5 +1,5 @@
 'use client';
-import {useEffect,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import DesktopSidebar from '../DesktopSidebar';
 type Entry={start:string;finish:string;breakMinutes:string;notWorked?:boolean};
 type Records=Record<string,Entry>;
@@ -38,6 +38,7 @@ export default function HoursPage(){
  const [records,setRecords]=useState<Records>({});
  const [ready,setReady]=useState(false);
  const [message,setMessage]=useState('');
+ const dirty=useRef(false);
  useEffect(()=>{
   const load=()=>{try{const value=JSON.parse(localStorage.getItem('dj_timesheets')||'{}');setRecords(value&&typeof value==='object'&&!Array.isArray(value)?value:{})}catch{}};
   load();setReady(true);
@@ -48,8 +49,8 @@ export default function HoursPage(){
   return ()=>{window.removeEventListener('dj-cloud-received',onCloud);window.removeEventListener('storage',onStorage)};
  },[]);
  useEffect(()=>{
-  if(!ready)return;
-  const timeout=window.setTimeout(()=>{try{localStorage.setItem('dj_timesheets',JSON.stringify(records));setMessage('Saved automatically')}catch{setMessage('Could not save hours')}},500);
+  if(!ready||!dirty.current)return;
+  const timeout=window.setTimeout(()=>{try{localStorage.setItem('dj_timesheets',JSON.stringify(records));dirty.current=false;setMessage('Saved automatically')}catch{setMessage('Could not save hours')}},500);
   return ()=>window.clearTimeout(timeout);
  },[records,ready]);
  const monday=weekOf(new Date(week+'T12:00:00'));
@@ -59,8 +60,8 @@ export default function HoursPage(){
  const weekly=daily.reduce((a,b)=>a+b,0);
  const today=duration(records[iso(new Date())]||blank());
  const days=entries.filter(x=>!x.notWorked&&x.start&&x.finish).length;
- function change(date:string,field:keyof Entry,value:string){setRecords(old=>({...old,[date]:{...(old[date]||blank()),[field]:value}}));setMessage('Unsaved changes')}
- function toggleNA(date:string,checked:boolean){setRecords(old=>({...old,[date]:{...(old[date]||blank()),notWorked:checked,...(checked?{start:'',finish:''}:{})}}));setMessage('Unsaved changes')}
+ function change(date:string,field:keyof Entry,value:string){dirty.current=true;setRecords(old=>({...old,[date]:{...(old[date]||blank()),[field]:value}}));setMessage('Unsaved changes')}
+ function toggleNA(date:string,checked:boolean){dirty.current=true;setRecords(old=>({...old,[date]:{...(old[date]||blank()),notWorked:checked,...(checked?{start:'',finish:''}:{})}}));setMessage('Unsaved changes')}
  function normalize(date:string,field:'start'|'finish'){const raw=records[date]?.[field];if(raw)change(date,field,formatTime(raw,field))}
 
  async function exportPDF(){

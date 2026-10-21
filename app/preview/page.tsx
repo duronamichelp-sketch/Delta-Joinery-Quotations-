@@ -66,65 +66,81 @@ export default function Preview(){
    y+=17;
    write('Quotation breakdown',left,y,15,'bold');
    y+=8;
-   const header=()=>{pdf.setFillColor(...green);pdf.rect(left,y,pageWidth,11,'F');pdf.setTextColor(255,255,255);pdf.setFont('helvetica','bold');pdf.setFontSize(9);pdf.text('ITEM / DESCRIPTION',left+4,y+7);pdf.text('QTY',142,y+7,{align:'right'});pdf.text('AMOUNT',right-4,y+7,{align:'right'});y+=11};
-   header();
+   // Compact, dynamically scaled layout: all quotation lines and totals stay on one A4 page.
    const unitRows=(q.chosenUnits||[]).flatMap(x=>{const u=units.find(z=>z.id===x.id);return u?[{x,u}]:[]});
-   let rowIndex=0;
-   for(const item of all){
-    const unitRow=rowIndex<unitRows.length?unitRows[rowIndex]:undefined;
-    rowIndex++;
-    const detailLines:string[]=[];
-    if(unitRow){
-     const {x,u}=unitRow;
-     detailLines.push('Dimensions: '+u.width+' x '+u.height+' x '+u.depth+' mm');
-     detailLines.push('Carcass: '+money(u.price)+' per unit');
+   const prepared=all.map((item,index)=>{
+    const unit=unitRows[index];
+    const details:string[]=[];
+    if(unit){
+     const {x,u}=unit;
+     details.push('Dimensions: '+u.width+' x '+u.height+' x '+u.depth+' mm  |  Carcass: '+money(u.price));
      if(x.adc){
       const finish=x.doorFinish||'MFC';
       const sqm=doorSqm(x);
       const rate=Number(u.doorPrices?.[finish]??doorRates[finish]??0);
-      detailLines.push('Door: '+finish+'  |  '+sqm.toFixed(3)+' m2 x '+money(rate)+'/m2');
-      detailLines.push('Door cost: '+money(pricedDoor(x,doorRates,u))+'  |  Hinges: '+money((u.hingesPerUnit||0)*(u.hingePrice||0)));
-     }else{detailLines.push('Carcass only - no door or hinge charge')}
-    }else if(item.detail){detailLines.push(item.detail)}
-    pdf.setFont('helvetica','bold');pdf.setFontSize(9.5);
-    const labelLines=pdf.splitTextToSize(item.label,99) as string[];
-    const wrappedDetails=detailLines.flatMap(z=>pdf.splitTextToSize(z,102) as string[]);
-    const rowHeight=Math.max(20,10+labelLines.length*4.7+wrappedDetails.length*4.3);
-    if(y+rowHeight>253){newPage();header()}
-    if(rowIndex%2===0){pdf.setFillColor(248,251,249);pdf.rect(left,y,pageWidth,rowHeight,'F')}
-    pdf.setFont('helvetica','bold');pdf.setFontSize(9.5);pdf.setTextColor(...dark);
-    pdf.text(labelLines,left+4,y+7);
-    pdf.setFont('helvetica','normal');pdf.setFontSize(8);pdf.setTextColor(91,111,99);
-    let detailY=y+9+labelLines.length*4.7;
-    for(const detail of wrappedDetails){pdf.text(detail,left+4,detailY);detailY+=4.3}
-    pdf.setFont('helvetica','bold');pdf.setFontSize(9);pdf.setTextColor(...dark);
-    pdf.text(String(item.qty),142,y+7,{align:'right'});
-    pdf.text(money(item.qty*item.price),right-4,y+7,{align:'right'});
-    y+=rowHeight;line(left,y,right);
+      details.push('Door: '+finish+'  |  '+sqm.toFixed(3)+' m2 x '+money(rate)+'/m2');
+      details.push('Door cost: '+money(pricedDoor(x,doorRates,u))+'  |  Hinges: '+money((u.hingesPerUnit||0)*(u.hingePrice||0)));
+     }else{details.push('Carcass only')}
+    }else if(item.detail){details.push(item.detail)}
+    pdf.setFont('helvetica','bold');pdf.setFontSize(8.5);
+    const titleLines=pdf.splitTextToSize(item.label,95) as string[];
+    pdf.setFont('helvetica','normal');pdf.setFontSize(7);
+    const detailLines=details.flatMap(v=>pdf.splitTextToSize(v,102) as string[]);
+    return {item,titleLines,detailLines};
+   });
+   const tableTop=y;
+   const reservedBottom=q.includeVat?60:51;
+   const availableRows=Math.max(45,263-tableTop-10-reservedBottom);
+   const nominal=prepared.reduce((sum,r)=>sum+6+r.titleLines.length*4.2+r.detailLines.length*3.6,0);
+   const scale=Math.min(1,availableRows/Math.max(1,nominal));
+   const titleFont=Math.max(4.5,9*scale),detailFont=Math.max(4,7.5*scale);
+   const titleStep=4.2*scale,detailStep=3.6*scale;
+   const headerH=Math.max(6.2,9*scale);
+   const paddingH=5*scale;
+   pdf.setFillColor(...green);pdf.rect(left,y,pageWidth,headerH,'F');
+   pdf.setTextColor(255,255,255);pdf.setFont('helvetica','bold');pdf.setFontSize(Math.max(5.5,8*scale));
+   pdf.text('ITEM / DESCRIPTION',left+4,y+headerH*.68);
+   pdf.text('QTY',142,y+headerH*.68,{align:'right'});
+   pdf.text('AMOUNT',right-4,y+headerH*.68,{align:'right'});
+   y+=headerH;
+   for(let index=0;index<prepared.length;index++){
+    const {item,titleLines,detailLines}=prepared[index];
+    const h=paddingH+titleLines.length*titleStep+detailLines.length*detailStep;
+    if(index%2===1){pdf.setFillColor(248,251,249);pdf.rect(left,y,pageWidth,h,'F')}
+    pdf.setFont('helvetica','bold');pdf.setFontSize(titleFont);pdf.setTextColor(...dark);
+    pdf.text(titleLines,left+4,y+titleStep);
+    pdf.setFont('helvetica','normal');pdf.setFontSize(detailFont);pdf.setTextColor(91,111,99);
+    let dy=y+titleStep*titleLines.length+detailStep;
+    for(const detail of detailLines){pdf.text(detail,left+4,dy);dy+=detailStep}
+    pdf.setFont('helvetica','bold');pdf.setFontSize(titleFont);pdf.setTextColor(...dark);
+    pdf.text(String(item.qty),142,y+titleStep,{align:'right'});
+    pdf.text(money(item.qty*item.price),right-4,y+titleStep,{align:'right'});
+    y+=h;line(left,y,right);
    }
-   if(all.length===0){y+=12;write('No items added to this quotation',left+4,y,10);y+=12;line(left,y,right)}
-   const totalsHeight=q.includeVat?41:28;
-   if(y+totalsHeight>257)newPage();
-   y+=12;
-   const summaryLeft=114;
-   const summaryRow=(label:string,amount:number)=>{pdf.setFont('helvetica','normal');pdf.setFontSize(9);pdf.setTextColor(...dark);pdf.text(label,summaryLeft,y);pdf.text(money(amount),right,y,{align:'right'});y+=9;};
-   if(q.includeVat){summaryRow('Subtotal (excl. VAT)',subtotal);summaryRow('VAT (13.5%)',vatAmount)}
-   pdf.setDrawColor(...green);pdf.setLineWidth(.5);pdf.line(summaryLeft,y-3,right,y-3);
-   y+=7;
-   pdf.setFillColor(238,246,240);pdf.roundedRect(left,y-7,pageWidth,17,2,2,'F');
-   pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.setTextColor(...dark);
-   pdf.text(q.includeVat?'TOTAL INCLUDING VAT':'TOTAL EXCLUDING VAT',left+5,y+3);
-   pdf.setFontSize(15);pdf.setTextColor(...green);
-   pdf.text(money(total),right-4,y+4,{align:'right'});
-   y+=28;
-   if(y>264)newPage();
-   line(left,y,right);y+=8;
-   pdf.setTextColor(95,112,101);pdf.setFont('helvetica','normal');pdf.setFontSize(9);
+   if(prepared.length===0){y+=9;write('No items added to this quotation',left+4,y,8)}
+   y+=9;
+   const summaryLeft=113;
+   const summaryFont=8.3;
+   if(q.includeVat){
+    pdf.setFont('helvetica','normal');pdf.setFontSize(summaryFont);pdf.setTextColor(...dark);
+    pdf.text('Subtotal (excl. VAT)',summaryLeft,y);pdf.text(money(subtotal),right,y,{align:'right'});y+=7;
+    pdf.text('VAT (13.5%)',summaryLeft,y);pdf.text(money(vatAmount),right,y,{align:'right'});y+=9;
+   }
+   pdf.setDrawColor(...green);pdf.setLineWidth(.5);pdf.line(summaryLeft,y-5,right,y-5);
+   pdf.setFillColor(238,246,240);pdf.roundedRect(left,y,pageWidth,15,2,2,'F');
+   pdf.setFont('helvetica','bold');pdf.setFontSize(9);pdf.setTextColor(...dark);
+   pdf.text(q.includeVat?'TOTAL INCLUDING VAT':'TOTAL EXCLUDING VAT',left+5,y+9.5);
+   pdf.setFontSize(14);pdf.setTextColor(...green);
+   pdf.text(money(total),right-4,y+10,{align:'right'});
+   y+=21;
+   line(left,y,right);y+=6;
+   pdf.setTextColor(95,112,101);pdf.setFont('helvetica','normal');pdf.setFontSize(8);
    pdf.text('Thank you for considering Delta Joinery.',left,y);
-   y+=6;pdf.setFontSize(8);
-   const disclaimer=pdf.splitTextToSize(q.includeVat?'INTERNAL QUOTATION ONLY. VAT at 13.5% has been included in the final total.':'INTERNAL QUOTATION ONLY. VAT has not been included in the final total.',pageWidth);
-   pdf.text(disclaimer,left,y);
-   for(let page=1;page<=pdf.getNumberOfPages();page++){pdf.setPage(page);pdf.setFontSize(8);pdf.setTextColor(130,142,134);pdf.text('Delta Joinery  |  Quotation '+(q.number||''),left,287);pdf.text(page+' / '+pdf.getNumberOfPages(),right,287,{align:'right'})}
+   y+=5;pdf.setFontSize(7);
+   pdf.text(q.includeVat?'INTERNAL QUOTATION ONLY. VAT at 13.5% included.':'INTERNAL QUOTATION ONLY. VAT excluded.',left,y);
+   pdf.setFontSize(7);pdf.setTextColor(130,142,134);
+   pdf.text('Delta Joinery  |  Quotation '+(q.number||''),left,287);
+   pdf.text('1 / 1',right,287,{align:'right'});
    pdf.save('Delta-Joinery-Quotation-'+(q.number||'draft').replace(/[^a-z0-9_-]/gi,'-')+'.pdf');
   }catch(error){console.error(error);alert('Unable to generate PDF. Please try again.')}
  }

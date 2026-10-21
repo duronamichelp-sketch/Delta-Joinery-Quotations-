@@ -72,8 +72,33 @@ export default function CloudSync({children}:{children:React.ReactNode}){
    pause.current=false;
    window.dispatchEvent(new CustomEvent('dj-cloud-received',{detail:'dj_timesheets'}));
   }).subscribe();
+  // Fetch fresh hours when switching devices, reopening the app or returning to its tab.
+  // This also works when database realtime publication is not enabled.
+  let refreshing=false;
+  const refreshTimesheets=async()=>{
+   const user=personRef.current;
+   if(!user||refreshing||pause.current||pending.current['dj_timesheets'])return;
+   refreshing=true;
+   try{
+    const {data,error}=await supabase.from('joinery_data').select('payload').eq('user_id',user.id).eq('data_key','dj_timesheets').maybeSingle();
+    if(error)throw error;
+    if(data&&data.payload&&typeof data.payload==='object'){
+     const incoming=JSON.stringify(data.payload);
+     if(incoming!==localStorage.getItem('dj_timesheets')){
+      pause.current=true;
+      try{localStorage.setItem('dj_timesheets',incoming)}finally{pause.current=false}
+      window.dispatchEvent(new CustomEvent('dj-cloud-received',{detail:'dj_timesheets'}));
+     }
+    }
+   }catch(e){setMessage('Hours sync unavailable: '+(e instanceof Error?e.message:'Unknown error'))}
+   finally{refreshing=false}
+  };
+  const onReturn=()=>{if(document.visibilityState==='visible')void refreshTimesheets()};
+  window.addEventListener('focus',onReturn);
+  document.addEventListener('visibilitychange',onReturn);
+  const refreshTimer=window.setInterval(()=>{if(document.visibilityState==='visible')void refreshTimesheets()},15000);
   window.addEventListener('dj-cloud-change',save);
-  return ()=>{listener.subscription.unsubscribe();void supabase.removeChannel(timesheetChannel);Storage.prototype.setItem=original;window.removeEventListener('dj-cloud-change',save);Object.values(pending.current).forEach(clearTimeout)};
+  return ()=>{listener.subscription.unsubscribe();void supabase.removeChannel(timesheetChannel);Storage.prototype.setItem=original;window.removeEventListener('dj-cloud-change',save);window.removeEventListener('focus',onReturn);document.removeEventListener('visibilitychange',onReturn);window.clearInterval(refreshTimer);Object.values(pending.current).forEach(clearTimeout)};
  },[]);
  async function login(create:boolean){
   if(!client)return;

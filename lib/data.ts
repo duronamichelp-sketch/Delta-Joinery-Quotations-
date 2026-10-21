@@ -15,10 +15,10 @@ export const DEFAULT_LABOUR:Labour[]=[];
 
 export type ExtraCost={id:string;name:string;price:number;image?:string};
 
-export const DOOR_OPTIONS:Record<string,string[]>={MFC:['MFC','MFC Painted','MFC Shaker'],'PAINTED MDF':['Painted MDF','MDF Painted Shaker'],'MDF VENEER':['MDF Veneer','MDF Veneer Shaker'],'MDF MOLDING':['MDF Molding','MDF Molding Shaker'],SPF:['SPF','SPF Shaker']};
+export const DOOR_OPTIONS:Record<string,string[]>={MFC:['MFC Plain'],MDF:['MDF Plain','MDF Shaker','MDF Molding'],'MDF VENEER':['MDF Veneer Plain','MDF Veneer Solid Molding']};
 export const DOOR_FINISHES=Object.values(DOOR_OPTIONS).flat();
 export function unitDoorPrice(unit:Unit,finish?:string){return Number((finish&&unit.doorPrices?.[finish])??unit.doorCost??0)}
 
-export const DEFAULT_FINISH_RATES:Record<string,number>={'MFC':120,'Painted MDF':190,'MDF Veneer':240};
+export const DEFAULT_FINISH_RATES:Record<string,number>={'MFC Plain':120,'MDF Plain':190,'MDF Veneer Plain':240};
 export function doorSqm(x:QuoteUnit){const calculated=(Number(x.doorWidth)||0)*(Number(x.doorHeight)||0)*(Number(x.doorCount)||0)/1000000;return Math.max(0,calculated>0?calculated:Number(x.doorSqm)||0)}
 export function pricedDoor(x:QuoteUnit,rates:Record<string,number>,unit?:Unit){const finish=x.doorFinish||'MFC';const rate=unit?.doorPrices?.[finish]??rates[finish]??0;return x.adc?doorSqm(x)*Math.max(0,Number(rate)||0):0}

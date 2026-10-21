@@ -512,3 +512,8 @@ button.rev-tile{cursor:pointer;text-align:left;display:block;width:100%}
  .dj-mobile-header{padding:0 11px}
 }
 @media print{.dj-mobile-header,.dj-mobile-tabs,.dj-mobile-menu-backdrop{display:none!important}}
+
+/* Cost library navigation: larger readable labels and safe overflow */
+.dj-library-tabs{overflow-x:auto;gap:4px;scrollbar-width:thin}
+.dj-library-tabs button{font-size:14px!important;font-weight:650!important;white-space:nowrap;min-width:max-content;padding:13px 15px!important}
+@media(max-width:760px){.dj-library-tabs button{font-size:14px!important;padding:12px 14px!important}}

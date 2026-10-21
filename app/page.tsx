@@ -5,6 +5,7 @@ import DesktopSidebar from './DesktopSidebar';
 import {read} from '../lib/data';
 import {savedQuoteTotal,type SavedQuotation} from '../lib/quotationTotals';
 type Task={id:string;client:string;project:string;due:string;notes:string;status:'upcoming'|'finished';created:string;finished?:string;amount?:number};
+// Dashboard includes manual finished quotation entries.
 const KEY='dj_quotation_tasks';
 const dateToday=()=>new Date().toLocaleDateString('en-CA');
 const formatDate=(v:string)=>v?new Date(v+'T12:00:00').toLocaleDateString('en-IE',{day:'numeric',month:'short',year:'numeric'}):'No deadline';

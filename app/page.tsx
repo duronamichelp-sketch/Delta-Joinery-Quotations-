@@ -2,7 +2,6 @@
 import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
 import DesktopSidebar from './DesktopSidebar';
-import Image from 'next/image';
 import {read} from '../lib/data';
 import {savedQuoteTotal,type SavedQuotation} from '../lib/quotationTotals';
 type Task={id:string;client:string;project:string;due:string;notes:string;status:'upcoming'|'finished';created:string;finished?:string;amount?:number};
@@ -37,7 +36,7 @@ export default function Home(){
  const finishedCount=finished.length+finishedSaved.length;
  const shown=filter==='upcoming'?upcoming:finished;
  return <main className="rev-shell dj-full-desktop"><DesktopSidebar active="home"/><div className="rev-phone">
- <section className="rev-hero dj-work-hero"><div className="rev-brand"><Image src="/delta-logo.png" alt="Delta Joinery" width={150} height={46}/><span className="rev-avatar">DJ</span></div><p className="rev-kicker">DELTA JOINERY · WORKSPACE</p><h1>Quotation<br/><em>dashboard.</em></h1><p className="rev-intro">Manage your jobs, deadlines and completed quotations.</p><Link href="/quote" className="rev-hero-button"><span className="dj-btn-plus">＋</span><span>New Quotation</span><b className="dj-chevron">→</b></Link><div className="rev-hero-glow"/></section>
+ <section className="rev-hero dj-work-hero"><div className="rev-brand"><span className="rev-avatar">DJ</span></div><p className="rev-kicker">DELTA JOINERY · WORKSPACE</p><h1>Quotation<br/><em>dashboard.</em></h1><p className="rev-intro">Manage your jobs, deadlines and completed quotations.</p><Link href="/quote" className="rev-hero-button"><span className="dj-btn-plus">＋</span><span>New Quotation</span><b className="dj-chevron">→</b></Link><div className="rev-hero-glow"/></section>
  <section className="rev-home-area">
  <div className="rev-section-title"><div><p>OVERVIEW</p><h2>Your workspace</h2></div></div>
  <div className="dj-stats"><button type="button" onClick={()=>{setFilter('upcoming');document.getElementById('dj-jobs')?.scrollIntoView({behavior:'smooth'})}} className="dj-stat"><span>Upcoming</span><strong>{upcoming.length}</strong><small>Need quotations</small></button><button type="button" onClick={()=>{setFilter('finished');document.getElementById('dj-jobs')?.scrollIntoView({behavior:'smooth'})}} className="dj-stat"><span>Finished</span><strong>{finishedCount}</strong><small>Completed quotations</small></button></div>

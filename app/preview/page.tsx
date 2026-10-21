@@ -135,7 +135,7 @@ export default function Preview(){
    y+=21;
    line(left,y,right);y+=6;
    pdf.setTextColor(95,112,101);pdf.setFont('helvetica','normal');pdf.setFontSize(8);
-   pdf.text('Thank you for considering Delta Joinery.',left,y);
+
    y+=5;pdf.setFontSize(7);
    pdf.text(q.includeVat?'INTERNAL QUOTATION ONLY. VAT at 13.5% included.':'INTERNAL QUOTATION ONLY. VAT excluded.',left,y);
    pdf.setFontSize(7);pdf.setTextColor(130,142,134);
@@ -156,7 +156,7 @@ export default function Preview(){
  <h2 className="font-semibold text-lg mb-3">Quotation breakdown</h2>
  <table className="w-full text-sm" style={{borderCollapse:'collapse'}}><thead><tr className="bg-green-900 text-white"><th className="text-left p-3">Description</th><th className="text-center p-3">Qty</th><th className="text-right p-3">Price</th><th className="text-right p-3">Total</th></tr></thead><tbody>{all.map((x,i)=><tr key={i} className="border-b border-gray-200"><td className="p-3"><strong>{x.label}</strong><div className="text-xs text-gray-500">{x.detail}</div></td><td className="text-center p-3">{x.qty}</td><td className="text-right p-3">{currency(x.price)}</td><td className="text-right p-3 font-medium">{currency(x.price*x.qty)}</td></tr>)}{all.length===0&&<tr><td colSpan={4} className="p-8 text-center text-gray-400">No items added to this quotation</td></tr>}</tbody></table>
  <div className="flex justify-end mt-8"><div className="w-full max-w-sm border-t-2 border-green-800 pt-5">{q.includeVat&&<><div className="flex justify-between gap-4 mb-3"><span>Subtotal (excl. VAT)</span><strong>{currency(subtotal)}</strong></div><div className="flex justify-between gap-4 mb-3"><span>VAT (13.5%)</span><strong>{currency(vatAmount)}</strong></div></>}<div className="flex justify-between gap-4"><strong>Total {q.includeVat?'(VAT included)':'(excl. VAT)'}</strong><strong className="text-xl text-green-800">{currency(total)}</strong></div></div></div>
- <div className="mt-16 border-t pt-5 text-xs text-gray-500"><p>Thank you for considering Delta Joinery.</p><p className="mt-1">{q.includeVat?'INTERNAL QUOTATION ONLY. VAT at 13.5% has been included in the final total.':'INTERNAL QUOTATION ONLY. VAT has not been included in the final total.'}</p></div>
+ <div className="mt-16 border-t pt-5 text-xs text-gray-500"><p className="mt-1">{q.includeVat?'INTERNAL QUOTATION ONLY. VAT at 13.5% has been included in the final total.':'INTERNAL QUOTATION ONLY. VAT has not been included in the final total.'}</p></div>
  </article>
  <style jsx global>{`
 @page { size: A4 portrait; margin: 0; }

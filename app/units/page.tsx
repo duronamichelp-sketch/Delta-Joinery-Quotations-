@@ -2,7 +2,7 @@
 import {useEffect,useState} from 'react';
 import Link from 'next/link';
 import DesktopSidebar from '../DesktopSidebar';
-import {Unit,Hardware,Labour,DoorMaterial,ExtraCost,DEFAULT_HARDWARE,DEFAULT_DOOR_RATES,DOOR_OPTIONS,DEFAULT_FINISH_RATES,currency,read} from '../../lib/data';
+import {Unit,Hardware,Labour,DoorMaterial,ExtraCost,DEFAULT_HARDWARE,DEFAULT_DOOR_RATES,DOOR_OPTIONS,DOOR_FINISHES,DEFAULT_FINISH_RATES,currency,read} from '../../lib/data';
 const blank={name:'',width:'600',height:'720',depth:'550',sqm:'',price:'',doorCost:'',hingesPerUnit:'2',hingePrice:'4',image:''};
 export default function Library(){
 const [tab,setTab]=useState('Units'),[loaded,setLoaded]=useState(false);

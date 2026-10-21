@@ -1,5 +1,6 @@
 import './globals.css';
 import CloudSync from './CloudSync';
+import MobileNavigation from './MobileNavigation';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 
@@ -32,7 +33,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}><CloudSync>{children}</CloudSync></body>
+      <body className={inter.className}><CloudSync><MobileNavigation/>{children}</CloudSync></body>
     </html>
   );
 }

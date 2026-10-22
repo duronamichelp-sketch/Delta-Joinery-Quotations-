@@ -604,3 +604,47 @@ button.rev-tile{cursor:pointer;text-align:left;display:block;width:100%}
  .dj-content,.dj-dashboard-wrap{padding-left:13px!important;padding-right:13px!important}
  .dj-full-desktop .dj-shared-sidebar{display:none!important}
 }
+
+
+/* Mobile app home: real dashboard data, concept-style presentation */
+.dj-app-home{display:none}
+@media screen and (max-width:899px){
+ .dj-app-home{display:block;background:#f9f7f0;padding-bottom:20px}
+ .dj-app-home-top{position:relative;background:linear-gradient(135deg,#003b2b,#072b21);color:white;padding:24px 17px 28px;min-height:220px;overflow:hidden}
+ .dj-app-home-heading{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:2}
+ .dj-app-home-heading small{font-size:10px;letter-spacing:.15em;color:#bed4c2}
+ .dj-app-home-heading h1{font-size:30px;line-height:1.05;letter-spacing:-.04em;margin:22px 0 10px;font-weight:800}
+ .dj-app-home-heading p{font-size:12px;color:#d8e7dc}
+ .dj-app-home-avatar{border:1px solid #bbd0be;border-radius:50%;padding:10px;font-weight:700;font-size:12px}
+ .dj-app-home-timber{position:absolute;right:-20px;bottom:0;display:flex;align-items:flex-end;gap:3px;opacity:.42;transform:skewY(-15deg)}
+ .dj-app-home-timber span{display:block;width:26px;height:130px;background:linear-gradient(90deg,#6c5135,#bba07c,#79583d)}
+ .dj-app-home-timber span:nth-child(2){height:95px}.dj-app-home-timber span:nth-child(3){height:160px}.dj-app-home-timber span:nth-child(4){height:110px}
+ .dj-app-home-body{padding:0 14px}
+ .dj-app-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:-9px;position:relative;z-index:3}
+ .dj-app-stats>a{border:1px solid #e8e8df;background:#fffdf8;text-decoration:none;color:#163c2e;border-radius:13px;padding:15px 12px;min-height:128px;display:flex;flex-direction:column;box-shadow:0 4px 11px #27382d0c;min-width:0}
+ .dj-app-icon{font-size:22px;background:#f1f2e9;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;margin-bottom:8px}
+ .dj-app-stats strong{font-size:22px;font-weight:800;line-height:1.2;overflow-wrap:anywhere}
+ .dj-app-stats b{font-size:11px;margin-top:3px}.dj-app-stats small{font-size:10px;color:#708277;margin-top:3px}
+ .dj-app-section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:20px 1px 10px}
+ .dj-app-section-title h2{font-size:15px;font-weight:800;margin:0}.dj-app-section-title a,.dj-app-section-title>span{font-size:11px;color:#316c51;text-decoration:none}
+ .dj-app-recent{border:1px solid #e8e8df;border-radius:12px;overflow:hidden;background:white}
+ .dj-app-recent>a{display:flex;gap:10px;align-items:center;color:#132e22;text-decoration:none;padding:11px 10px;border-bottom:1px solid #eeeee8;min-width:0}
+ .dj-app-recent>a:last-child{border:0}
+ .dj-app-recent-icon{width:42px;height:42px;display:grid;place-items:center;background:#e6eadd;border-radius:9px;color:#19523b;font-size:22px}
+ .dj-app-recent>a div{flex:1;min-width:0}.dj-app-recent>a strong{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dj-app-recent>a small{display:block;font-size:10px;color:#7d8980;margin-top:4px}
+ .dj-app-status{padding:5px 8px;background:#e1efdf;border-radius:15px;font-size:10px}.dj-app-recent>p{padding:12px;font-size:12px;color:#728075}
+ .dj-app-quick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+ .dj-app-quick a{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:76px;border-radius:11px;background:#fff;border:1px solid #e8e8df;color:#163c2e;text-decoration:none;font-size:10px;text-align:center;padding:6px 2px}
+ .dj-app-quick span{font-size:23px;margin-bottom:5px}
+ .dj-app-tracker-link{width:100%;border:1px solid #d8e4d9;border-radius:11px;padding:16px;background:white;color:#123b29;text-align:left;font-weight:650;font-size:12px;display:flex;justify-content:space-between}
+ .rev-shell .dj-work-hero{display:none!important}
+ .rev-shell .rev-home-area{padding-top:2px!important}
+ .rev-shell .rev-home-area>.rev-section-title:first-child,.rev-shell .rev-home-area>.dj-stats,.rev-shell .rev-home-area>.rev-recent-heading:not(#dj-jobs),.rev-shell .rev-home-area>.rev-tiles{display:none!important}
+ .dj-mobile-menu{background:#fbfaf5!important;color:#12392c!important}
+ .dj-mobile-menu a{color:#133d2e!important;background:transparent!important;opacity:1!important}
+ .dj-mobile-menu-top{background:#003d2d!important;color:#fff!important}
+ .dj-mobile-menu-top strong,.dj-mobile-menu-top button{color:#fff!important}
+ .dj-mobile-menu .dj-mobile-account{color:#163d2c!important}
+ .dj-mobile-account small,.dj-mobile-account p,.dj-mobile-account button{color:#173b2c!important}
+ .rev-shell .rev-home-area,.rev-shell .rev-screen-body{overflow-wrap:anywhere}
+}

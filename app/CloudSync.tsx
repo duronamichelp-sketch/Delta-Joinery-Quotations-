@@ -3,7 +3,7 @@ import {createContext,useContext,useEffect,useRef,useState} from 'react';
 import {createClient, type SupabaseClient} from '@supabase/supabase-js';
 const KEYS=['dj_units','dj_hardware','dj_labour','dj_electrics','dj_finishes','dj_door_rates','dj_quote','dj_saved_quotes','dj_quotation_tasks','dj_timesheets','dj_tool_addresses','dj_cutting_projects','dj_worktop_rates','dj_timber_rates','dj_fillers'];
 type Profile={id:string;email?:string};
-export const DeltaAccountContext=createContext<{email:string;message:string;signOut:()=>void;loadHours:()=>Promise<Record<string,unknown>|null>;saveHours:(hours:Record<string,unknown>)=>Promise<void>}|null>(null);
+export const DeltaAccountContext=createContext<{email:string;message:string;signOut:()=>void;loadHours:()=>Promise<Record<string,unknown>|null>;saveHours:(hours:Record<string,unknown>)=>Promise<void>;saveTool:(key:'dj_tool_addresses'|'dj_cutting_projects',payload:unknown)=>Promise<void>}|null>(null);
 export const useDeltaAccount=()=>useContext(DeltaAccountContext);
 export default function CloudSync({children}:{children:React.ReactNode}){
  const [checking,setChecking]=useState(true);const [client,setClient]=useState<SupabaseClient|null>(null),[person,setPerson]=useState<Profile|null>(null),[open,setOpen]=useState(false),[email,setEmail]=useState(''),[password,setPassword]=useState(''),[message,setMessage]=useState('');
@@ -31,10 +31,10 @@ export default function CloudSync({children}:{children:React.ReactNode}){
     for(const k of KEYS){
      if(remote.has(k)){
       const incoming=JSON.stringify(remote.get(k));
-      if(localStorage.getItem(k)!==incoming){localStorage.setItem(k,incoming)}
+      if(localStorage.getItem(k)!==incoming){localStorage.setItem(k,incoming);window.dispatchEvent(new CustomEvent('dj-cloud-received',{detail:k}))}
      }else{
       const local=localStorage.getItem(k);
-      if(local!==null){try{await supabase.from('joinery_data').upsert({user_id:userId,data_key:k,payload:JSON.parse(local)},{onConflict:'user_id,data_key'})}catch{}}
+      if(local!==null){const {error:uploadError}=await supabase.from('joinery_data').upsert({user_id:userId,data_key:k,payload:JSON.parse(local)},{onConflict:'user_id,data_key'});if(uploadError)throw uploadError}
      }
     }
     setMessage('Cloud sync connected');
@@ -156,6 +156,16 @@ export default function CloudSync({children}:{children:React.ReactNode}){
   pause.current=true;
   try{localStorage.setItem('dj_timesheets',JSON.stringify(hours))}finally{pause.current=false}
  }
+ async function saveTool(key:'dj_tool_addresses'|'dj_cutting_projects',payload:unknown){
+  const sb=clientRef.current,user=personRef.current;
+  if(!sb||!user)throw new Error('Cloud account not ready');
+  const {error}=await sb.from('joinery_data').upsert({user_id:user.id,data_key:key,payload},{onConflict:'user_id,data_key'});
+  if(error){setMessage('Cloud save failed: '+error.message);throw error}
+  pause.current=true;
+  try{localStorage.setItem(key,JSON.stringify(payload))}finally{pause.current=false}
+  window.dispatchEvent(new CustomEvent('dj-cloud-received',{detail:key}));
+  setMessage('Saved to cloud');
+ }
  async function login(create:boolean){
   if(!client)return;
   if(!email.trim()||password.length<6){setMessage('Enter an email and a password of at least 6 characters');return}
@@ -165,5 +175,5 @@ export default function CloudSync({children}:{children:React.ReactNode}){
   setMessage(create&&!res.data.session?'Check your email to confirm your account.':'Signed in successfully');
   if(res.data.session)setOpen(false);
  }
- return <>{person? <DeltaAccountContext.Provider value={{email:person.email||'Signed in',message,signOut:()=>{void client?.auth.signOut()},loadHours,saveHours}}>{children}</DeltaAccountContext.Provider>:<main className="dj-auth-screen"><div className="dj-auth-card"><div className="dj-auth-symbol">DJ</div><p className="dj-auth-eyebrow">DELTA JOINERY</p><h1>Quotation Workspace</h1><p>Sign in with your business email to access your quotations, prices and saved jobs on any device.</p>{checking?<p>Checking your account...</p>:<><form onSubmit={e=>{e.preventDefault();void login(false)}}><label>Business email<input type="email" required autoComplete="email" placeholder="you@yourbusiness.com" value={email} onChange={e=>setEmail(e.target.value)}/></label><label>Password<input type="password" required minLength={6} autoComplete="current-password" placeholder="Enter password" value={password} onChange={e=>setPassword(e.target.value)}/></label><button type="submit">Sign in</button></form><button type="button" className="dj-auth-register" onClick={()=>void login(true)}>First time here? Create account</button><p role="status" className="dj-auth-message">{message}</p></>}</div></main>}</>;
+ return <>{person? <DeltaAccountContext.Provider value={{email:person.email||'Signed in',message,signOut:()=>{void client?.auth.signOut()},loadHours,saveHours,saveTool}}>{children}</DeltaAccountContext.Provider>:<main className="dj-auth-screen"><div className="dj-auth-card"><div className="dj-auth-symbol">DJ</div><p className="dj-auth-eyebrow">DELTA JOINERY</p><h1>Quotation Workspace</h1><p>Sign in with your business email to access your quotations, prices and saved jobs on any device.</p>{checking?<p>Checking your account...</p>:<><form onSubmit={e=>{e.preventDefault();void login(false)}}><label>Business email<input type="email" required autoComplete="email" placeholder="you@yourbusiness.com" value={email} onChange={e=>setEmail(e.target.value)}/></label><label>Password<input type="password" required minLength={6} autoComplete="current-password" placeholder="Enter password" value={password} onChange={e=>setPassword(e.target.value)}/></label><button type="submit">Sign in</button></form><button type="button" className="dj-auth-register" onClick={()=>void login(true)}>First time here? Create account</button><p role="status" className="dj-auth-message">{message}</p></>}</div></main>}</>;
 }

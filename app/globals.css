@@ -767,7 +767,7 @@ button.rev-tile{cursor:pointer;text-align:left;display:block;width:100%}
  .dj-app-stats b{font-size:9px!important;margin:0!important}
  .dj-app-stats small{display:none!important}
  .dj-app-quick{grid-template-columns:repeat(4,minmax(0,1fr))!important}
- .dj-app-home-body:before{content:'＋  New Quotation   →';display:block;background:linear-gradient(125deg,#f1d9a5,#bf9256);color:#193429;font-size:15px;font-weight:750;border-radius:10px;padding:17px;text-align:center;margin-top:14px}
+ .dj-app-mobile-newquote{display:flex;justify-content:space-between;align-items:center;text-decoration:none;background:linear-gradient(125deg,#f1d9a5,#bf9256);color:#193429;font-size:15px;font-weight:750;border-radius:10px;padding:17px;margin-top:14px}
  .dj-app-home-body .dj-app-recent>a{border-radius:10px!important}
  .dj-app-home-body .dj-app-recent{background:transparent!important;border:0!important;display:grid!important;gap:8px!important}
  .dj-app-home-body .dj-app-recent>a{background:white!important;border:1px solid #e5e6df!important;padding:10px!important}

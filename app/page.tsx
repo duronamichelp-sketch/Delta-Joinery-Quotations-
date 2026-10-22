@@ -42,6 +42,17 @@ export default function Home(){
  const finishedCount=finished.length+finishedSaved.length;
  const shown=filter==='upcoming'?upcoming:finished;
  return <main className="rev-shell dj-full-desktop"><DesktopSidebar active="home"/><div className="rev-phone">
+ <section className="dj-app-home">
+  <div className="dj-app-home-top"><div className="dj-app-home-heading"><div><small>DELTA JOINERY · WORKSPACE</small><h1>Good morning,<br/>welcome back.</h1><p>Your joinery work, organised anywhere.</p></div><span className="dj-app-home-avatar">DJ</span></div><div className="dj-app-home-timber" aria-hidden="true"><span></span><span></span><span></span><span></span></div></div>
+  <div className="dj-app-home-body">
+   <div className="dj-app-stats"><Link href="/quotes"><span className="dj-app-icon">▤</span><strong>{savedQuotes.length+tasks.length}</strong><b>Quotations</b><small>Saved and tracked</small></Link><Link href="/hours"><span className="dj-app-icon">◷</span><strong>My Hours</strong><b>Timesheets</b><small>View and log time</small></Link><Link href="/units"><span className="dj-app-icon">⬡</span><strong>Price Library</strong><b>Materials &amp; rates</b><small>Browse everything</small></Link><Link href="/tools/addresses"><span className="dj-app-icon">⌖</span><strong>Addresses</strong><b>Saved locations</b><small>Open directions</small></Link></div>
+   <div className="dj-app-section-title"><h2>Recent quotations</h2><Link href="/quotes">View all →</Link></div>
+   <div className="dj-app-recent">{savedQuotes.slice(0,3).map((q,i)=><Link href="/quotes" key={i}><span className="dj-app-recent-icon">▤</span><div><strong>{String((q as unknown as {project?:string;client?:string}).project||(q as unknown as {client?:string}).client||'Saved quotation')}</strong><small>Saved quotation</small></div><span className="dj-app-status">Saved</span><span>›</span></Link>)}{savedQuotes.length===0&&<p>Open Saved Quotations to view your projects.</p>}</div>
+   <div className="dj-app-section-title"><h2>Quick actions</h2><Link href="/tools">All tools →</Link></div>
+   <div className="dj-app-quick"><Link href="/quote"><span>＋</span>New Quote</Link><Link href="/units"><span>⬡</span>Price Library</Link><Link href="/hours"><span>◷</span>My Hours</Link><Link href="/tools"><span>⚒</span>Tools</Link></div>
+   <div className="dj-app-section-title"><h2>Quotation tracker</h2><span>{upcoming.length} upcoming</span></div><button className="dj-app-tracker-link" onClick={()=>document.getElementById('dj-jobs')?.scrollIntoView({behavior:'smooth'})}>View upcoming and finished quotation jobs <span>→</span></button>
+  </div>
+ </section>
  <section className="rev-hero dj-work-hero"><div className="rev-brand"><span className="rev-avatar">DJ</span></div><p className="rev-kicker">DELTA JOINERY · WORKSPACE</p><h1>Quotation<br/><em>dashboard.</em></h1><p className="rev-intro">Manage your jobs, deadlines and completed quotations.</p><Link href="/quote" className="rev-hero-button"><span className="dj-btn-plus">＋</span><span>New Quotation</span><b className="dj-chevron">→</b></Link><div className="rev-hero-glow"/></section>
  <section className="rev-home-area">
  <div className="rev-section-title"><div><p>OVERVIEW</p><h2>Your workspace</h2></div></div>

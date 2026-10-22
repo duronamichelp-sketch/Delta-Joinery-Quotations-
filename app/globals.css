@@ -550,3 +550,5 @@ button.rev-tile{cursor:pointer;text-align:left;display:block;width:100%}
  .dj-print-sheet .dj-print-table td,.dj-print-sheet .dj-print-table th{padding:4px 7px}
  .dj-cut-print svg rect{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+
+@media print{.dj-first-sheet{break-before:auto!important;page-break-before:auto!important;margin-top:16px}.dj-first-sheet svg{max-height:80mm!important}}

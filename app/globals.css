@@ -648,3 +648,18 @@ button.rev-tile{cursor:pointer;text-align:left;display:block;width:100%}
  .dj-mobile-account small,.dj-mobile-account p,.dj-mobile-account button{color:#173b2c!important}
  .rev-shell .rev-home-area,.rev-shell .rev-screen-body{overflow-wrap:anywhere}
 }
+
+.dj-mobile-tools-hub{display:none}
+@media screen and (max-width:899px){
+ .dj-mobile-tools-hub{display:block}
+ .dj-functional .rev-inner:has(.dj-mobile-tools-hub)>p:first-child,.dj-functional .rev-inner:has(.dj-mobile-tools-hub)>h1,.dj-functional .rev-inner:has(.dj-mobile-tools-hub)>h1+p{display:none!important}
+ .dj-functional .rev-inner:has(.dj-mobile-tools-hub)>div[style*="grid-template-columns"]{display:none!important}
+ .dj-mobile-tools-banner{padding:24px 18px;margin-bottom:11px;min-height:134px;color:white;background:linear-gradient(110deg,#0b3227c9,#102c2299),repeating-linear-gradient(90deg,#8b6949 0 25px,#b59c7b 27px 35px);border-radius:14px}
+ .dj-mobile-tools-banner h2{font-size:24px;line-height:1.12;margin:0 0 12px;font-weight:800}
+ .dj-mobile-tools-banner p{font-size:12px;color:#f1ebe3;margin:0}
+ .dj-mobile-tools-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .dj-mobile-tools-card{display:flex;flex-direction:column;min-width:0;min-height:125px;background:#fffdf8;border:1px solid #e8e9e0;border-radius:13px;padding:15px;color:#113b2c;text-decoration:none}
+ .dj-mobile-tools-card span{width:39px;height:39px;border-radius:10px;background:#edf1e9;display:grid;place-items:center;font-size:23px;margin-bottom:12px}
+ .dj-mobile-tools-card b{font-size:13px}.dj-mobile-tools-card small{font-size:11px;color:#758079;margin-top:5px;line-height:1.3}
+ .dj-mobile-tools-card:last-child{grid-column:1/-1;min-height:96px}
+}

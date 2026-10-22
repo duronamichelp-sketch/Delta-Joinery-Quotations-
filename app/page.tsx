@@ -2,6 +2,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
 import DesktopSidebar from './DesktopSidebar';
+import {useDeltaAccount} from './CloudSync';
 import {read} from '../lib/data';
 import {savedQuoteTotal,type SavedQuotation} from '../lib/quotationTotals';
 type Task={id:string;client:string;project:string;due:string;notes:string;status:'upcoming'|'finished';created:string;finished?:string;amount?:number};
@@ -10,6 +11,7 @@ const KEY='dj_quotation_tasks';
 const dateToday=()=>new Date().toLocaleDateString('en-CA');
 const formatDate=(v:string)=>v?new Date(v+'T12:00:00').toLocaleDateString('en-IE',{day:'numeric',month:'short',year:'numeric'}):'No deadline';
 export default function Home(){
+ const account=useDeltaAccount();
  const [tasks,setTasks]=useState<Task[]>([]);
  const [savedQuotes,setSavedQuotes]=useState<SavedQuotation[]>([]);
  const [loaded,setLoaded]=useState(false);
@@ -26,14 +28,54 @@ export default function Home(){
  useEffect(()=>{try{const raw=localStorage.getItem(KEY);if(raw){const data=JSON.parse(raw);if(Array.isArray(data))setTasks(data)}}catch{}setSavedQuotes(read<SavedQuotation[]>('dj_saved_quotes',[]));setLoaded(true)},[]);
  useEffect(()=>{if(loaded)localStorage.setItem(KEY,JSON.stringify(tasks))},[tasks,loaded]);
  useEffect(()=>{
-  const calculate=()=>{try{
-   const all=JSON.parse(localStorage.getItem('dj_timesheets')||'{}') as Record<string,{start?:string;finish?:string;notWorked?:boolean}>;
-   const now=new Date();const monday=new Date(now.getFullYear(),now.getMonth(),now.getDate());monday.setDate(monday.getDate()-(monday.getDay()+6)%7);
-   const parse=(raw:string,finish:boolean):number|null=>{const t=raw.trim().toUpperCase();if(!t)return null;const suffix=t.match(/(AM|PM)$/)?.[1];const digits=t.replace(/\\s*(AM|PM)$/,'').trim().replace(/:/g,'');if(!/^\\d{1,4}$/.test(digits))return null;const a=t.includes(':')?t.replace(/\\s*(AM|PM)$/,'').trim().split(':'):digits.length<=2?[digits,'0']:[digits.slice(0,-2),digits.slice(-2)];let h=Number(a[0]),m=Number(a[1]);if(h>23||m>59)return null;if(suffix&&h<=12)h=h%12+(suffix==='PM'?12:0);else if(!suffix&&finish&&h>0&&h<12)h+=12;return h*60+m};
-   let total=0;for(let i=0;i<7;i++){const d=new Date(monday);d.setDate(monday.getDate()+i);if(d>now)continue;const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');const e=all[key];if(!e||e.notWorked)continue;const a=parse(e.start||'',false),b=parse(e.finish||'',true);if(a!==null&&b!==null)total+=Math.max(0,((b<a?b+1440:b)-a)/60)}setWeekHours(total)
-  }catch{setWeekHours(null)}};
-  calculate();const refresh=(e:Event)=>{if((e as CustomEvent).detail==='dj_timesheets')calculate()};window.addEventListener('dj-cloud-received',refresh);window.addEventListener('focus',calculate);return()=>{window.removeEventListener('dj-cloud-received',refresh);window.removeEventListener('focus',calculate)};
- },[]);
+  let cancelled=false;
+  type TimeEntry={start?:string;finish?:string;notWorked?:boolean};
+  const parseTime=(raw:string,kind:'start'|'finish')=>{
+   const text=raw.trim().toUpperCase();if(!text)return null;
+   const suffix=text.match(/(AM|PM)$/)?.[1];
+   const value=text.replace(/\s*(AM|PM)$/,'').trim();
+   const digits=value.replace(/:/g,'');
+   if(!/^\d{1,4}$/.test(digits))return null;
+   const parts=value.includes(':')?value.split(':'):digits.length<=2?[digits,'0']:[digits.slice(0,-2),digits.slice(-2)];
+   if(parts.length!==2)return null;
+   let hour=Number(parts[0]);const minute=Number(parts[1]);
+   if(hour>23||minute>59)return null;
+   if(suffix&&hour<=12)hour=hour%12+(suffix==='PM'?12:0);
+   else if(!suffix&&kind==='finish'&&hour>0&&hour<12)hour+=12;
+   return hour*60+minute;
+  };
+  const calculate=(all:Record<string,TimeEntry>)=>{
+   const today=new Date();
+   const monday=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+   monday.setDate(monday.getDate()-(monday.getDay()+6)%7);
+   let total=0;
+   for(let i=0;i<7;i++){
+    const d=new Date(monday);d.setDate(monday.getDate()+i);
+    if(d>today)continue;
+    const date=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    const e=all[date];if(!e||e.notWorked)continue;
+    const start=parseTime(e.start||'','start'),finish=parseTime(e.finish||'','finish');
+    if(start!==null&&finish!==null)total+=Math.max(0,((finish<start?finish+1440:finish)-start)/60);
+   }
+   if(!cancelled)setWeekHours(total);
+  };
+  const readLocal=()=>{try{const value=JSON.parse(localStorage.getItem('dj_timesheets')||'{}');return value&&typeof value==='object'&&!Array.isArray(value)?value as Record<string,TimeEntry>:{} }catch{return {} as Record<string,TimeEntry>}};
+  const refresh=async()=>{
+   const local=readLocal();
+   if(!account){calculate(local);return}
+   try{
+    const remote=await account.loadHours() as Record<string,TimeEntry>|null;
+    if(cancelled)return;
+    calculate(remote?{...local,...remote}:local);
+   }catch{if(!cancelled)calculate(local)}
+  };
+  void refresh();
+  const onCloud=(e:Event)=>{if((e as CustomEvent<string>).detail==='dj_timesheets')void refresh()};
+  const onFocus=()=>void refresh();
+  window.addEventListener('dj-cloud-received',onCloud);
+  window.addEventListener('focus',onFocus);
+  return()=>{cancelled=true;window.removeEventListener('dj-cloud-received',onCloud);window.removeEventListener('focus',onFocus)};
+ },[account?.email]);
  const upcoming=useMemo(()=>tasks.filter(t=>t.status==='upcoming').sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999')),[tasks]);
  const finished=useMemo(()=>tasks.filter(t=>t.status==='finished').sort((a,b)=>(b.finished||'').localeCompare(a.finished||'')),[tasks]);
  function addManual(e:React.FormEvent){e.preventDefault();const value=Number(manualAmount);if(!manualClient.trim()||!manualProject.trim()||!Number.isFinite(value)||value<0)return;setTasks(prev=>[{id:crypto.randomUUID(),client:manualClient.trim(),project:manualProject.trim(),due:'',notes:'Manually entered finished quotation',status:'finished',created:dateToday(),finished:dateToday(),amount:Math.round(value*100)/100},...prev]);setManualClient('');setManualProject('');setManualAmount('');setShowManual(false);setFilter('finished')}

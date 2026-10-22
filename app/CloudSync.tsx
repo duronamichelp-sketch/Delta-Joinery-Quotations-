@@ -1,7 +1,7 @@
 'use client';
 import {createContext,useContext,useEffect,useRef,useState} from 'react';
 import {createClient, type SupabaseClient} from '@supabase/supabase-js';
-const KEYS=['dj_units','dj_hardware','dj_labour','dj_electrics','dj_finishes','dj_door_rates','dj_quote','dj_saved_quotes','dj_quotation_tasks','dj_timesheets','dj_tool_addresses','dj_cutting_projects'];
+const KEYS=['dj_units','dj_hardware','dj_labour','dj_electrics','dj_finishes','dj_door_rates','dj_quote','dj_saved_quotes','dj_quotation_tasks','dj_timesheets','dj_tool_addresses','dj_cutting_projects','dj_worktop_rates','dj_timber_rates','dj_fillers'];
 type Profile={id:string;email?:string};
 export const DeltaAccountContext=createContext<{email:string;message:string;signOut:()=>void;loadHours:()=>Promise<Record<string,unknown>|null>;saveHours:(hours:Record<string,unknown>)=>Promise<void>}|null>(null);
 export const useDeltaAccount=()=>useContext(DeltaAccountContext);

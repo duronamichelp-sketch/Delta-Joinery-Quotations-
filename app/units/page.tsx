@@ -11,7 +11,7 @@ const WORKTOP_OPTIONS=[{name:'Laminated worktop 38mm',rate:160,unit:'linear m'},
 const HEIGHTS=[150,...Array.from({length:23},(_,i)=>(i+2)*100)];
 const WIDTHS=[150,...Array.from({length:11},(_,i)=>(i+2)*100)];
 const DEPTHS=[300,350,400,450,500,550,600];
-const blank={name:'',width:'600',height:'720',depth:'550',sqm:'',price:'',doorCost:'',image:''};
+const blank={name:'150mm × 150mm Unit',width:'150',height:'150',depth:'550',sqm:'',price:'',doorCost:'',image:''};
 export default function Library(){
 const [tab,setTab]=useState('Units'),[loaded,setLoaded]=useState(false);
 const [selectedHeight,setSelectedHeight]=useState(150),[selectedWidth,setSelectedWidth]=useState(150),[customSize,setCustomSize]=useState(false);

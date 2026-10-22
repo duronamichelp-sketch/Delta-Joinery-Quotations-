@@ -17,6 +17,14 @@ export default function CloudSync({children}:{children:React.ReactNode}){
   const pull=async(userId:string)=>{
    pause.current=true;
    try{
+    // Migrate cutting lists saved with older, per-project local keys.
+    try{
+     const oldNames=JSON.parse(localStorage.getItem('dj_cutting_list_names')||'[]') as string[];
+     const current=JSON.parse(localStorage.getItem('dj_cutting_projects')||'{}') as Record<string,unknown>;
+     let changed=false;
+     for(const name of oldNames){if(typeof name!=='string'||current[name])continue;const raw=localStorage.getItem('dj_cutting_list_'+name);if(raw){current[name]=JSON.parse(raw);changed=true}}
+     if(changed)localStorage.setItem('dj_cutting_projects',JSON.stringify(current));
+    }catch{}
     const {data,error}=await supabase.from('joinery_data').select('data_key,payload').eq('user_id',userId);
     if(error)throw error;
     const remote=new Map((data||[]).map(x=>[x.data_key,x.payload]));

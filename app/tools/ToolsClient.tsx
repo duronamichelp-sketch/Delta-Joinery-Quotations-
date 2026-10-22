@@ -15,7 +15,7 @@ const [floorL,setFloorL]=useState('4.2'),[floorW,setFloorW]=useState('3.6'),[pac
 const [angle,setAngle]=useState('90');
 const [name,setName]=useState(''),[eircode,setEircode]=useState(''),[addresses,setAddresses]=useState<Address[]>([]);
 const [origin,setOrigin]=useState(''),[locationMessage,setLocationMessage]=useState('');
-useEffect(()=>{try{setAddresses(JSON.parse(localStorage.getItem('dj_tool_addresses')||'[]'))}catch{}},[]);
+useEffect(()=>{const refresh=()=>{try{setAddresses(JSON.parse(localStorage.getItem('dj_tool_addresses')||'[]'))}catch{}};refresh();const onCloud=(e:Event)=>{if((e as CustomEvent).detail==='dj_tool_addresses')refresh()};window.addEventListener('dj-cloud-received',onCloud);return ()=>window.removeEventListener('dj-cloud-received',onCloud)},[]);
 const save=(next:Address[])=>{setAddresses(next);localStorage.setItem('dj_tool_addresses',JSON.stringify(next))};
 const W=num(width),H=num(height),S=Math.max(.1,num(slat)),G=num(gap);
 const qty=W>=2*S?Math.max(2,Math.round((W+G)/(S+G))):0;

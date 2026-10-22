@@ -1,7 +1,7 @@
 'use client';
 import {createContext,useContext,useEffect,useRef,useState} from 'react';
 import {createClient, type SupabaseClient} from '@supabase/supabase-js';
-const KEYS=['dj_units','dj_hardware','dj_labour','dj_electrics','dj_finishes','dj_door_rates','dj_quote','dj_saved_quotes','dj_quotation_tasks','dj_timesheets','dj_tool_addresses'];
+const KEYS=['dj_units','dj_hardware','dj_labour','dj_electrics','dj_finishes','dj_door_rates','dj_quote','dj_saved_quotes','dj_quotation_tasks','dj_timesheets','dj_tool_addresses','dj_cutting_projects'];
 type Profile={id:string;email?:string};
 export const DeltaAccountContext=createContext<{email:string;message:string;signOut:()=>void;loadHours:()=>Promise<Record<string,unknown>|null>;saveHours:(hours:Record<string,unknown>)=>Promise<void>}|null>(null);
 export const useDeltaAccount=()=>useContext(DeltaAccountContext);
@@ -74,6 +74,38 @@ export default function CloudSync({children}:{children:React.ReactNode}){
    pause.current=false;
    window.dispatchEvent(new CustomEvent('dj-cloud-received',{detail:'dj_timesheets'}));
   }).subscribe();
+  // Keep addresses and cutting lists in sync across signed-in devices.
+  const toolsKeys=['dj_tool_addresses','dj_cutting_projects'];
+  const toolChannel=supabase.channel('dj-tools-sync').on('postgres_changes',{
+   event:'*',schema:'public',table:'joinery_data'
+  },payload=>{
+   const row=payload.new as {user_id?:string;data_key?:string;payload?:unknown};
+   if(!personRef.current||row.user_id!==personRef.current.id||!row.data_key||!toolsKeys.includes(row.data_key)||pending.current[row.data_key])return;
+   const received=JSON.stringify(row.payload??(row.data_key==='dj_tool_addresses'?[]:{}));
+   if(localStorage.getItem(row.data_key)===received)return;
+   pause.current=true;
+   try{localStorage.setItem(row.data_key,received)}finally{pause.current=false}
+   window.dispatchEvent(new CustomEvent('dj-cloud-received',{detail:row.data_key}));
+  }).subscribe();
+  let refreshingTools=false;
+  const refreshTools=async()=>{
+   const user=personRef.current;
+   if(!user||refreshingTools||pause.current)return;
+   refreshingTools=true;
+   try{
+    const {data,error}=await supabase.from('joinery_data').select('data_key,payload').eq('user_id',user.id).in('data_key',toolsKeys);
+    if(error)throw error;
+    for(const row of data||[]){
+     if(pending.current[row.data_key])continue;
+     const incoming=JSON.stringify(row.payload);
+     if(incoming===localStorage.getItem(row.data_key))continue;
+     pause.current=true;
+     try{localStorage.setItem(row.data_key,incoming)}finally{pause.current=false}
+     window.dispatchEvent(new CustomEvent('dj-cloud-received',{detail:row.data_key}));
+    }
+   }catch(e){setMessage('Tools sync unavailable: '+(e instanceof Error?e.message:'Unknown error'))}
+   finally{refreshingTools=false}
+  };
   // Fetch fresh hours when switching devices, reopening the app or returning to its tab.
   // This also works when database realtime publication is not enabled.
   let refreshing=false;
@@ -95,12 +127,12 @@ export default function CloudSync({children}:{children:React.ReactNode}){
    }catch(e){setMessage('Hours sync unavailable: '+(e instanceof Error?e.message:'Unknown error'))}
    finally{refreshing=false}
   };
-  const onReturn=()=>{if(document.visibilityState==='visible')void refreshTimesheets()};
+  const onReturn=()=>{if(document.visibilityState==='visible'){void refreshTimesheets();void refreshTools()}};
   window.addEventListener('focus',onReturn);
   document.addEventListener('visibilitychange',onReturn);
-  const refreshTimer=window.setInterval(()=>{if(document.visibilityState==='visible')void refreshTimesheets()},15000);
+  const refreshTimer=window.setInterval(()=>{if(document.visibilityState==='visible'){void refreshTimesheets();void refreshTools()}},15000);
   window.addEventListener('dj-cloud-change',save);
-  return ()=>{listener.subscription.unsubscribe();void supabase.removeChannel(timesheetChannel);Storage.prototype.setItem=original;window.removeEventListener('dj-cloud-change',save);window.removeEventListener('focus',onReturn);document.removeEventListener('visibilitychange',onReturn);window.clearInterval(refreshTimer);Object.values(pending.current).forEach(clearTimeout)};
+  return ()=>{listener.subscription.unsubscribe();void supabase.removeChannel(timesheetChannel);void supabase.removeChannel(toolChannel);Storage.prototype.setItem=original;window.removeEventListener('dj-cloud-change',save);window.removeEventListener('focus',onReturn);document.removeEventListener('visibilitychange',onReturn);window.clearInterval(refreshTimer);Object.values(pending.current).forEach(clearTimeout)};
  },[]);
  async function loadHours():Promise<Record<string,unknown>|null>{
   const sb=clientRef.current,user=personRef.current;if(!sb||!user)throw new Error('Cloud account not ready');

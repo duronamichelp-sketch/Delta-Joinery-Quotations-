@@ -517,3 +517,36 @@ button.rev-tile{cursor:pointer;text-align:left;display:block;width:100%}
 .dj-library-tabs{overflow-x:auto;gap:4px;scrollbar-width:thin}
 .dj-library-tabs button{font-size:14px!important;font-weight:650!important;white-space:nowrap;min-width:max-content;padding:13px 15px!important}
 @media(max-width:760px){.dj-library-tabs button{font-size:14px!important;padding:12px 14px!important}}
+
+
+/* Workshop cutting list: separate paper report from the interactive editor */
+.dj-cut-print{display:none}
+@media print{
+ @page{size:A4 portrait;margin:12mm}
+ body:has(.dj-cutting-page){background:#fff!important;color:#172d21!important;margin:0!important}
+ body:has(.dj-cutting-page) .dj-mobile-header,
+ body:has(.dj-cutting-page) .dj-mobile-tabs,
+ body:has(.dj-cutting-page) .dj-shared-sidebar{display:none!important}
+ .dj-cutting-page{display:block!important;position:static!important;width:100%!important;max-width:none!important;min-height:0!important;height:auto!important;overflow:visible!important;background:#fff!important;padding:0!important;margin:0!important;box-shadow:none!important}
+ .dj-cutting-page .rev-phone{display:block!important;position:static!important;width:100%!important;max-width:none!important;min-width:0!important;height:auto!important;min-height:0!important;overflow:visible!important;box-shadow:none!important;border:none!important;padding:0!important;margin:0!important;background:#fff!important}
+ .dj-cutting-page .rev-phone > :not(.dj-cut-print){display:none!important}
+ .dj-cut-print{display:block!important;font-family:Arial,sans-serif!important;font-size:10pt;color:#1b3124;line-height:1.35}
+ .dj-cut-print h1{font-size:22pt;margin:14px 0}
+ .dj-cut-print h2{font-size:12pt;margin:16px 0 8px}
+ .dj-print-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #173e2e;padding:0 0 12px;gap:15px}
+ .dj-print-head strong{font-size:14pt;letter-spacing:1px}
+ .dj-print-head small{display:block;font-size:8pt;letter-spacing:1px;margin-top:4px}
+ .dj-print-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;background:#f2f5f2;padding:11px;border-radius:6px}
+ .dj-print-metrics span{display:grid;gap:3px;font-size:8pt}
+ .dj-print-metrics b{font-size:10pt}
+ .dj-print-table{width:100%;border-collapse:collapse;font-size:9pt;table-layout:fixed}
+ .dj-print-table th{background:#e9efe9;text-align:left;font-weight:700}
+ .dj-print-table td,.dj-print-table th{padding:7px;border-bottom:1px solid #dce4dc;overflow-wrap:anywhere}
+ .dj-print-note{margin-top:14px;padding:10px;background:#f2f5f2;font-size:8pt}
+ .dj-print-sheet{break-before:page;page-break-before:always;break-inside:avoid-page;page-break-inside:avoid;display:block;min-height:0}
+ .dj-print-sheet-header{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #173e2e;padding-bottom:10px;margin-bottom:12px;font-size:12pt}
+ .dj-print-sheet svg{display:block;width:100%!important;height:auto!important;max-height:105mm;margin:0 auto 12px}
+ .dj-print-sheet .dj-print-table{font-size:8pt}
+ .dj-print-sheet .dj-print-table td,.dj-print-sheet .dj-print-table th{padding:4px 7px}
+ .dj-cut-print svg rect{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}

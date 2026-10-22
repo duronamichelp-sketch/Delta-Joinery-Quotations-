@@ -776,3 +776,10 @@ button.rev-tile{cursor:pointer;text-align:left;display:block;width:100%}
  .dj-functional .rev-inner input,.dj-functional .rev-inner textarea,.dj-functional .rev-inner select{min-height:44px!important}
  .rev-shell .rev-screen-head{background:#00372a!important}
 }
+
+
+@media screen and (max-width:899px){
+ .dj-app-stats>a{overflow:hidden!important;min-width:0!important;padding:9px 2px!important}
+ .dj-app-stats .dj-addresses-card-title{font-size:clamp(11px,3vw,16px)!important;letter-spacing:-.055em!important;white-space:nowrap!important;overflow:visible!important;word-break:normal!important}
+ .dj-app-stats>a>b{font-size:clamp(8px,2.3vw,10px)!important;white-space:nowrap!important;letter-spacing:-.02em!important}
+}

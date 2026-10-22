@@ -42,12 +42,12 @@ export default function CuttingList(){
  const [selected,setSelected]=useState(0);
  const [saved,setSaved]=useState<string[]>([]);
  const [notice,setNotice]=useState('');
- useEffect(()=>{try{setSaved(JSON.parse(localStorage.getItem('dj_cutting_list_names')||'[]'))}catch{}},[]);
+ useEffect(()=>{const refresh=()=>{try{const all=JSON.parse(localStorage.getItem('dj_cutting_projects')||'{}');setSaved(Object.keys(all));}catch{setSaved([])}};refresh();const onSync=(e:Event)=>{if((e as CustomEvent).detail==='dj_cutting_projects')refresh()};window.addEventListener('dj-cloud-received',onSync);return()=>window.removeEventListener('dj-cloud-received',onSync)},[]);
  const data=useMemo(()=>optimize(settings,parts),[settings,parts]);
  const changeSetting=(key:keyof Settings,value:string)=>setSettings(s=>({...s,[key]:value}));
  const changePart=(id:string,key:keyof Part,value:string|boolean)=>setParts(ps=>ps.map(p=>p.id===id?{...p,[key]:value}:p));
- const save=()=>{const n=settings.project.trim();if(!n){setNotice('Enter a project name');return}try{localStorage.setItem('dj_cutting_list_'+n,JSON.stringify({settings,parts}));const list=Array.from(new Set([...saved,n]));localStorage.setItem('dj_cutting_list_names',JSON.stringify(list));setSaved(list);setNotice('Saved on this device')}catch{setNotice('Unable to save on this device')}};
- const load=(name:string)=>{try{const obj=JSON.parse(localStorage.getItem('dj_cutting_list_'+name)||'null');if(obj?.settings&&Array.isArray(obj.parts)){setSettings(obj.settings);setParts(obj.parts);setSelected(0);setNotice('Loaded '+name)}}catch{setNotice('Unable to load project')}};
+ const save=()=>{const n=settings.project.trim();if(!n){setNotice('Enter a project name');return}try{const all=JSON.parse(localStorage.getItem('dj_cutting_projects')||'{}');all[n]={settings,parts};localStorage.setItem('dj_cutting_projects',JSON.stringify(all));setSaved(Object.keys(all));setNotice('Saved — syncing with your cloud account')}catch{setNotice('Unable to save project')}};
+ const load=(name:string)=>{try{const all=JSON.parse(localStorage.getItem('dj_cutting_projects')||'{}');const obj=all[name];if(obj?.settings&&Array.isArray(obj.parts)){setSettings(obj.settings);setParts(obj.parts);setSelected(0);setNotice('Loaded '+name)}}catch{setNotice('Unable to load project')}};
  const count=parts.reduce((a,p)=>a+(Number(p.qty)||0),0);
  const actual=data.sheets.flat().reduce((a,p)=>a+p.w*p.h,0);
  const sheetArea=ticks(settings.length)*ticks(settings.width);

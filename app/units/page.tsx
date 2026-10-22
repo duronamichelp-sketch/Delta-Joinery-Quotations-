@@ -7,7 +7,7 @@ const TIMBER_NAMES=["Oak","American White Oak","European Oak","Red Oak","Red Dea
 const WORKTOP_OPTIONS=[{name:'Laminated worktop 38mm',rate:160,unit:'linear m'},{name:'Quartz worktop 30mm',rate:360,unit:'m²'},{name:'Quartz splashback 20mm',rate:320,unit:'m²'}];
 const blank={name:'',width:'600',height:'720',depth:'550',sqm:'',price:'',doorCost:'',image:''};
 export default function Library(){
-const [tab,setTab]=useState('Units'),[loaded,setLoaded]=useState(false);
+const [tab,setTab]=useState('Worktops'),[loaded,setLoaded]=useState(false);
 useEffect(()=>{const selected=new URLSearchParams(window.location.search).get('tab');if(selected&&['Units','Doors','Hardware','Labour','Electrics','Finishes','Filler / Plinths & Coving','Timber','Worktops'].includes(selected))setTab(selected)},[]);
 const [units,setUnits]=useState<Unit[]>([]),[hardware,setHardware]=useState<Hardware[]>([]),[labour,setLabour]=useState<Labour[]>([]);
 const [electrics,setElectrics]=useState<ExtraCost[]>([]),[finishes,setFinishes]=useState<ExtraCost[]>([]),[fillers,setFillers]=useState<ExtraCost[]>([]);const [extra,setExtra]=useState({name:'',price:'',image:''});

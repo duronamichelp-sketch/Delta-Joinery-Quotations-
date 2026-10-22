@@ -663,3 +663,79 @@ button.rev-tile{cursor:pointer;text-align:left;display:block;width:100%}
  .dj-mobile-tools-card b{font-size:13px}.dj-mobile-tools-card small{font-size:11px;color:#758079;margin-top:5px;line-height:1.3}
  .dj-mobile-tools-card:last-child{grid-column:1/-1;min-height:96px}
 }
+
+
+/* Premium desktop redesign: full width, existing data and page tools retained */
+.dj-desktop-overview{display:none}
+@media (min-width:900px){
+ .rev-shell.dj-full-desktop{background:#f5f3ee!important}
+ .rev-shell.dj-full-desktop>.rev-phone{background:#f5f3ee!important}
+ .rev-shell.dj-full-desktop .rev-phone>.dj-desktop-overview{display:block!important;max-width:none!important;width:100%!important}
+ .rev-shell.dj-full-desktop .rev-phone:has(.dj-desktop-overview)>.dj-work-hero{display:none!important}
+ .rev-shell.dj-full-desktop .rev-phone:has(.dj-desktop-overview)>.rev-home-area{max-width:none!important;margin:0!important;padding:18px 26px 70px!important}
+ .rev-shell.dj-full-desktop .rev-phone:has(.dj-desktop-overview)>.rev-home-area>.rev-section-title:first-child,
+ .rev-shell.dj-full-desktop .rev-phone:has(.dj-desktop-overview)>.rev-home-area>.dj-stats,
+ .rev-shell.dj-full-desktop .rev-phone:has(.dj-desktop-overview)>.rev-home-area>.dj-next-due,
+ .rev-shell.dj-full-desktop .rev-phone:has(.dj-desktop-overview)>.rev-home-area>.rev-tiles,
+ .rev-shell.dj-full-desktop .rev-phone:has(.dj-desktop-overview)>.rev-home-area>.rev-recent-heading:not(#dj-jobs){display:none!important}
+ .dj-shared-sidebar{background:linear-gradient(155deg,#002e24,#061d18)!important;border-right:1px solid #c6a97755!important;padding:26px 14px!important}
+ .dj-shared-brand{padding:12px 12px 27px!important;position:relative}
+ .dj-shared-brand:before{content:'△';color:#d4ad73;font-size:31px;margin-right:4px}
+ .dj-shared-brand b{font-family:Georgia,serif;letter-spacing:.07em!important;font-size:15px!important}
+ .dj-shared-sidebar nav>a{border-radius:7px!important;transition:background .16s;padding:12px 14px!important;font-size:13px!important}
+ .dj-shared-sidebar nav>a.current{background:#284e3f!important;box-shadow:inset 3px 0 #cba46d}
+ .dj-shared-sidebar nav>a:hover{background:#ffffff19}
+ .dj-desktop-topline{height:62px;background:#fffcf7;border-bottom:1px solid #e6e2d9;padding:0 28px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+ .dj-desktop-searchlabel{font-size:10px;letter-spacing:.18em;color:#42614f;font-weight:800}
+ .dj-desktop-searchlabel span{color:#bda77e;margin:0 10px}
+ .dj-desktop-top-actions{display:flex;gap:10px;align-items:center}
+ .dj-desktop-top-actions a{text-decoration:none;color:#164431;font-size:12px;font-weight:700;border:1px solid #e2decf;border-radius:7px;padding:10px 14px}
+ .dj-desktop-top-actions a:first-child{background:linear-gradient(140deg,#ecd7ac,#c8a36b);color:#1a2a21;border:0}
+ .dj-desktop-banner{background:linear-gradient(100deg,#031e18,#063327 70%,#172d24);color:#fff;min-height:262px;display:flex;justify-content:space-between;gap:20px;padding:40px 48px;overflow:hidden;position:relative}
+ .dj-desktop-banner:after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 83% 43%,#bfa57530,transparent 46%);pointer-events:none}
+ .dj-desktop-banner-copy{position:relative;z-index:2}
+ .dj-desktop-banner-copy>span{font-size:10px;letter-spacing:.24em;color:#dfc293}
+ .dj-desktop-banner h1{font-family:Georgia,serif;font-size:clamp(30px,3.3vw,47px);line-height:1.08;font-weight:400;margin:15px 0}
+ .dj-desktop-banner p{font-size:13px;color:#d1dfd5;max-width:430px;line-height:1.5}
+ .dj-desktop-banner-actions{display:flex;gap:12px;align-items:center;margin-top:23px}
+ .dj-desktop-banner-actions a{padding:12px 16px;background:#d8b47f;color:#152a20;text-decoration:none;border-radius:6px;font-weight:700;font-size:12px}
+ .dj-desktop-banner-actions a+a{background:transparent;border:1px solid #c3a774;color:#fff}
+ .dj-desktop-banner-art{height:210px;width:min(38%,410px);align-self:center;display:flex;gap:7px;align-items:flex-end;transform:perspective(500px) rotateY(-16deg);opacity:.68}
+ .dj-desktop-banner-art span{display:block;flex:1;height:78%;background:linear-gradient(90deg,#3a3023,#a0825d 25%,#d0ac7e 49%,#6b543a 78%,#30251d);border-radius:2px;box-shadow:0 9px 24px #0005}
+ .dj-desktop-banner-art span:nth-child(2){height:95%}.dj-desktop-banner-art span:nth-child(3){height:65%}.dj-desktop-banner-art span:nth-child(4){height:87%}
+ .dj-desktop-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 26px}
+ .dj-desktop-summary>a,.dj-desktop-summary>button{display:flex;align-items:center;gap:14px;text-align:left;background:#fffdfa;color:#193b2c;border:1px solid #e6e2d8;padding:16px 14px;border-radius:9px;text-decoration:none;min-width:0}
+ .dj-desktop-summary>*>span{width:40px;height:40px;flex-shrink:0;background:#f1eee6;border-radius:9px;color:#9d7a4a;display:grid;place-items:center;font-size:23px}
+ .dj-desktop-summary strong{font:400 26px Georgia,serif;display:block}.dj-desktop-summary small{display:block;color:#637568;font-size:11px;margin-top:4px}
+ .dj-desktop-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(310px,1fr);gap:14px;margin:0 26px}
+ .dj-desktop-maincol,.dj-desktop-sidecol{display:grid;align-content:start;gap:14px;min-width:0}
+ .dj-desktop-panel{background:#fffdfa;border:1px solid #e5e2d8;padding:20px;border-radius:9px;min-width:0}
+ .dj-desktop-panel-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+ .dj-desktop-panel-heading h2{font:400 21px Georgia,serif;margin:0}
+ .dj-desktop-panel-heading a,.dj-desktop-panel-heading button{border:0;background:none;text-decoration:none;color:#466252;font-size:11px;cursor:pointer}
+ .dj-desktop-rowheaders,.dj-desktop-jobrow{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(90px,.7fr) 92px;align-items:center;gap:12px}
+ .dj-desktop-rowheaders{padding:12px;background:#f2f0eb;font-weight:750;color:#647368;font-size:10px}
+ .dj-desktop-jobrow{border:0;border-bottom:1px solid #e9e7e1;background:transparent;width:100%;text-align:left;padding:15px 12px;font-size:12px;color:#1b3527}
+ .dj-desktop-jobrow:hover{background:#f8f5ee}
+ .dj-desktop-jobrow b,.dj-desktop-jobrow small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .dj-desktop-jobrow small{color:#849085;margin-top:5px}
+ .dj-desktop-jobstatus{background:#e2ede1;color:#356946;border-radius:5px;padding:6px;font-size:10px;text-align:center}
+ .dj-desktop-empty{padding:16px;color:#748174}
+ .dj-desktop-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ .dj-desktop-shortcuts>div{background:linear-gradient(135deg,#073529,#05251d);border:1px solid #c3a77340;border-radius:9px;color:#fff;padding:23px}
+ .dj-desktop-shortcuts>div+div{background:#fefcf7;color:#193c2d;border-color:#e5e2d8}
+ .dj-desktop-shortcuts b{font:400 21px Georgia,serif}
+ .dj-desktop-shortcuts p{line-height:1.5;font-size:12px;opacity:.8}
+ .dj-desktop-shortcuts a,.dj-desktop-shortcuts button{font-size:12px;color:#dabc8c;background:none;border:0;padding:0;text-decoration:none}
+ .dj-desktop-shortcuts button{color:#12573c}
+ .dj-desktop-quickgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .dj-desktop-quickgrid>a{display:flex;align-items:center;gap:10px;padding:15px 10px;background:#f7f5ef;border-radius:7px;text-decoration:none;color:#1c3c2e;min-width:0}
+ .dj-desktop-quickgrid>a:hover{background:#ede9dc}
+ .dj-desktop-quickgrid>a>span{font-size:25px;color:#b39665;width:28px;text-align:center;flex-shrink:0}
+ .dj-desktop-quickgrid b,.dj-desktop-quickgrid small{display:block}
+ .dj-desktop-quickgrid b{font-size:12px}.dj-desktop-quickgrid small{font-size:10px;color:#7a8479;line-height:1.3;margin-top:5px}
+ .dj-desktop-checkpanel p{border-bottom:1px solid #e8e4da;padding:8px 0;display:flex;justify-content:space-between;color:#6b776b}
+ .dj-desktop-checkpanel strong{color:#1a4431}
+ .dj-desktop-checkpanel>a{font-size:12px;color:#175b41;text-decoration:none;font-weight:700}
+}
+@media(min-width:900px) and (max-width:1150px){.dj-desktop-layout{grid-template-columns:minmax(0,1fr)}.dj-desktop-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}

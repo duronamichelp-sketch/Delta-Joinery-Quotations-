@@ -71,10 +71,16 @@ export default function Home(){
   };
   void refresh();
   const onCloud=(e:Event)=>{if((e as CustomEvent<string>).detail==='dj_timesheets')void refresh()};
+  const onLocal=(e:Event)=>{if((e as CustomEvent<string>).detail==='dj_timesheets')calculate(readLocal())};
   const onFocus=()=>void refresh();
+  const onVisibility=()=>{if(document.visibilityState==='visible')void refresh()};
+  const timer=window.setInterval(()=>{if(document.visibilityState==='visible')void refresh()},15000);
   window.addEventListener('dj-cloud-received',onCloud);
+  window.addEventListener('dj-cloud-change',onLocal);
+  window.addEventListener('storage',onFocus);
   window.addEventListener('focus',onFocus);
-  return()=>{cancelled=true;window.removeEventListener('dj-cloud-received',onCloud);window.removeEventListener('focus',onFocus)};
+  document.addEventListener('visibilitychange',onVisibility);
+  return()=>{cancelled=true;window.clearInterval(timer);window.removeEventListener('dj-cloud-received',onCloud);window.removeEventListener('dj-cloud-change',onLocal);window.removeEventListener('storage',onFocus);window.removeEventListener('focus',onFocus);document.removeEventListener('visibilitychange',onVisibility)};
  },[account?.email]);
  const upcoming=useMemo(()=>tasks.filter(t=>t.status==='upcoming').sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999')),[tasks]);
  const finished=useMemo(()=>tasks.filter(t=>t.status==='finished').sort((a,b)=>(b.finished||'').localeCompare(a.finished||'')),[tasks]);
@@ -97,7 +103,7 @@ export default function Home(){
  <section className="dj-desktop-overview">
 <div className="dj-desktop-topline"><div className="dj-desktop-searchlabel">DELTA JOINERY <span> / </span> DASHBOARD</div></div>
 <div className="dj-desktop-banner"><div className="dj-desktop-banner-copy"><span>WORKSHOP MANAGEMENT · DELTA JOINERY</span><h1>Your workshop.<br/>Beautifully organised.</h1><p>Everything you need to manage quotations, deadlines and workshop work.</p><div className="dj-desktop-banner-actions"><Link href="/quote">＋ New Quotation</Link><Link href="/quotes">View saved quotations →</Link></div></div><div className="dj-desktop-banner-art" aria-hidden="true"><span></span><span></span><span></span><span></span></div></div>
-<div className="dj-desktop-summary"><button type="button" onClick={()=>{setFilter('upcoming');document.getElementById('dj-jobs')?.scrollIntoView({behavior:'smooth'})}}><span>◷</span><div><strong>{upcoming.length}</strong><small>Upcoming jobs</small></div></button><button type="button" onClick={()=>{setFilter('finished');document.getElementById('dj-jobs')?.scrollIntoView({behavior:'smooth'})}}><span>✓</span><div><strong>{finishedCount}</strong><small>Finished quotations</small></div></button><Link href="/quotes"><span>▤</span><div><strong>{savedQuotes.length}</strong><small>Saved quotations</small></div></Link><Link href="/hours"><span>◴</span><div><strong>My Hours</strong><small>Open timesheets</small></div></Link></div>
+<div className="dj-desktop-summary"><button type="button" onClick={()=>{setFilter('upcoming');document.getElementById('dj-jobs')?.scrollIntoView({behavior:'smooth'})}}><span>◷</span><div><strong>{upcoming.length}</strong><small>Upcoming jobs</small></div></button><button type="button" onClick={()=>{setFilter('finished');document.getElementById('dj-jobs')?.scrollIntoView({behavior:'smooth'})}}><span>✓</span><div><strong>{finishedCount}</strong><small>Finished quotations</small></div></button><Link href="/quotes"><span>▤</span><div><strong>{savedQuotes.length}</strong><small>Saved quotations</small></div></Link><Link href="/hours"><span>◴</span><div><strong>{weekHours===null?'—':weekHours.toFixed(2)+' hrs'}</strong><small>My Hours · This week</small></div></Link></div>
 <div className="dj-desktop-layout"><div className="dj-desktop-maincol">
 <section className="dj-desktop-panel"><div className="dj-desktop-panel-heading"><h2>Quotation tracker</h2><button type="button" onClick={()=>document.getElementById('dj-jobs')?.scrollIntoView({behavior:'smooth'})}>View all →</button></div><div className="dj-desktop-rowheaders"><span>CLIENT / PROJECT</span><span>DEADLINE</span><span>STATUS</span></div>{upcoming.slice(0,5).map(t=><button key={t.id} type="button" className="dj-desktop-jobrow" onClick={()=>{setFilter('upcoming');document.getElementById('dj-jobs')?.scrollIntoView({behavior:'smooth'})}}><div><b>{t.project}</b><small>{t.client}</small></div><span>{formatDate(t.due)}</span><span className="dj-desktop-jobstatus">Upcoming</span></button>)}{upcoming.length===0&&<p className="dj-desktop-empty">No upcoming quotation tasks.</p>}</section>
 

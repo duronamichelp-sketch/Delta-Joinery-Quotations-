@@ -739,3 +739,40 @@ button.rev-tile{cursor:pointer;text-align:left;display:block;width:100%}
  .dj-desktop-checkpanel>a{font-size:12px;color:#175b41;text-decoration:none;font-weight:700}
 }
 @media(min-width:900px) and (max-width:1150px){.dj-desktop-layout{grid-template-columns:minmax(0,1fr)}.dj-desktop-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* Approved Delta Joinery mobile app v5 – visual-only, preserve business data */
+@media screen and (max-width:899px){
+ .dj-mobile-header{background:#003328!important;height:64px!important}
+ .dj-mobile-header>a{display:flex!important;align-items:center!important}
+ .dj-mobile-brand-words{letter-spacing:1px!important;font-family:Georgia,serif!important;font-size:17px!important;font-weight:500!important}
+ .dj-mobile-brand-words small{font-family:Arial,sans-serif;font-size:8px!important;letter-spacing:2.2px!important}
+ .dj-mobile-tabs-v5{grid-template-columns:repeat(5,minmax(0,1fr))!important;background:#fffefa!important;box-shadow:0 -4px 18px #14261b20!important;border-radius:0!important;border-top:1px solid #e1e4da!important}
+ .dj-mobile-tabs-v5>a,.dj-mobile-tabs-v5>button{color:#66796b!important}
+ .dj-mobile-tabs-v5>a.active{background:transparent!important;color:#003c2a!important}
+ .dj-mobile-tabs-v5>a.active span{color:#003b2c!important}
+ .dj-mobile-tabs-v5 span{font-size:21px!important}
+ .dj-app-home{background:#f9f8f3!important}
+ .dj-app-home-top{padding:0!important;height:277px!important;min-height:277px!important;overflow:hidden!important;background:linear-gradient(0deg,#002a22f9 0%,#062b238e 55%,#111d1820),repeating-linear-gradient(90deg,#765840 0 19px,#bf9a70 21px 41px,#3b3b2b 43px 48px)!important}
+ .dj-app-home-heading{position:absolute!important;bottom:42px!important;left:17px!important;right:17px!important}
+ .dj-app-home-heading h1{color:#fff!important;margin:0 0 9px!important;font-family:Arial,sans-serif!important;line-height:1.04!important;font-size:31px!important}
+ .dj-app-home-heading p{font-size:12px!important;margin:0!important;color:#f1f1e9!important}
+ .dj-app-home-heading small{display:none!important}
+ .dj-app-home-timber{display:none!important}
+ .dj-app-home-body{padding:0 13px 16px!important}
+ .dj-app-stats{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:5px!important;margin-top:-31px!important}
+ .dj-app-stats>a{min-height:78px!important;padding:10px 3px!important;border-radius:9px!important;align-items:center!important;text-align:center!important;justify-content:center!important;gap:2px!important}
+ .dj-app-stats .dj-app-icon{display:none!important}
+ .dj-app-stats strong{font-size:17px!important;font-family:Arial,sans-serif!important;line-height:1.25!important}
+ .dj-app-stats b{font-size:9px!important;margin:0!important}
+ .dj-app-stats small{display:none!important}
+ .dj-app-quick{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ .dj-app-home-body:before{content:'＋  New Quotation   →';display:block;background:linear-gradient(125deg,#f1d9a5,#bf9256);color:#193429;font-size:15px;font-weight:750;border-radius:10px;padding:17px;text-align:center;margin-top:14px}
+ .dj-app-home-body .dj-app-recent>a{border-radius:10px!important}
+ .dj-app-home-body .dj-app-recent{background:transparent!important;border:0!important;display:grid!important;gap:8px!important}
+ .dj-app-home-body .dj-app-recent>a{background:white!important;border:1px solid #e5e6df!important;padding:10px!important}
+ .dj-app-home-body .dj-app-section-title h2{font-size:15px!important}
+ .dj-functional .rev-inner{background:#faf9f5!important}
+ .dj-functional .rev-inner input,.dj-functional .rev-inner textarea,.dj-functional .rev-inner select{min-height:44px!important}
+ .rev-shell .rev-screen-head{background:#00372a!important}
+}

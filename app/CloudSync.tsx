@@ -30,7 +30,25 @@ export default function CloudSync({children}:{children:React.ReactNode}){
     const remote=new Map((data||[]).map(x=>[x.data_key,x.payload]));
     for(const k of KEYS){
      if(remote.has(k)){
-      const incoming=JSON.stringify(remote.get(k));
+      let payload=remote.get(k);
+      // A previously offline desktop may hold addresses that never reached the cloud.
+      // Merge by stable ID before displaying the cloud data, without losing either copy.
+      if(k==='dj_tool_addresses'){
+       const localText=localStorage.getItem(k);
+       const localValue=localText?JSON.parse(localText):[];
+       const cloudValue=Array.isArray(payload)?payload:[];
+       if(Array.isArray(localValue)&&localValue.length){
+        const merged=new Map<string,unknown>();
+        for(const x of cloudValue){if(x&&typeof x==='object'&&typeof x.id==='string')merged.set(x.id,x)}
+        for(const x of localValue){if(x&&typeof x==='object'&&typeof x.id==='string'&&!merged.has(x.id))merged.set(x.id,x)}
+        if(merged.size>cloudValue.length){
+         payload=Array.from(merged.values());
+         const {error:mergeError}=await supabase.from('joinery_data').upsert({user_id:userId,data_key:k,payload},{onConflict:'user_id,data_key'});
+         if(mergeError)throw mergeError;
+        }
+       }
+      }
+      const incoming=JSON.stringify(payload);
       if(localStorage.getItem(k)!==incoming){localStorage.setItem(k,incoming);window.dispatchEvent(new CustomEvent('dj-cloud-received',{detail:k}))}
      }else{
       const local=localStorage.getItem(k);
@@ -159,8 +177,9 @@ export default function CloudSync({children}:{children:React.ReactNode}){
  async function saveTool(key:'dj_tool_addresses'|'dj_cutting_projects',payload:unknown){
   const sb=clientRef.current,user=personRef.current;
   if(!sb||!user)throw new Error('Cloud account not ready');
-  const {error}=await sb.from('joinery_data').upsert({user_id:user.id,data_key:key,payload},{onConflict:'user_id,data_key'});
-  if(error){setMessage('Cloud save failed: '+error.message);throw error}
+  const {data,error}=await sb.from('joinery_data').upsert({user_id:user.id,data_key:key,payload},{onConflict:'user_id,data_key'}).select('data_key,payload').single();
+  if(error||!data){const reason=error?.message||'Cloud did not confirm the save';setMessage('Cloud save failed: '+reason);throw new Error(reason)}
+  if(JSON.stringify(data.payload)!==JSON.stringify(payload))throw new Error('Cloud returned different data');
   pause.current=true;
   try{localStorage.setItem(key,JSON.stringify(payload))}finally{pause.current=false}
   window.dispatchEvent(new CustomEvent('dj-cloud-received',{detail:key}));

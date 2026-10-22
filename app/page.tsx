@@ -13,6 +13,7 @@ export default function Home(){
  const [tasks,setTasks]=useState<Task[]>([]);
  const [savedQuotes,setSavedQuotes]=useState<SavedQuotation[]>([]);
  const [loaded,setLoaded]=useState(false);
+ const [weekHours,setWeekHours]=useState<number|null>(null);
  const [showForm,setShowForm]=useState(false);
  const [showManual,setShowManual]=useState(false);
  const [manualClient,setManualClient]=useState('');
@@ -24,6 +25,15 @@ export default function Home(){
  const [editing,setEditing]=useState<string|null>(null);
  useEffect(()=>{try{const raw=localStorage.getItem(KEY);if(raw){const data=JSON.parse(raw);if(Array.isArray(data))setTasks(data)}}catch{}setSavedQuotes(read<SavedQuotation[]>('dj_saved_quotes',[]));setLoaded(true)},[]);
  useEffect(()=>{if(loaded)localStorage.setItem(KEY,JSON.stringify(tasks))},[tasks,loaded]);
+ useEffect(()=>{
+  const calculate=()=>{try{
+   const all=JSON.parse(localStorage.getItem('dj_timesheets')||'{}') as Record<string,{start?:string;finish?:string;notWorked?:boolean}>;
+   const now=new Date();const monday=new Date(now.getFullYear(),now.getMonth(),now.getDate());monday.setDate(monday.getDate()-(monday.getDay()+6)%7);
+   const parse=(raw:string,finish:boolean):number|null=>{const t=raw.trim().toUpperCase();if(!t)return null;const suffix=t.match(/(AM|PM)$/)?.[1];const digits=t.replace(/\\s*(AM|PM)$/,'').trim().replace(/:/g,'');if(!/^\\d{1,4}$/.test(digits))return null;const a=t.includes(':')?t.replace(/\\s*(AM|PM)$/,'').trim().split(':'):digits.length<=2?[digits,'0']:[digits.slice(0,-2),digits.slice(-2)];let h=Number(a[0]),m=Number(a[1]);if(h>23||m>59)return null;if(suffix&&h<=12)h=h%12+(suffix==='PM'?12:0);else if(!suffix&&finish&&h>0&&h<12)h+=12;return h*60+m};
+   let total=0;for(let i=0;i<7;i++){const d=new Date(monday);d.setDate(monday.getDate()+i);if(d>now)continue;const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');const e=all[key];if(!e||e.notWorked)continue;const a=parse(e.start||'',false),b=parse(e.finish||'',true);if(a!==null&&b!==null)total+=Math.max(0,((b<a?b+1440:b)-a)/60)}setWeekHours(total)
+  }catch{setWeekHours(null)}};
+  calculate();const refresh=(e:Event)=>{if((e as CustomEvent).detail==='dj_timesheets')calculate()};window.addEventListener('dj-cloud-received',refresh);window.addEventListener('focus',calculate);return()=>{window.removeEventListener('dj-cloud-received',refresh);window.removeEventListener('focus',calculate)};
+ },[]);
  const upcoming=useMemo(()=>tasks.filter(t=>t.status==='upcoming').sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999')),[tasks]);
  const finished=useMemo(()=>tasks.filter(t=>t.status==='finished').sort((a,b)=>(b.finished||'').localeCompare(a.finished||'')),[tasks]);
  function addManual(e:React.FormEvent){e.preventDefault();const value=Number(manualAmount);if(!manualClient.trim()||!manualProject.trim()||!Number.isFinite(value)||value<0)return;setTasks(prev=>[{id:crypto.randomUUID(),client:manualClient.trim(),project:manualProject.trim(),due:'',notes:'Manually entered finished quotation',status:'finished',created:dateToday(),finished:dateToday(),amount:Math.round(value*100)/100},...prev]);setManualClient('');setManualProject('');setManualAmount('');setShowManual(false);setFilter('finished')}
@@ -55,7 +65,7 @@ export default function Home(){
 <section className="dj-app-home">
   <div className="dj-app-home-top"><div className="dj-app-home-heading"><div><small>DELTA JOINERY · WORKSPACE</small><h1>Good morning,<br/>welcome back.</h1><p>Your joinery work, organised anywhere.</p></div><span className="dj-app-home-avatar">DJ</span></div><div className="dj-app-home-timber" aria-hidden="true"><span></span><span></span><span></span><span></span></div></div>
   <div className="dj-app-home-body">
-   <div className="dj-app-stats"><Link href="/quotes"><span className="dj-app-icon">▤</span><strong>{savedQuotes.length+tasks.length}</strong><b>Quotations</b><small>Saved and tracked</small></Link><Link href="/hours"><span className="dj-app-icon">◷</span><strong>My Hours</strong><b>Timesheets</b><small>View and log time</small></Link><Link href="/units"><span className="dj-app-icon">⬡</span><strong>Price Library</strong><b>Materials &amp; rates</b><small>Browse everything</small></Link><Link href="/tools/addresses"><span className="dj-app-icon">⌖</span><strong>Addresses</strong><b>Saved locations</b><small>Open directions</small></Link></div>
+   <div className="dj-app-stats"><Link href="/quotes"><span className="dj-app-icon">▤</span><strong>{savedQuotes.filter(q=>!q.finished).length+tasks.filter(t=>t.status==='upcoming').length}</strong><b>Quotations</b><small>Saved and tracked</small></Link><Link href="/hours"><span className="dj-app-icon">◷</span><strong>{weekHours===null?'—':weekHours.toFixed(1)+'h'}</strong><b>My Hours</b><small>View and log time</small></Link><Link href="/units"><span className="dj-app-icon">⬡</span><strong>Price Library</strong><b>Materials &amp; rates</b><small>Browse everything</small></Link><Link href="/tools/addresses"><span className="dj-app-icon">⌖</span><strong className="dj-addresses-card-title">Addresses</strong><b>Saved locations</b><small>Open directions</small></Link></div>
    <Link href="/quote" className="dj-app-mobile-newquote">＋ New Quotation <span>→</span></Link>
    <div className="dj-app-section-title"><h2>Recent quotations</h2><Link href="/quotes">View all →</Link></div>
    <div className="dj-app-recent">{savedQuotes.slice(0,3).map((q,i)=><Link href="/quotes" key={i}><span className="dj-app-recent-icon">▤</span><div><strong>{String((q as unknown as {project?:string;client?:string}).project||(q as unknown as {client?:string}).client||'Saved quotation')}</strong><small>Saved quotation</small></div><span className="dj-app-status">Saved</span><span>›</span></Link>)}{savedQuotes.length===0&&<p>Open Saved Quotations to view your projects.</p>}</div>

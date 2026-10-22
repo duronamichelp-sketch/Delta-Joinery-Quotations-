@@ -22,3 +22,14 @@ export function unitDoorPrice(unit:Unit,finish?:string){return Number((finish&&u
 export const DEFAULT_FINISH_RATES:Record<string,number>={'MFC Plain':120,'MDF Plain':190,'MDF Veneer Plain':240};
 export function doorSqm(x:QuoteUnit){const calculated=(Number(x.doorWidth)||0)*(Number(x.doorHeight)||0)*(Number(x.doorCount)||0)/1000000;return Math.max(0,calculated>0?calculated:Number(x.doorSqm)||0)}
 export function pricedDoor(x:QuoteUnit,rates:Record<string,number>,unit?:Unit){const finish=x.doorFinish||'MFC';const rate=unit?.doorPrices?.[finish]??rates[finish]??0;return x.adc?doorSqm(x)*Math.max(0,Number(rate)||0):0}
+
+export const UNIT_HEIGHTS=[150,...Array.from({length:23},(_,i)=>(i+2)*100)];
+export const UNIT_WIDTHS=[150,...Array.from({length:11},(_,i)=>(i+2)*100)];
+export const UNIT_DEPTHS=[300,350,400,450,500,550,600];
+// Delta Joinery MFC 18mm big-piece list rate; includes 15% uplift.
+// Carcass assumption: two sides, top, bottom, and full 18mm back; no doors.
+export const MFC_CARCASS_RATE=120;
+export const UNIT_MARKUP=1.15;
+export const carcassArea=(w:number,h:number,d:number)=>(2*h*d+2*w*d+w*h)/1000000;
+export const sizePrice=(w:number,h:number,d:number)=>Math.round(carcassArea(w,h,d)*MFC_CARCASS_RATE*UNIT_MARKUP*100)/100;
+export const sizeKey=(w:number,h:number,d:number)=>[w,h,d].join('x');

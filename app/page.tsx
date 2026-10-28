@@ -5,6 +5,9 @@ import DesktopSidebar from './DesktopSidebar';
 import {useDeltaAccount} from './CloudSync';
 import {read} from '../lib/data';
 import {savedQuoteTotal,type SavedQuotation} from '../lib/quotationTotals';
+import {localDateKey,weekHours as calculateWeekHours,type TimeRecords} from '../lib/workingHours';
+import {useLiveNow} from './useLiveNow';
+import LiveHoursLabel from './LiveHoursLabel';
 type Task={id:string;client:string;project:string;due:string;notes:string;status:'upcoming'|'finished';created:string;finished?:string;amount?:number};
 // Dashboard includes manual finished quotation entries.
 const KEY='dj_quotation_tasks';
@@ -15,7 +18,11 @@ export default function Home(){
  const [tasks,setTasks]=useState<Task[]>([]);
  const [savedQuotes,setSavedQuotes]=useState<SavedQuotation[]>([]);
  const [loaded,setLoaded]=useState(false);
- const [weekHours,setWeekHours]=useState<number|null>(null);
+ const [timeRecords,setTimeRecords]=useState<TimeRecords|null>(null);
+ const now=useLiveNow();
+ const weekHours=timeRecords===null?null:calculateWeekHours(timeRecords,now);
+ const todayDate=localDateKey(now);
+ const todayEntry=timeRecords?.[todayDate];
  const [showForm,setShowForm]=useState(false);
  const [showManual,setShowManual]=useState(false);
  const [manualClient,setManualClient]=useState('');
@@ -29,42 +36,13 @@ export default function Home(){
  useEffect(()=>{if(loaded)localStorage.setItem(KEY,JSON.stringify(tasks))},[tasks,loaded]);
  useEffect(()=>{
   let cancelled=false;
-  type TimeEntry={start?:string;finish?:string;notWorked?:boolean};
-  const parseTime=(raw:string,kind:'start'|'finish')=>{
-   const text=raw.trim().toUpperCase();if(!text)return null;
-   const suffix=text.match(/(AM|PM)$/)?.[1];
-   const value=text.replace(/\s*(AM|PM)$/,'').trim();
-   const digits=value.replace(/:/g,'');
-   if(!/^\d{1,4}$/.test(digits))return null;
-   const parts=value.includes(':')?value.split(':'):digits.length<=2?[digits,'0']:[digits.slice(0,-2),digits.slice(-2)];
-   if(parts.length!==2)return null;
-   let hour=Number(parts[0]);const minute=Number(parts[1]);
-   if(hour>23||minute>59)return null;
-   if(suffix&&hour<=12)hour=hour%12+(suffix==='PM'?12:0);
-   else if(!suffix&&kind==='finish'&&hour>0&&hour<12)hour+=12;
-   return hour*60+minute;
-  };
-  const calculate=(all:Record<string,TimeEntry>)=>{
-   const today=new Date();
-   const monday=new Date(today.getFullYear(),today.getMonth(),today.getDate());
-   monday.setDate(monday.getDate()-(monday.getDay()+6)%7);
-   let total=0;
-   for(let i=0;i<7;i++){
-    const d=new Date(monday);d.setDate(monday.getDate()+i);
-    if(d>today)continue;
-    const date=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    const e=all[date];if(!e||e.notWorked)continue;
-    const start=parseTime(e.start||'','start'),finish=parseTime(e.finish||'','finish');
-    if(start!==null&&finish!==null)total+=Math.max(0,((finish<start?finish+1440:finish)-start)/60);
-   }
-   if(!cancelled)setWeekHours(total);
-  };
-  const readLocal=()=>{try{const value=JSON.parse(localStorage.getItem('dj_timesheets')||'{}');return value&&typeof value==='object'&&!Array.isArray(value)?value as Record<string,TimeEntry>:{} }catch{return {} as Record<string,TimeEntry>}};
+  const calculate=(all:TimeRecords)=>{if(!cancelled)setTimeRecords(all)};
+  const readLocal=()=>{try{const value=JSON.parse(localStorage.getItem('dj_timesheets')||'{}');return value&&typeof value==='object'&&!Array.isArray(value)?value as TimeRecords:{} }catch{return {} as TimeRecords}};
   const refresh=async()=>{
    const local=readLocal();
    if(!account){calculate(local);return}
    try{
-    const remote=await account.loadHours() as Record<string,TimeEntry>|null;
+    const remote=await account.loadHours() as TimeRecords|null;
     if(cancelled)return;
     calculate(remote?{...local,...remote}:local);
    }catch{if(!cancelled)calculate(local)}
@@ -103,7 +81,7 @@ export default function Home(){
  <section className="dj-desktop-overview">
 <div className="dj-desktop-topline"><div className="dj-desktop-searchlabel">DELTA JOINERY <span> / </span> DASHBOARD</div></div>
 <div className="dj-desktop-banner"><div className="dj-desktop-banner-copy"><span>WORKSHOP MANAGEMENT · DELTA JOINERY</span><h1>Your workshop.<br/>Beautifully organised.</h1><p>Everything you need to manage quotations, deadlines and workshop work.</p><div className="dj-desktop-banner-actions"><Link href="/quote">＋ New Quotation</Link><Link href="/quotes">View saved quotations →</Link></div></div><div className="dj-desktop-banner-art" aria-hidden="true"><span></span><span></span><span></span><span></span></div></div>
-<div className="dj-desktop-summary"><button type="button" onClick={()=>{setFilter('upcoming');document.getElementById('dj-jobs')?.scrollIntoView({behavior:'smooth'})}}><span>◷</span><div><strong>{upcoming.length}</strong><small>Upcoming jobs</small></div></button><button type="button" onClick={()=>{setFilter('finished');document.getElementById('dj-jobs')?.scrollIntoView({behavior:'smooth'})}}><span>✓</span><div><strong>{finishedCount}</strong><small>Finished quotations</small></div></button><Link href="/quotes"><span>▤</span><div><strong>{savedQuotes.length}</strong><small>Saved quotations</small></div></Link><Link href="/hours"><span>◴</span><div><strong>{weekHours===null?'—':weekHours.toFixed(2)+' hrs'}</strong><small>My Hours · This week</small></div></Link></div>
+<div className="dj-desktop-summary"><button type="button" onClick={()=>{setFilter('upcoming');document.getElementById('dj-jobs')?.scrollIntoView({behavior:'smooth'})}}><span>◷</span><div><strong>{upcoming.length}</strong><small>Upcoming jobs</small></div></button><button type="button" onClick={()=>{setFilter('finished');document.getElementById('dj-jobs')?.scrollIntoView({behavior:'smooth'})}}><span>✓</span><div><strong>{finishedCount}</strong><small>Finished quotations</small></div></button><Link href="/quotes"><span>▤</span><div><strong>{savedQuotes.length}</strong><small>Saved quotations</small></div></Link><Link href="/hours"><span>◴</span><div><strong>{weekHours===null?'—':weekHours.toFixed(2)+' hrs'}</strong><small>My Hours · This week</small><LiveHoursLabel entry={todayEntry} date={todayDate} now={now} hours={weekHours??0}/></div></Link></div>
 <div className="dj-desktop-layout"><div className="dj-desktop-maincol">
 <section className="dj-desktop-panel"><div className="dj-desktop-panel-heading"><h2>Quotation tracker</h2><button type="button" onClick={()=>document.getElementById('dj-jobs')?.scrollIntoView({behavior:'smooth'})}>View all →</button></div><div className="dj-desktop-rowheaders"><span>CLIENT / PROJECT</span><span>DEADLINE</span><span>STATUS</span></div>{upcoming.slice(0,5).map(t=><button key={t.id} type="button" className="dj-desktop-jobrow" onClick={()=>{setFilter('upcoming');document.getElementById('dj-jobs')?.scrollIntoView({behavior:'smooth'})}}><div><b>{t.project}</b><small>{t.client}</small></div><span>{formatDate(t.due)}</span><span className="dj-desktop-jobstatus">Upcoming</span></button>)}{upcoming.length===0&&<p className="dj-desktop-empty">No upcoming quotation tasks.</p>}</section>
 
@@ -113,7 +91,7 @@ export default function Home(){
 <section className="dj-app-home">
   <div className="dj-app-home-top"><div className="dj-app-home-heading"><div><small>DELTA JOINERY · WORKSPACE</small><h1>Good morning,<br/>welcome back.</h1><p>Your joinery work, organised anywhere.</p></div><span className="dj-app-home-avatar">DJ</span></div><div className="dj-app-home-timber" aria-hidden="true"><span></span><span></span><span></span><span></span></div></div>
   <div className="dj-app-home-body">
-   <div className="dj-app-stats"><Link href="/quotes"><span className="dj-app-icon">▤</span><strong>{savedQuotes.filter(q=>!q.finished).length+tasks.filter(t=>t.status==='upcoming').length}</strong><b>Quotations</b><small>Saved and tracked</small></Link><Link href="/hours"><span className="dj-app-icon">◷</span><strong>{weekHours===null?'—':weekHours.toFixed(1)+'h'}</strong><b>My Hours</b><small>View and log time</small></Link><Link href="/units"><span className="dj-app-icon">⬡</span><strong>Price Library</strong><b>Materials &amp; rates</b><small>Browse everything</small></Link><Link href="/tools/addresses"><span className="dj-app-icon">⌖</span><strong className="dj-addresses-card-title">Addresses</strong><b>Saved locations</b><small>Open directions</small></Link></div>
+   <div className="dj-app-stats"><Link href="/quotes"><span className="dj-app-icon">▤</span><strong>{savedQuotes.filter(q=>!q.finished).length+tasks.filter(t=>t.status==='upcoming').length}</strong><b>Quotations</b><small>Saved and tracked</small></Link><Link href="/hours"><span className="dj-app-icon">◷</span><strong>{weekHours===null?'—':weekHours.toFixed(1)+'h'}</strong><b>My Hours</b><small>View and log time</small><LiveHoursLabel entry={todayEntry} date={todayDate} now={now} hours={weekHours??0}/></Link><Link href="/units"><span className="dj-app-icon">⬡</span><strong>Price Library</strong><b>Materials &amp; rates</b><small>Browse everything</small></Link><Link href="/tools/addresses"><span className="dj-app-icon">⌖</span><strong className="dj-addresses-card-title">Addresses</strong><b>Saved locations</b><small>Open directions</small></Link></div>
    <Link href="/quote" className="dj-app-mobile-newquote">＋ New Quotation <span>→</span></Link>
    <div className="dj-app-section-title"><h2>Recent quotations</h2><Link href="/quotes">View all →</Link></div>
    <div className="dj-app-recent">{savedQuotes.slice(0,3).map((q,i)=><Link href="/quotes" key={i}><span className="dj-app-recent-icon">▤</span><div><strong>{String((q as unknown as {project?:string;client?:string}).project||(q as unknown as {client?:string}).client||'Saved quotation')}</strong><small>Saved quotation</small></div><span className="dj-app-status">Saved</span><span>›</span></Link>)}{savedQuotes.length===0&&<p>Open Saved Quotations to view your projects.</p>}</div>

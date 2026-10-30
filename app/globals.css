@@ -999,227 +999,422 @@ body .dj-glass-home .skoda-left{grid-column:1!important;grid-row:2!important}
 .dj-quote-glass .dj-fold.dj-fold-open{padding-bottom:14px!important}
 }
 
-/* Desktop viewport containment — prevent dashboard/quotation horizontal clipping */
-@media(min-width:901px){
-html,body{max-width:100%;overflow-x:hidden!important}
-.dj-desktop{width:100%!important;max-width:100vw!important;min-width:0!important;overflow-x:hidden!important;box-sizing:border-box!important}
-.dj-desktop>.dj-shared-sidebar{flex:0 0 260px!important;width:260px!important;min-width:260px!important;max-width:260px!important;box-sizing:border-box!important}
-.dj-desktop .dj-main{flex:1 1 auto!important;width:auto!important;min-width:0!important;max-width:calc(100vw - 260px)!important;box-sizing:border-box!important;overflow-x:hidden!important}
-.dj-desktop .dj-top{width:auto!important;max-width:calc(100% - 36px)!important;box-sizing:border-box!important}
-.dj-desktop .dj-area{width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important}
-.dj-quote-glass .dj-area{grid-template-columns:minmax(0,1fr) minmax(280px,330px)!important}
-.dj-quote-glass .dj-left,.dj-quote-glass .dj-total{min-width:0!important;max-width:100%!important}
-.dj-quote-glass .dj-card,.dj-quote-glass .dj-fold,.dj-quote-glass .dj-fields{min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
-}
-@media(min-width:901px) and (max-width:1180px){
-.dj-desktop>.dj-shared-sidebar{flex-basis:220px!important;width:220px!important;min-width:220px!important;max-width:220px!important}
-.dj-desktop .dj-main{max-width:calc(100vw - 220px)!important}
-.dj-quote-glass .dj-area{grid-template-columns:minmax(0,1fr) 280px!important;gap:12px!important}
-.dj-quote-glass .dj-quotation-heading h1{font-size:34px!important}
-}
-
-/* FINAL DESKTOP SHELL LOCK — Home is the master layout for every desktop tab */
-@media(min-width:900px){
-html,body{width:100%;max-width:100%;overflow-x:hidden!important}
-.dj-glass-home,.dj-desktop{
-  width:100%!important;max-width:100vw!important;min-width:0!important;
-  box-sizing:border-box!important;
-}
-.dj-glass-home{grid-template-columns:220px minmax(0,1fr)!important}
-.dj-desktop{display:grid!important;grid-template-columns:220px minmax(0,1fr)!important;align-items:start!important}
-.dj-glass-home>.dj-shared-sidebar,
-.dj-desktop>.dj-shared-sidebar{
-  position:sticky!important;top:10px!important;
-  width:calc(100% - 12px)!important;min-width:0!important;max-width:none!important;
-  height:calc(100vh - 20px)!important;min-height:0!important;
-  margin:0 0 10px 12px!important;
-  box-sizing:border-box!important;
-  border:1px solid rgba(118,196,242,.34)!important;
-  border-radius:16px!important;
-  background:linear-gradient(180deg,rgba(8,29,45,.78),rgba(5,20,33,.72))!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 18px 45px rgba(0,0,0,.28)!important;
-  backdrop-filter:blur(22px)!important;
-  overflow:hidden!important;
-}
-.dj-glass-home>.dj-shared-sidebar .dj-shared-brand,
-.dj-desktop>.dj-shared-sidebar .dj-shared-brand{background:transparent!important}
-.dj-glass-home>.dj-shared-sidebar nav,
-.dj-desktop>.dj-shared-sidebar nav{padding:8px 10px!important}
-.dj-glass-home>.dj-shared-sidebar nav>a,
-.dj-desktop>.dj-shared-sidebar nav>a,
-.dj-glass-home>.dj-shared-sidebar nav>button,
-.dj-desktop>.dj-shared-sidebar nav>button{
-  min-height:42px!important;margin:2px 0!important;padding:10px 12px!important;
-  border:1px solid transparent!important;border-radius:10px!important;
-  box-sizing:border-box!important;font-size:13px!important;
-}
-.dj-glass-home>.dj-shared-sidebar nav>a.current,
-.dj-desktop>.dj-shared-sidebar nav>a.current{
-  background:linear-gradient(90deg,rgba(207,135,43,.55),rgba(255,188,85,.28))!important;
-  border-color:rgba(255,194,91,.72)!important;
-  box-shadow:0 0 22px rgba(236,157,54,.30),inset 0 1px 0 rgba(255,255,255,.15)!important;
-}
-.dj-desktop>.dj-main{
-  width:100%!important;max-width:100%!important;min-width:0!important;
-  overflow-x:hidden!important;box-sizing:border-box!important;
-}
-.dj-desktop .dj-top{max-width:calc(100% - 36px)!important}
-.dj-desktop .dj-area{width:100%!important;max-width:100%!important;min-width:0!important}
-}
-
-/* MASTER DESKTOP SHELL — identical geometry on every route */
-@media(min-width:900px){
-:root{--dj-shell-sidebar:220px;--dj-shell-gap:0px;--dj-shell-edge:12px;--dj-shell-top:10px}
-body{overflow-y:scroll!important}
-.dj-glass-home,
-.dj-full-desktop,
-.dj-desktop{
-  display:grid!important;
-  grid-template-columns:var(--dj-shell-sidebar) minmax(0,1fr)!important;
-  column-gap:var(--dj-shell-gap)!important;
-  width:100%!important;max-width:100vw!important;min-width:0!important;
-  margin:0!important;padding:0!important;box-sizing:border-box!important;
-  align-items:start!important;
-}
-.dj-glass-home>.dj-shared-sidebar,
-.dj-full-desktop>.dj-shared-sidebar,
-.dj-desktop>.dj-shared-sidebar{
-  grid-column:1!important;grid-row:1!important;
-  position:sticky!important;top:var(--dj-shell-top)!important;
-  width:calc(var(--dj-shell-sidebar) - var(--dj-shell-edge))!important;
-  min-width:calc(var(--dj-shell-sidebar) - var(--dj-shell-edge))!important;
-  max-width:calc(var(--dj-shell-sidebar) - var(--dj-shell-edge))!important;
-  height:calc(100vh - 20px)!important;
-  margin:0 0 10px var(--dj-shell-edge)!important;
-  flex:none!important;box-sizing:border-box!important;
-  border:1px solid rgba(118,196,242,.34)!important;border-radius:16px!important;
-  background:linear-gradient(180deg,rgba(8,29,45,.78),rgba(5,20,33,.72))!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 18px 45px rgba(0,0,0,.28)!important;
-  backdrop-filter:blur(22px)!important;overflow:hidden!important;z-index:20!important;
-}
-.dj-glass-home>.dj-glass-stage,
-.dj-full-desktop>.rev-phone,
-.dj-desktop>.dj-main{
-  grid-column:2!important;grid-row:1!important;
-  width:100%!important;min-width:0!important;max-width:none!important;
-  margin:0!important;box-sizing:border-box!important;
-}
-.dj-full-desktop>.rev-phone{
-  min-height:100vh!important;
-  border-radius:0!important;
-}
-.dj-full-desktop>.rev-phone.rev-inner{
-  max-width:none!important;
-}
-.dj-glass-stage{padding-left:18px!important;padding-right:18px!important}
-.dj-full-desktop>.rev-phone{padding-left:18px!important;padding-right:18px!important}
-.dj-desktop>.dj-main{padding-left:0!important;padding-right:0!important}
-.dj-glass-home>.dj-shared-sidebar nav,
-.dj-full-desktop>.dj-shared-sidebar nav,
-.dj-desktop>.dj-shared-sidebar nav{padding:8px 10px!important}
-.dj-glass-home>.dj-shared-sidebar nav>a,
-.dj-full-desktop>.dj-shared-sidebar nav>a,
-.dj-desktop>.dj-shared-sidebar nav>a,
-.dj-glass-home>.dj-shared-sidebar nav>button,
-.dj-full-desktop>.dj-shared-sidebar nav>button,
-.dj-desktop>.dj-shared-sidebar nav>button{
-  min-height:42px!important;margin:2px 0!important;padding:10px 12px!important;
-  box-sizing:border-box!important;border-radius:10px!important;font-size:13px!important;
-}
-}
-
-/* SINGLE SOURCE OF TRUTH: desktop shell geometry.
-   Intentionally higher specificity than all legacy route-specific layout rules. */
+/* =========================================================
+   DELTA JOINERY — UNIFIED DESKTOP GLASS SYSTEM
+   Home is the visual master. Desktop only; mobile remains intact.
+   ========================================================= */
 @media screen and (min-width:900px){
-html{overflow-y:scroll!important;scrollbar-gutter:stable!important}
-body{width:100%!important;max-width:none!important;overflow-x:hidden!important}
+  :root{
+    --dj-shell-offset:254px;
+    --dj-sidebar-width:230px;
+    --dj-edge:12px;
+    --dj-blue:#39b8ff;
+    --dj-blue-deep:#0c70b8;
+    --dj-gold:#ffc45e;
+    --dj-text:#f4f8fb;
+    --dj-muted:#b8c9d4;
+    --dj-line:rgba(112,190,239,.30);
+    --dj-panel:rgba(7,28,45,.76);
+    --dj-panel-strong:rgba(5,23,38,.90);
+    --dj-field:rgba(3,18,30,.74);
+  }
 
-body main.dj-glass-home,
-body main.dj-full-desktop,
-body main.dj-desktop,
-body .dj-preview-desktop{
- display:grid!important;
- grid-template-columns:254px minmax(0,1fr)!important;
- grid-template-rows:auto!important;
- width:100%!important;max-width:none!important;min-width:0!important;
- min-height:100vh!important;
- margin:0!important;padding:0!important;
- position:relative!important;
- overflow:visible!important;
- box-sizing:border-box!important;
-}
+  html{scrollbar-gutter:stable!important;overflow-y:scroll!important;background:#061522!important}
+  body{margin:0!important;min-height:100vh!important;overflow-x:hidden!important;background:#061522!important;color:var(--dj-text)!important}
 
-body main.dj-glass-home>.dj-shared-sidebar,
-body main.dj-full-desktop>.dj-shared-sidebar,
-body main.dj-desktop>.dj-shared-sidebar,
-body .dj-preview-desktop>.dj-shared-sidebar{
- display:flex!important;
- grid-column:1!important;grid-row:1!important;
- position:sticky!important;
- left:auto!important;right:auto!important;top:12px!important;bottom:auto!important;
- width:230px!important;min-width:230px!important;max-width:230px!important;
- height:calc(100vh - 24px)!important;min-height:0!important;
- margin:0 12px!important;padding:20px 16px!important;
- box-sizing:border-box!important;
- align-self:start!important;
- flex:none!important;
- border-radius:16px!important;
- overflow:hidden!important;
- z-index:100!important;
-}
+  /* One exact shell size on Home + every desktop route */
+  body main.dj-glass-home,
+  body main.dj-unified-page,
+  body .dj-preview-desktop.dj-unified-page{
+    display:grid!important;
+    grid-template-columns:var(--dj-shell-offset) minmax(0,1fr)!important;
+    grid-template-rows:auto!important;
+    width:100%!important;
+    max-width:100vw!important;
+    min-width:0!important;
+    min-height:100vh!important;
+    margin:0!important;
+    padding:0!important;
+    box-sizing:border-box!important;
+    position:relative!important;
+    isolation:isolate!important;
+    overflow:visible!important;
+  }
 
-body main.dj-glass-home>.dj-glass-stage,
-body main.dj-full-desktop>.rev-phone,
-body main.dj-desktop>.dj-main,
-body .dj-preview-desktop>.dj-preview-body{
- display:block!important;
- grid-column:2!important;grid-row:1!important;
- position:relative!important;
- left:auto!important;right:auto!important;
- margin:0!important;
- width:100%!important;max-width:none!important;min-width:0!important;
- min-height:100vh!important;
- box-sizing:border-box!important;
- transform:none!important;
- zoom:1!important;
-}
+  body main.dj-unified-page,
+  body .dj-preview-desktop.dj-unified-page{
+    background:
+      linear-gradient(115deg,rgba(3,15,27,.68),rgba(3,17,29,.48),rgba(3,15,25,.66)),
+      url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2400&q=92') center/cover fixed no-repeat!important;
+  }
 
-body main.dj-glass-home>.dj-glass-stage{
- padding:10px 30px 26px 18px!important;
- overflow:hidden!important;
-}
-body main.dj-full-desktop>.rev-phone{
- padding-left:18px!important;padding-right:30px!important;
- border-radius:0!important;box-shadow:none!important;
-}
-body main.dj-desktop>.dj-main{
- padding-left:0!important;padding-right:0!important;
- max-width:none!important;
-}
-body .dj-preview-desktop>.dj-preview-body{
- padding-left:18px!important;padding-right:30px!important;
-}
+  /* Sidebar never changes size, position, colour or padding */
+  body main.dj-glass-home>.dj-shared-sidebar,
+  body main.dj-unified-page>.dj-shared-sidebar,
+  body .dj-preview-desktop.dj-unified-page>.dj-shared-sidebar{
+    display:flex!important;
+    flex-direction:column!important;
+    position:fixed!important;
+    left:var(--dj-edge)!important;
+    top:var(--dj-edge)!important;
+    bottom:var(--dj-edge)!important;
+    width:var(--dj-sidebar-width)!important;
+    min-width:var(--dj-sidebar-width)!important;
+    max-width:var(--dj-sidebar-width)!important;
+    height:auto!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:20px 16px!important;
+    box-sizing:border-box!important;
+    border:1px solid rgba(118,196,242,.34)!important;
+    border-radius:16px!important;
+    background:linear-gradient(180deg,rgba(8,29,45,.88),rgba(5,20,33,.84))!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 18px 45px rgba(0,0,0,.28)!important;
+    backdrop-filter:blur(22px) saturate(135%)!important;
+    -webkit-backdrop-filter:blur(22px) saturate(135%)!important;
+    overflow:hidden!important;
+    z-index:100!important;
+  }
 
-body main.dj-glass-home>.dj-glass-stage:before,
-body main.dj-glass-home>.dj-glass-stage:after{
- left:0!important;
-}
+  body .dj-shared-sidebar .dj-shared-brand{
+    min-height:48px!important;
+    padding:0 8px 20px!important;
+    margin:0!important;
+    display:flex!important;
+    align-items:flex-start!important;
+    color:#fff!important;
+    background:transparent!important;
+    text-decoration:none!important;
+  }
+  body .dj-shared-sidebar .dj-shared-brand b{font-size:15px!important;letter-spacing:.08em!important;color:#fff!important;white-space:nowrap!important}
+  body .dj-shared-sidebar .dj-shared-brand small{font-size:8px!important;letter-spacing:.18em!important;color:#9fb6c5!important}
+  body .dj-shared-sidebar nav{display:flex!important;flex-direction:column!important;gap:2px!important;padding:8px 0!important;margin:0!important}
+  body .dj-shared-sidebar nav>a,
+  body .dj-shared-sidebar nav>button{
+    width:100%!important;
+    min-height:42px!important;
+    margin:0!important;
+    padding:10px 12px!important;
+    border:1px solid transparent!important;
+    border-radius:10px!important;
+    box-sizing:border-box!important;
+    display:flex!important;
+    align-items:center!important;
+    gap:10px!important;
+    color:#dfeaf1!important;
+    background:transparent!important;
+    font-size:13px!important;
+    font-weight:650!important;
+    line-height:1.2!important;
+    text-decoration:none!important;
+    box-shadow:none!important;
+  }
+  body .dj-shared-sidebar nav>a.current{
+    background:linear-gradient(90deg,rgba(207,135,43,.55),rgba(255,188,85,.24))!important;
+    border-color:rgba(255,194,91,.70)!important;
+    color:#fff!important;
+    box-shadow:0 0 22px rgba(236,157,54,.24),inset 0 1px 0 rgba(255,255,255,.13)!important;
+  }
+  body .dj-shared-sidebar nav>button[aria-expanded="true"]{
+    background:rgba(12,112,184,.26)!important;
+    border-color:rgba(76,182,247,.35)!important;
+    color:#fff!important;
+  }
+  body .dj-sidebar-account{margin-top:auto!important;border-top:1px solid rgba(112,190,239,.16)!important;padding:16px 6px 0!important;color:#c9d8e1!important}
+  body .dj-sidebar-account-label{color:#93aebb!important}
+  body .dj-sidebar-account-email{color:#fff!important}
 
-/* Same sidebar internals on every route */
-body .dj-shared-sidebar .dj-shared-brand{padding:0 8px 22px!important}
-body .dj-shared-sidebar nav{padding:8px 0!important}
-body .dj-shared-sidebar nav>a,
-body .dj-shared-sidebar nav>button{
- width:100%!important;min-height:42px!important;
- margin:2px 0!important;padding:10px 12px!important;
- box-sizing:border-box!important;font-size:13px!important;
-}
+  /* Every route begins at the same x/y and uses the same available width */
+  body main.dj-glass-home>.dj-glass-stage,
+  body main.dj-unified-page>.rev-phone,
+  body main.dj-unified-page>.dj-main,
+  body main.dj-unified-page>.dj-unified-content,
+  body .dj-preview-desktop.dj-unified-page>.dj-preview-body{
+    grid-column:2!important;
+    grid-row:1!important;
+    position:relative!important;
+    left:auto!important;
+    right:auto!important;
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    min-height:100vh!important;
+    margin:0!important;
+    padding:12px 30px 32px 18px!important;
+    box-sizing:border-box!important;
+    background:transparent!important;
+    color:var(--dj-text)!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    transform:none!important;
+    zoom:1!important;
+    overflow:visible!important;
+  }
+  body main.dj-glass-home>.dj-glass-stage{padding:10px 30px 26px 18px!important}
+  body main.dj-glass-home>.dj-glass-stage:before,
+  body main.dj-glass-home>.dj-glass-stage:after{left:var(--dj-shell-offset)!important}
 
-/* Prevent route content from changing shell width */
-body main.dj-full-desktop>.rev-phone.rev-inner,
-body main.dj-full-desktop>.rev-phone .rev-screen-body,
-body main.dj-full-desktop>.rev-phone .rev-home-area,
-body main.dj-desktop>.dj-main .dj-area{
- max-width:none!important;min-width:0!important;box-sizing:border-box!important;
-}
+  /* Shared page typography */
+  body main.dj-unified-page h1,
+  body main.dj-unified-page h2,
+  body main.dj-unified-page h3,
+  body main.dj-unified-page h4{color:var(--dj-text)!important}
+  body main.dj-unified-page h1{letter-spacing:-.035em!important}
+  body main.dj-unified-page p,
+  body main.dj-unified-page small{color:var(--dj-muted)!important}
+  body main.dj-unified-page .rev-kicker-light,
+  body main.dj-unified-page .dj-kicker{color:var(--dj-gold)!important;font-weight:800!important;letter-spacing:.14em!important}
+  body main.dj-unified-page .rev-sub,
+  body main.dj-unified-page .dj-desc{color:var(--dj-muted)!important}
+
+  /* Same glass header on route pages */
+  body main.dj-unified-page .rev-screen-head,
+  body main.dj-unified-page .dj-top{
+    min-height:56px!important;
+    height:auto!important;
+    margin:0 0 22px!important;
+    padding:0 18px!important;
+    border:1px solid rgba(138,202,240,.34)!important;
+    border-radius:14px!important;
+    background:rgba(7,27,43,.66)!important;
+    color:#fff!important;
+    backdrop-filter:blur(20px)!important;
+    -webkit-backdrop-filter:blur(20px)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important;
+  }
+  body main.dj-unified-page .rev-screen-head b{color:#fff!important}
+  body main.dj-unified-page .rev-back-link{color:#fff!important;background:rgba(255,255,255,.06)!important;border:1px solid rgba(112,190,239,.22)!important}
+  body main.dj-unified-page .rev-mint-pill,
+  body main.dj-unified-page .dj-dark,
+  body main.dj-unified-page .dj-primary-btn,
+  body main.dj-unified-page .dj-total-action{
+    background:linear-gradient(135deg,#0d7fc8,#0a5f9a)!important;
+    color:#fff!important;
+    border:1px solid rgba(90,194,255,.45)!important;
+    box-shadow:0 8px 22px rgba(0,87,145,.24)!important;
+  }
+  body main.dj-unified-page .dj-outline{
+    background:rgba(6,30,48,.72)!important;
+    color:#eaf4fa!important;
+    border:1px solid rgba(112,190,239,.30)!important;
+  }
+
+  /* Old rev pages become the same desktop canvas */
+  body main.dj-unified-page>.rev-phone.rev-inner{padding:12px 30px 32px 18px!important}
+  body main.dj-unified-page .rev-screen-body{
+    padding:0!important;
+    background:transparent!important;
+    color:var(--dj-text)!important;
+  }
+  body main.dj-unified-page .rev-nav{display:none!important}
+  body main.dj-unified-page .rev-white-panel,
+  body main.dj-unified-page .rev-saved-row,
+  body main.dj-unified-page .dj-unit-panel{
+    background:var(--dj-panel)!important;
+    color:var(--dj-text)!important;
+    border:1px solid var(--dj-line)!important;
+    border-radius:14px!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 14px 34px rgba(0,0,0,.20)!important;
+    backdrop-filter:blur(18px)!important;
+  }
+  body main.dj-unified-page .rev-saved-row h2,
+  body main.dj-unified-page .rev-saved-row p{color:var(--dj-text)!important}
+  body main.dj-unified-page .rev-saved-top small{color:var(--dj-gold)!important}
+  body main.dj-unified-page .rev-select-row,
+  body main.dj-unified-page .rev-search-input{
+    background:var(--dj-field)!important;
+    color:#fff!important;
+    border:1px solid rgba(112,190,239,.28)!important;
+    box-shadow:none!important;
+  }
+
+  /* Form controls across all desktop routes */
+  body main.dj-unified-page input,
+  body main.dj-unified-page select,
+  body main.dj-unified-page textarea{
+    background:var(--dj-field)!important;
+    color:#fff!important;
+    border-color:rgba(112,190,239,.28)!important;
+    box-shadow:none!important;
+    outline:none!important;
+  }
+  body main.dj-unified-page input::placeholder,
+  body main.dj-unified-page textarea::placeholder{color:#7f98a8!important}
+  body main.dj-unified-page option{background:#0d2130!important;color:#fff!important}
+  body main.dj-unified-page input:focus,
+  body main.dj-unified-page select:focus,
+  body main.dj-unified-page textarea:focus{
+    border-color:rgba(70,190,255,.72)!important;
+    box-shadow:0 0 0 3px rgba(36,166,239,.12)!important;
+  }
+
+  /* Quotation */
+  body main.dj-quote-page{background:
+    linear-gradient(115deg,rgba(3,15,27,.68),rgba(3,17,29,.48),rgba(3,15,25,.66)),
+    url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2400&q=92') center/cover fixed no-repeat!important}
+  body main.dj-quote-page>.dj-main{padding:12px 30px 32px 18px!important}
+  body main.dj-quote-page .dj-area{width:100%!important;max-width:none!important;min-width:0!important;margin:0!important;padding:0!important}
+  body main.dj-quote-page .dj-card,
+  body main.dj-quote-page .dj-fold,
+  body main.dj-quote-page .dj-total{
+    background:var(--dj-panel)!important;
+    border-color:var(--dj-line)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 14px 34px rgba(0,0,0,.20)!important;
+    color:#fff!important;
+  }
+
+  /* Price library */
+  body main.dj-library-page .dj-library-tabs{
+    display:flex!important;
+    gap:7px!important;
+    overflow-x:auto!important;
+    padding:4px!important;
+    margin:0 0 18px!important;
+    background:rgba(5,22,35,.60)!important;
+    border:1px solid rgba(112,190,239,.18)!important;
+    border-radius:12px!important;
+  }
+  body main.dj-library-page .dj-library-tabs button{
+    min-height:42px!important;
+    background:rgba(9,42,65,.70)!important;
+    color:#dceaf2!important;
+    border:1px solid rgba(112,190,239,.18)!important;
+    border-radius:9px!important;
+  }
+  body main.dj-library-page .dj-library-tabs button.active,
+  body main.dj-library-page .dj-library-tabs button[aria-selected="true"]{
+    background:linear-gradient(135deg,#0d7fc8,#0a5f9a)!important;
+    color:#fff!important;
+    border-color:rgba(90,194,255,.5)!important;
+  }
+  body main.dj-library-page .dj-height-btn,
+  body main.dj-library-page .dj-width-btn{
+    background:rgba(6,29,46,.74)!important;
+    color:#eaf4f9!important;
+    border-color:rgba(112,190,239,.22)!important;
+  }
+  body main.dj-library-page .dj-height-btn.active,
+  body main.dj-library-page .dj-width-btn.active{
+    background:rgba(12,112,184,.35)!important;
+    color:#fff!important;
+    border-color:rgba(82,190,255,.55)!important;
+  }
+
+  /* Hours */
+  body main.dj-hours-page .dj-unified-content{padding:28px 30px 32px 18px!important}
+  body main.dj-hours-page .dj-page-inner{max-width:1200px!important;margin:0!important}
+  body main.dj-hours-page .dj-page-inner>h1{font-size:36px!important;margin:4px 0 6px!important}
+  body main.dj-hours-page .dj-page-inner>p{margin:0 0 24px!important}
+  body main.dj-hours-page section{
+    background:var(--dj-panel)!important;
+    color:#fff!important;
+    border:1px solid var(--dj-line)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 14px 34px rgba(0,0,0,.20)!important;
+    backdrop-filter:blur(18px)!important;
+  }
+  body main.dj-hours-page table{color:#eef6fa!important}
+  body main.dj-hours-page thead tr{background:rgba(13,62,91,.66)!important}
+  body main.dj-hours-page th{color:#dceaf1!important}
+  body main.dj-hours-page td{border-color:rgba(112,190,239,.12)!important}
+  body main.dj-hours-page tbody tr:hover{background:rgba(52,159,221,.06)!important}
+  body main.dj-hours-page button{
+    border-color:rgba(112,190,239,.28)!important;
+    color:#fff!important;
+  }
+  body main.dj-hours-page button[style*="17613d"]{
+    background:linear-gradient(135deg,#0d7fc8,#0a5f9a)!important;
+    border-color:rgba(90,194,255,.45)!important;
+  }
+  body main.dj-hours-page .dj-page-inner div[style*="background"]{
+    background:rgba(10,43,66,.54)!important;
+    color:#fff!important;
+  }
+
+  /* Tools / Addresses / Measurements */
+  body main.dj-tools-page .dj-unified-content,
+  body main.dj-skoda-page .dj-unified-content,
+  body main.dj-cutting-page .dj-unified-content{padding:28px 30px 32px 18px!important}
+  body main.dj-tools-page .dj-unified-content>h1,
+  body main.dj-skoda-page .dj-unified-content>h1,
+  body main.dj-cutting-page .dj-unified-content h1{color:#fff!important}
+  body main.dj-tools-page .dj-unified-content>p,
+  body main.dj-skoda-page .dj-unified-content>p,
+  body main.dj-cutting-page .dj-unified-content>div:first-child p{color:var(--dj-muted)!important}
+
+  body main.dj-tools-page .dj-unified-content a[style*="display: block"],
+  body main.dj-tools-page .dj-unified-content>div>div[style*="background"],
+  body main.dj-tools-page .dj-unified-content>div>div>div[style*="background"]{
+    background:var(--dj-panel)!important;
+    color:#eef6fa!important;
+    border-color:var(--dj-line)!important;
+  }
+
+  /* Škoda */
+  body main.dj-skoda-page section{
+    background:var(--dj-panel)!important;
+    color:#fff!important;
+    border-color:var(--dj-line)!important;
+  }
+  body main.dj-skoda-page section h2,
+  body main.dj-skoda-page section h3,
+  body main.dj-skoda-page section strong{color:#fff!important}
+  body main.dj-skoda-page section p,
+  body main.dj-skoda-page section span{color:var(--dj-muted)!important}
+  body main.dj-skoda-page section div[style*="background"],
+  body main.dj-skoda-page section label[style*="background"]{
+    background:rgba(9,42,65,.62)!important;
+    color:#fff!important;
+    border-color:rgba(112,190,239,.22)!important;
+  }
+  body main.dj-skoda-page button{
+    color:#fff!important;
+    border-color:rgba(112,190,239,.30)!important;
+  }
+
+  /* Cutting list */
+  body main.dj-cutting-page section{
+    background:var(--dj-panel)!important;
+    color:#fff!important;
+    border-color:var(--dj-line)!important;
+  }
+  body main.dj-cutting-page section p,
+  body main.dj-cutting-page section small{color:var(--dj-muted)!important}
+  body main.dj-cutting-page section div[style*="background"]{
+    background:rgba(9,42,65,.60)!important;
+    color:#fff!important;
+  }
+  body main.dj-cutting-page table{color:#eef6fa!important}
+  body main.dj-cutting-page td,
+  body main.dj-cutting-page th{border-color:rgba(112,190,239,.14)!important}
+  body main.dj-cutting-page .dj-cut-print{display:none}
+
+  /* Preview keeps the actual A4 quotation white, while the app around it matches */
+  body .dj-preview-page>.dj-preview-body{
+    padding:12px 30px 32px 18px!important;
+    background:transparent!important;
+  }
+  body .dj-preview-page .no-print{
+    max-width:none!important;
+    margin:0 0 18px!important;
+    padding:0!important;
+  }
+  body .dj-preview-page .dj-quotation-paper{
+    background:#fff!important;
+    color:#111827!important;
+    border-radius:14px!important;
+    box-shadow:0 20px 60px rgba(0,0,0,.30)!important;
+  }
+  body .dj-preview-page .dj-quotation-paper h1,
+  body .dj-preview-page .dj-quotation-paper h2,
+  body .dj-preview-page .dj-quotation-paper h3,
+  body .dj-preview-page .dj-quotation-paper p,
+  body .dj-preview-page .dj-quotation-paper small{color:inherit!important}
+
+  /* Smooth interactions without moving the layout */
+  body main.dj-unified-page button,
+  body main.dj-unified-page a,
+  body main.dj-glass-home button,
+  body main.dj-glass-home a{transition:background-color .14s ease,border-color .14s ease,box-shadow .14s ease,color .14s ease!important}
+  body main.dj-unified-page button:hover,
+  body main.dj-unified-page a:hover{filter:brightness(1.06)}
 }

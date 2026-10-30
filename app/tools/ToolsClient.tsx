@@ -69,8 +69,11 @@ return <main className="rev-shell dj-full-desktop dj-functional"><DesktopSidebar
  }
  return <div key={group.key} style={{borderBottom:'1px solid #e1e8e3',padding:'14px 0'}}>
   <div style={{display:'flex',justifyContent:'space-between',gap:16,flexWrap:'wrap',alignItems:'center'}}>
-   <div><strong>{group.label}</strong><div style={{fontSize:13,color:'#6b7b72',marginTop:3}}>{group.items.length} locations</div></div>
-   <button type="button" onClick={()=>{setOpenSupplier(isOpen?null:group.key);setAddingSupplier(null)}} style={{...primary,background:'#eaf4ee',color:'#173e2e'}}>{isOpen?'Hide locations ↑':`Locations (${group.items.length}) ↓`}</button>
+   <button type="button" onClick={()=>{setOpenSupplier(isOpen?null:group.key);setAddingSupplier(null)}} aria-expanded={isOpen} style={{background:'transparent',border:0,padding:0,textAlign:'left',cursor:'pointer',color:'inherit',flex:'1 1 260px'}}>
+    <strong style={{fontSize:15}}>{group.label}</strong>
+    <div style={{fontSize:13,color:'#6b7b72',marginTop:3}}>{group.items.length} saved locations · {isOpen?'hide locations':'press to choose location'}</div>
+   </button>
+   <button type="button" onClick={()=>{setOpenSupplier(isOpen?null:group.key);setAddingSupplier(null)}} style={{...primary,background:'#eaf4ee',color:'#173e2e'}}>{isOpen?'Close ↑':`Choose location (${group.items.length}) ↓`}</button>
   </div>
   {isOpen&&<div style={{marginTop:12,padding:'12px 14px',background:'#f7faf8',border:'1px solid #e2ebe5',borderRadius:12,display:'grid',gap:8}}>
    {group.items.map(x=><div key={x.id} style={{display:'flex',justifyContent:'space-between',gap:12,alignItems:'center',flexWrap:'wrap',padding:'9px 0',borderBottom:'1px solid #e7eee9'}}>

@@ -938,3 +938,10 @@ body .dj-glass-home .library{grid-column:1!important;grid-row:2!important}
 body .dj-glass-home .jobs{grid-column:2!important;grid-row:2!important}
 body .dj-glass-home .skoda{grid-column:2!important;grid-row:3!important}
 }
+
+/* Weekly hours replacement panel */
+.weekly-hours-total{display:flex;align-items:baseline;gap:10px;padding:22px 4px 18px}
+.weekly-hours-total strong{font-size:42px;line-height:1;color:#ffc45e}
+.weekly-hours-total span{color:#b9cbd7;font-size:13px}
+.weekly-hours-days{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:14px}
+.weekly-hours-days span{padding:9px 6px;text-align:center;border:1px solid #76c4f244;border-radius:8px;background:#0a294077;color:#dceaf3;font-size:11px}

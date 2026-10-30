@@ -14,7 +14,7 @@ const starter:Furniture[]=[
 {id:'freestanding',name:'Freestanding Wall',materials:[{id:'fixings',name:'Fixings',qty:2,unit:'packs'}]}
 ];
 const extras=[{key:'bin',name:'Bin'},{key:'sink',name:'Sink'},{key:'tap',name:'Tap'}];
-const style={card:{background:'#fff',border:'1px solid #dce8df',borderRadius:15,padding:18} as React.CSSProperties,input:{width:'100%',minWidth:0,border:'1px solid #cbdcd0',borderRadius:9,padding:'10px 12px',fontSize:15,boxSizing:'border-box'} as React.CSSProperties,button:{border:'1px solid #bfd7c6',background:'#f0f7f2',borderRadius:9,padding:'9px 13px',cursor:'pointer',fontWeight:650,color:'#16452d'} as React.CSSProperties};
+const style={card:{background:'rgba(7,28,45,.78)',border:'1px solid rgba(112,190,239,.30)',borderRadius:15,padding:18,boxShadow:'inset 0 1px 0 rgba(255,255,255,.06),0 16px 36px rgba(0,0,0,.20)',backdropFilter:'blur(18px)',color:'#f4f8fb'} as React.CSSProperties,input:{width:'100%',minWidth:0,border:'1px solid rgba(112,190,239,.28)',borderRadius:9,padding:'10px 12px',fontSize:15,boxSizing:'border-box',background:'rgba(3,18,30,.72)',color:'#f4f8fb'} as React.CSSProperties,button:{border:'1px solid rgba(112,190,239,.35)',background:'rgba(10,50,76,.78)',borderRadius:9,padding:'9px 13px',cursor:'pointer',fontWeight:650,color:'#f4f8fb'} as React.CSSProperties};
 const uid=()=>crypto.randomUUID();
 export default function SkodaPage(){
 const account=useDeltaAccount();

@@ -2007,3 +2007,48 @@ body .dj-glass-home .skoda-left{grid-column:1!important;grid-row:2!important}
     overflow:visible!important;
   }
 }
+
+/* Legacy-proof inner rev components. */
+@media screen and (min-width:900px){
+  body main.rev-shell.dj-full-desktop.dj-unified-page>.rev-phone.rev-inner{
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    min-height:100vh!important;
+    margin:0!important;
+    padding:var(--dj-page-pad-top) var(--dj-page-pad-x) 32px var(--dj-page-pad-left)!important;
+    background:transparent!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    overflow:visible!important;
+  }
+  body main.rev-shell.dj-full-desktop.dj-unified-page .rev-screen-body.dj-page-body{
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:0!important;
+    background:transparent!important;
+    color:var(--dj-text)!important;
+  }
+  body main.rev-shell.dj-full-desktop.dj-unified-page .rev-screen-head.dj-page-header{
+    display:flex!important;
+    min-height:62px!important;
+    height:auto!important;
+    margin:0 0 18px!important;
+    padding:10px 14px!important;
+    border:1px solid rgba(138,202,240,.31)!important;
+    border-radius:14px!important;
+    background:rgba(7,27,43,.66)!important;
+    color:#fff!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 14px 34px rgba(0,0,0,.18)!important;
+  }
+  body main.rev-shell.dj-full-desktop.dj-unified-page .rev-saved-row,
+  body main.rev-shell.dj-full-desktop.dj-unified-page .rev-white-panel{
+    background:var(--dj-panel)!important;
+    color:var(--dj-text)!important;
+    border:1px solid var(--dj-line)!important;
+    border-radius:14px!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 14px 34px rgba(0,0,0,.20)!important;
+  }
+}

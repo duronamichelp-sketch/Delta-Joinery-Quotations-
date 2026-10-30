@@ -66,7 +66,7 @@ return <main className="rev-shell dj-full-desktop dj-functional"><DesktopSidebar
  if(!multiple){
   const x=group.items[0];
   const isSingleOpen=openSupplier===group.key;
-  return <div key={x.id} style={{borderBottom:'1px solid #e1e8e3',padding:'14px 0'}}>
+  return <div key={x.id} style={{border:'1px solid #e2ebe5',borderRadius:16,background:'#fff',boxShadow:'0 8px 24px rgba(20,55,41,.05)',overflow:'hidden',padding:'16px',marginBottom:2}}>
    <div style={{display:'flex',justifyContent:'space-between',gap:16,flexWrap:'wrap',alignItems:'center'}}>
     <div><strong>{x.name}</strong><div>{x.eircode}</div></div>
     <div style={{display:'flex',alignItems:'center',gap:10}}>
@@ -85,24 +85,24 @@ return <main className="rev-shell dj-full-desktop dj-functional"><DesktopSidebar
    </div>}
   </div>
  }
- return <div key={group.key} style={{borderBottom:'1px solid #e1e8e3',padding:'14px 0'}}>
-  <div style={{display:'flex',justifyContent:'space-between',gap:16,flexWrap:'wrap',alignItems:'center'}}>
-   <button type="button" onClick={()=>{setOpenSupplier(isOpen?null:group.key);setAddingSupplier(null)}} aria-expanded={isOpen} style={{background:'transparent',border:0,padding:0,textAlign:'left',cursor:'pointer',color:'inherit',flex:'1 1 260px'}}>
-    <strong style={{fontSize:15}}>{group.label}</strong>
-    <div style={{fontSize:13,color:'#6b7b72',marginTop:3}}>{group.items.length} saved locations · {isOpen?'hide locations':'press to choose location'}</div>
+ return <div key={group.key} style={{border:'1px solid #e2ebe5',borderRadius:16,background:'#fff',boxShadow:'0 8px 24px rgba(20,55,41,.05)',overflow:'hidden',marginBottom:2}}>
+  <div style={{display:'flex',justifyContent:'space-between',gap:16,flexWrap:'wrap',alignItems:'center',padding:'16px 16px 14px'}}>
+   <button type="button" onClick={()=>{setOpenSupplier(isOpen?null:group.key);setAddingSupplier(null)}} aria-expanded={isOpen} style={{background:'transparent',border:0,padding:0,textAlign:'left',cursor:'pointer',color:'inherit',flex:'1 1 260px',display:'flex',alignItems:'center',gap:12}}><span aria-hidden="true" style={{width:38,height:38,borderRadius:10,background:'#eef4f0',display:'grid',placeItems:'center',fontSize:18}}>⌖</span><span>
+    <strong style={{fontSize:16,display:'block'}}>{group.label}</strong>
+    <span style={{display:'block',fontSize:13,color:'#6b7b72',marginTop:3}}>{group.items.length} saved location{group.items.length===1?'':'s'}</span></span>
    </button>
-   <button type="button" onClick={()=>{setOpenSupplier(isOpen?null:group.key);setAddingSupplier(null)}} style={{...primary,background:'#eaf4ee',color:'#173e2e'}}>{isOpen?'Close ↑':`Choose location (${group.items.length}) ↓`}</button>
+   <button type="button" onClick={()=>{setOpenSupplier(isOpen?null:group.key);setAddingSupplier(null)}} style={{...primary,background:'#edf5f0',color:'#173e2e',padding:'10px 14px',fontWeight:700}}>{group.items.length} Location{group.items.length===1?'':'s'} {isOpen?'↑':'↓'}</button>
   </div>
-  {isOpen&&<div style={{marginTop:12,padding:'12px 14px',background:'#f7faf8',border:'1px solid #e2ebe5',borderRadius:12,display:'grid',gap:8}}>
-   {group.items.map(x=><div key={x.id} style={{display:'flex',justifyContent:'space-between',gap:12,alignItems:'center',flexWrap:'wrap',padding:'9px 0',borderBottom:'1px solid #e7eee9'}}>
-    <div><strong style={{fontSize:14}}>{addressLocation(x.name)}</strong><div>{x.eircode}</div></div>
+  {isOpen&&<div style={{borderTop:'1px solid #edf1ee',padding:'4px 14px 14px',background:'#fff',display:'grid',gap:0}}>
+   {group.items.map(x=><div key={x.id} style={{display:'flex',justifyContent:'space-between',gap:12,alignItems:'center',flexWrap:'wrap',padding:'13px 2px',borderBottom:'1px solid #edf1ee'}}>
+    <div style={{display:'flex',alignItems:'center',gap:10}}><span aria-hidden="true">📍</span><div><strong style={{fontSize:14}}>{addressLocation(x.name)}</strong><div style={{fontSize:13,color:'#6b7b72'}}>{x.eircode}</div></div></div>
     <div style={{display:'flex',gap:8,alignItems:'center'}}><button type="button" onClick={()=>{setEditing(x.id);setName(x.name);setEircode(x.eircode);window.scrollTo({top:0,behavior:'smooth'})}} style={{...primary,background:'#eaf4ee',color:'#173e2e',padding:'9px 13px'}}>Edit</button><a style={{...primary,textDecoration:'none',padding:'9px 13px'}} href={'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(x.eircode+', Ireland')+'&travelmode=driving'} target="_blank" rel="noopener noreferrer">Go Now ↗</a><button type="button" onClick={()=>{void save(addresses.filter(v=>v.id!==x.id))}}>Delete</button></div>
    </div>)}
    {addingSupplier===group.key?<form onSubmit={async e=>{e.preventDefault();if(!newLocation.trim()||!newLocationEircode.trim())return;const item:Address={id:crypto.randomUUID(),name:`${group.label} (${newLocation.trim()})`,eircode:newLocationEircode.trim().toUpperCase()};if(await save([item,...addresses])){setNewLocation('');setNewLocationEircode('');setAddingSupplier(null)}}} style={{display:'grid',gridTemplateColumns:'minmax(180px,1fr) minmax(140px,.6fr) auto',gap:8,marginTop:6}}>
     <input aria-label="Location name" placeholder="Location e.g. Blanchardstown" value={newLocation} onChange={e=>setNewLocation(e.target.value)} style={{...field,padding:'10px'}} required/>
     <input aria-label="Location Eircode" placeholder="Eircode / postcode" value={newLocationEircode} onChange={e=>setNewLocationEircode(e.target.value)} style={{...field,padding:'10px'}} required/>
     <button disabled={savingAddress} style={{...primary,padding:'10px 14px'}} type="submit">Add</button>
-   </form>:<button type="button" onClick={()=>{setAddingSupplier(group.key);setNewLocation('');setNewLocationEircode('')}} style={{justifySelf:'start',background:'transparent',border:'1px dashed #9db8a8',color:'#173e2e',borderRadius:9,padding:'9px 12px',cursor:'pointer'}}>+ Add another location</button>}
+   </form>:<button type="button" onClick={()=>{setAddingSupplier(group.key);setNewLocation('');setNewLocationEircode('')}} style={{marginTop:10,width:'100%',background:'#f2f8f4',border:'1px dashed #a9c1b2',color:'#173e2e',borderRadius:12,padding:'12px 14px',cursor:'pointer',fontWeight:700}}>＋ Add another location</button>}
   </div>}
  </div>
 })}{addresses.length===0?<p>No addresses saved yet.</p>:matchingAddresses.length===0?<p>No matches found. Try a different name or Eircode.</p>:null}</div></div></div>}

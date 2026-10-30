@@ -15,6 +15,7 @@ const clean=(v?:string)=>String(v||'').trim().toLowerCase();
 export default function FinishedQuotes(){
  const [quotes,setQuotes]=useState<Q[]>([]),[tasks,setTasks]=useState<Task[]>([]),[search,setSearch]=useState('');
  const [selected,setSelected]=useState<Selected|null>(null);
+ const [manualEdit,setManualEdit]=useState<Task|null>(null);
  const [imageUrls,setImageUrls]=useState<Record<string,string>>({});
  const [storageClient]=useState<SupabaseClient|null>(()=>{const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;return url&&key?createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true}}):null});
 
@@ -54,6 +55,13 @@ export default function FinishedQuotes(){
   const updated=tasks.map(t=>clean(t.project)===clean(q.project)&&clean(t.client)===clean(q.client)?{...t,status:'upcoming' as const,finished:undefined}:t);
   setTasks(updated);localStorage.setItem('dj_quotation_tasks',JSON.stringify(updated));setSelected(null);
  }
+ function editFull(q:Q){localStorage.setItem('dj_quote',JSON.stringify(q));window.location.href='/quote'}
+ function saveManualEdit(){
+  if(!manualEdit)return;
+  const next=tasks.map(t=>t.id===manualEdit.id?manualEdit:t);
+  setTasks(next);localStorage.setItem('dj_quotation_tasks',JSON.stringify(next));
+  setSelected({kind:'manual',task:manualEdit});setManualEdit(null);
+ }
 
  if(selected){
   const isSaved=selected.kind==='saved';
@@ -64,7 +72,7 @@ export default function FinishedQuotes(){
   const client=q?.client||t?.client||'No client';
   const amount=q?details!.total:Number(t?.amount)||0;
   return <main className="rev-shell dj-full-desktop dj-functional dj-unified-page dj-finished-page"><DesktopSidebar active="finished"/><div className="rev-phone rev-inner">
-   <header className="rev-screen-head dj-page-header dj-route-toolbar"><button type="button" className="rev-back-link" onClick={()=>setSelected(null)}>‹</button><b>Finished Quotation</b><div className="dj-header-actions"><button type="button" className="dj-primary-action" onClick={()=>window.print()}>🖨 Print Quotation</button>{q&&<button className="dj-secondary-action" onClick={()=>reopen(q)}>↶ Reopen to Saved</button>}</div></header>
+   <header className="rev-screen-head dj-page-header dj-route-toolbar"><button type="button" className="rev-back-link" onClick={()=>{setManualEdit(null);setSelected(null)}}>‹</button><b>Finished Quotation</b><div className="dj-header-actions"><button type="button" className="dj-primary-action" onClick={()=>window.print()}>🖨 Print Quotation</button>{q&&<button className="dj-secondary-action" onClick={()=>editFull(q)}>✎ Edit Quotation</button>}{t&&<button className="dj-secondary-action" onClick={()=>setManualEdit({...t})}>✎ Edit Details</button>}{q&&<button className="dj-secondary-action" onClick={()=>reopen(q)}>↶ Reopen to Saved</button>}</div></header>
    <section className="rev-screen-body dj-page-body">
     <div className="dj-print-tech-title">
      <div className="brand"><strong>DELTA JOINERY</strong><span>FINISHED QUOTATION RECORD</span></div>
@@ -77,6 +85,19 @@ export default function FinishedQuotes(){
      <div><p className="rev-kicker-light">{isSaved?'ORIGINAL QUOTATION':'MANUAL / HISTORICAL ENTRY'}</p><h1>{title}</h1><p>{client}</p></div>
      <strong>{currency(amount)}</strong>
     </div>
+
+    {t&&manualEdit&&<section className="dj-finished-edit-panel">
+     <div className="head"><div><h2>Edit Finished Quotation</h2><p>Update the historical/manual entry without changing its finished status.</p></div><button type="button" onClick={()=>setManualEdit(null)}>✕</button></div>
+     <div className="fields">
+      <label>Client<input value={manualEdit.client} onChange={e=>setManualEdit({...manualEdit,client:e.target.value})}/></label>
+      <label>Project<input value={manualEdit.project} onChange={e=>setManualEdit({...manualEdit,project:e.target.value})}/></label>
+      <label>Quote Date<input type="date" value={manualEdit.created||''} onChange={e=>setManualEdit({...manualEdit,created:e.target.value})}/></label>
+      <label>Finished Date<input type="date" value={manualEdit.finished||''} onChange={e=>setManualEdit({...manualEdit,finished:e.target.value})}/></label>
+      <label>Amount (€)<input type="number" min="0" step="0.01" value={manualEdit.amount??''} onChange={e=>setManualEdit({...manualEdit,amount:Number(e.target.value)||0})}/></label>
+      <label className="wide">Notes<textarea value={manualEdit.notes||''} onChange={e=>setManualEdit({...manualEdit,notes:e.target.value})}/></label>
+     </div>
+     <div className="actions"><button type="button" className="dj-primary-action" onClick={saveManualEdit}>Save Changes</button><button type="button" className="dj-secondary-action" onClick={()=>setManualEdit(null)}>Cancel</button></div>
+    </section>}
 
     <div className="dj-finished-original-meta">
      <span><b>Client</b>{client}</span>

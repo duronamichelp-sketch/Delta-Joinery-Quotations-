@@ -2920,3 +2920,274 @@ body .dj-glass-home .skoda-left{grid-column:1!important;grid-row:2!important}
     color:#111!important;
   }
 }
+
+/* TECHNICAL LANDSCAPE FINISHED-QUOTATION PRINT */
+.dj-print-tech-title{display:none}
+@page{size:A4 landscape;margin:8mm}
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  html,body{width:100%!important;background:#fff!important;color:#111!important;font-family:Arial,Helvetica,sans-serif!important}
+  body main.dj-finished-page .dj-page-body{
+    display:grid!important;
+    grid-template-columns:repeat(12,minmax(0,1fr))!important;
+    gap:4mm!important;
+    align-items:start!important;
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:0!important;
+  }
+
+  body main.dj-finished-page .dj-print-tech-title{
+    display:grid!important;
+    grid-column:1/-1!important;
+    grid-template-columns:2.1fr 3fr 1.7fr 1.4fr 1.6fr!important;
+    border:1.4px solid #111!important;
+    background:#fff!important;
+    break-inside:avoid!important;
+  }
+  body main.dj-finished-page .dj-print-tech-title>div{
+    display:grid!important;
+    align-content:center!important;
+    gap:1.5mm!important;
+    min-height:19mm!important;
+    padding:3mm 3.5mm!important;
+    border-left:1px solid #111!important;
+    box-sizing:border-box!important;
+  }
+  body main.dj-finished-page .dj-print-tech-title>div:first-child{border-left:0!important}
+  body main.dj-finished-page .dj-print-tech-title span{
+    color:#555!important;
+    font-size:6.5pt!important;
+    font-weight:700!important;
+    letter-spacing:.12em!important;
+  }
+  body main.dj-finished-page .dj-print-tech-title strong{
+    color:#111!important;
+    font-size:11pt!important;
+    line-height:1.1!important;
+  }
+  body main.dj-finished-page .dj-print-tech-title small{
+    color:#333!important;
+    font-size:7.5pt!important;
+  }
+  body main.dj-finished-page .dj-print-tech-title .brand{
+    background:#151515!important;
+  }
+  body main.dj-finished-page .dj-print-tech-title .brand strong{
+    color:#fff!important;
+    font-size:15pt!important;
+    letter-spacing:.08em!important;
+  }
+  body main.dj-finished-page .dj-print-tech-title .brand span{color:#d7d7d7!important}
+  body main.dj-finished-page .dj-print-tech-title .status strong{letter-spacing:.1em!important}
+  body main.dj-finished-page .dj-print-tech-title .value strong{
+    font-size:14pt!important;
+    text-align:right!important;
+  }
+
+  body main.dj-finished-page .dj-finished-original-head{display:none!important}
+
+  body main.dj-finished-page .dj-finished-original-meta{
+    grid-column:1/-1!important;
+    display:grid!important;
+    grid-template-columns:repeat(6,minmax(0,1fr))!important;
+    gap:0!important;
+    margin:0!important;
+    border:1px solid #111!important;
+    background:#fff!important;
+    break-inside:avoid!important;
+  }
+  body main.dj-finished-page .dj-finished-original-meta span{
+    min-height:13mm!important;
+    padding:2.5mm 3mm!important;
+    border:0!important;
+    border-left:1px solid #aaa!important;
+    border-radius:0!important;
+    background:#fff!important;
+    color:#111!important;
+    box-sizing:border-box!important;
+  }
+  body main.dj-finished-page .dj-finished-original-meta span:first-child{border-left:0!important}
+  body main.dj-finished-page .dj-finished-original-meta b{
+    color:#555!important;
+    font-size:6.3pt!important;
+    letter-spacing:.1em!important;
+  }
+
+  body main.dj-finished-page .dj-finished-original-card{
+    margin:0!important;
+    padding:0!important;
+    border:1px solid #111!important;
+    border-radius:0!important;
+    background:#fff!important;
+    color:#111!important;
+    box-shadow:none!important;
+    break-inside:avoid!important;
+  }
+  body main.dj-finished-page .dj-finished-original-card>h2{
+    margin:0!important;
+    padding:2.2mm 3mm!important;
+    border-bottom:1px solid #111!important;
+    background:#e9ecef!important;
+    color:#111!important;
+    font-size:8pt!important;
+    font-weight:800!important;
+    letter-spacing:.06em!important;
+    text-transform:uppercase!important;
+  }
+
+  body main.dj-finished-page .dj-print-details-card{
+    grid-column:1/-1!important;
+  }
+  body main.dj-finished-page .dj-print-details-card>p{
+    margin:0!important;
+    padding:3mm!important;
+    color:#111!important;
+    font-size:8pt!important;
+    line-height:1.35!important;
+  }
+  body main.dj-finished-page .dj-finished-contact{
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:0!important;
+  }
+  body main.dj-finished-page .dj-finished-contact span{
+    min-height:12mm!important;
+    padding:2.5mm 3mm!important;
+    border:0!important;
+    border-left:1px solid #bbb!important;
+    border-radius:0!important;
+    background:#fff!important;
+    color:#111!important;
+  }
+  body main.dj-finished-page .dj-finished-contact span:first-child{border-left:0!important}
+  body main.dj-finished-page .dj-finished-contact .wide{
+    grid-column:1/-1!important;
+    border-left:0!important;
+    border-top:1px solid #bbb!important;
+  }
+  body main.dj-finished-page .dj-finished-contact b{
+    color:#555!important;
+    font-size:6.2pt!important;
+    letter-spacing:.08em!important;
+  }
+
+  body main.dj-finished-page .dj-print-lines-card{
+    grid-column:1/9!important;
+  }
+  body main.dj-finished-page .dj-print-breakdown-card{
+    grid-column:9/-1!important;
+  }
+  body main.dj-finished-page .dj-print-photos-card{
+    grid-column:1/-1!important;
+  }
+
+  body main.dj-finished-page .dj-finished-lines{
+    border:0!important;
+    border-radius:0!important;
+    overflow:visible!important;
+  }
+  body main.dj-finished-page .dj-finished-lines>.head,
+  body main.dj-finished-page .dj-finished-lines>.row{
+    display:grid!important;
+    grid-template-columns:1.1fr 2.5fr .65fr .8fr .9fr!important;
+    gap:0!important;
+    min-width:0!important;
+    padding:0!important;
+  }
+  body main.dj-finished-page .dj-finished-lines>.head{
+    background:#f2f3f4!important;
+    color:#111!important;
+    font-size:6.3pt!important;
+    font-weight:800!important;
+  }
+  body main.dj-finished-page .dj-finished-lines>.head span,
+  body main.dj-finished-page .dj-finished-lines>.row span,
+  body main.dj-finished-page .dj-finished-lines>.row strong{
+    min-height:8mm!important;
+    padding:2mm 2.4mm!important;
+    border-left:1px solid #c4c8cc!important;
+    box-sizing:border-box!important;
+    color:#111!important;
+    text-align:left!important;
+  }
+  body main.dj-finished-page .dj-finished-lines>.head span:first-child,
+  body main.dj-finished-page .dj-finished-lines>.row span:first-child{border-left:0!important}
+  body main.dj-finished-page .dj-finished-lines>.row{
+    border-top:1px solid #d1d4d7!important;
+    background:#fff!important;
+    font-size:7.2pt!important;
+  }
+  body main.dj-finished-page .dj-finished-lines>.row strong{
+    text-align:right!important;
+    font-weight:800!important;
+  }
+
+  body main.dj-finished-page .dj-finished-breakdown{
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    border:0!important;
+    border-radius:0!important;
+    background:#fff!important;
+  }
+  body main.dj-finished-page .dj-finished-breakdown>div{
+    min-height:8mm!important;
+    padding:2mm 3mm!important;
+    border-top:1px solid #d1d4d7!important;
+    background:#fff!important;
+    font-size:7.5pt!important;
+  }
+  body main.dj-finished-page .dj-finished-breakdown>div:first-child{border-top:0!important}
+  body main.dj-finished-page .dj-finished-breakdown .subtotal{
+    background:#f2f3f4!important;
+    font-weight:800!important;
+  }
+  body main.dj-finished-page .dj-finished-breakdown .total{
+    background:#151515!important;
+  }
+  body main.dj-finished-page .dj-finished-breakdown .total span,
+  body main.dj-finished-page .dj-finished-breakdown .total strong{
+    color:#fff!important;
+    font-size:9pt!important;
+  }
+  body main.dj-finished-page .dj-finished-breakdown span,
+  body main.dj-finished-page .dj-finished-breakdown strong{
+    color:#111!important;
+  }
+
+  body main.dj-finished-page .dj-finished-blank{
+    min-height:28mm!important;
+    border:0!important;
+    border-radius:0!important;
+    background:
+      linear-gradient(#f3f4f5 1px,transparent 1px) 0 0/100% 7mm!important;
+  }
+
+  body main.dj-finished-page .dj-finished-readonly-gallery{
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    gap:3mm!important;
+    padding:3mm!important;
+  }
+  body main.dj-finished-page .dj-finished-readonly-gallery figure{
+    margin:0!important;
+    border:1px solid #999!important;
+    border-radius:0!important;
+    background:#fff!important;
+    break-inside:avoid!important;
+  }
+  body main.dj-finished-page .dj-finished-readonly-gallery img,
+  body main.dj-finished-page .dj-finished-readonly-gallery figure>div{
+    width:100%!important;
+    aspect-ratio:4/3!important;
+    object-fit:cover!important;
+    background:#f2f2f2!important;
+  }
+  body main.dj-finished-page .dj-finished-readonly-gallery figcaption{
+    padding:1.5mm 2mm!important;
+    color:#111!important;
+    font-size:6.5pt!important;
+  }
+}

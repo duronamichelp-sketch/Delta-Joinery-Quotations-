@@ -31,10 +31,10 @@ export default function SavedQuotes(){
  }
  const visible=quotes.filter(q=>!q.finished&&[q.number,q.client,q.project].join(' ').toLowerCase().includes(search.toLowerCase()));
  return <main className="rev-shell dj-full-desktop dj-functional dj-unified-page dj-saved-page"><DesktopSidebar active="quotes"/><div className="rev-phone rev-inner">
-  <header className="rev-screen-head dj-page-header dj-route-toolbar"><Link href="/" className="rev-back-link">‹</Link><b>Saved Quotations</b><div className="dj-header-actions"><Link href="/finished-quotes" className="dj-secondary-action">Finished Quotations</Link><Link href="/quote" className="rev-mint-pill">＋ New</Link></div></header>
+  <header className="rev-screen-head dj-page-header dj-route-toolbar"><Link href="/" className="rev-back-link">‹</Link><b>Saved Quotations</b><div className="dj-header-actions"><Link href="/finished-quotes" className="dj-secondary-action">Finished Quotations</Link><Link href="/quote?new=1" className="rev-mint-pill">＋ New</Link></div></header>
   <section className="rev-screen-body dj-page-body"><p className="rev-kicker-light">WORK IN PROGRESS</p><h1>Saved quotations</h1><p className="rev-sub">Every saved item and price stays here so you can continue exactly where you left off.</p>
    <input className="rev-select-row rev-search rev-search-input" aria-label="Search quotations" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search client, project or number..."/>
-   {visible.length===0?<div className="rev-white-panel"><p className="dj-empty-caption">No saved quotation drafts. Start a quotation and press Save Quotation to keep your progress here.</p><Link className="dj-primary-btn dj-total-action" href="/quote">Create quotation</Link></div>:visible.map(q=><div className="rev-saved-row" key={q.id}>
+   {visible.length===0?<div className="rev-white-panel"><p className="dj-empty-caption">No saved quotation drafts. Start a quotation and press Save Quotation to keep your progress here.</p><Link className="dj-primary-btn dj-total-action" href="/quote?new=1">Create quotation</Link></div>:visible.map(q=><div className="rev-saved-row" key={q.id}>
     <div className="rev-saved-top"><span>{q.number||'Quotation'}</span><small>Saved Draft</small></div>
     <h2>{q.project||'Untitled project'}</h2>
     <p>{q.client||'No client'} · {q.date||'No date'} · {currency(savedQuoteTotal(q))}{q.siteImages?.length?' · '+q.siteImages.length+' site photo'+(q.siteImages.length===1?'':'s'):''}</p>
@@ -42,6 +42,6 @@ export default function SavedQuotes(){
    </div>)}
    <p className="dj-storage-hint">Finish moves the quotation to Finished Quotations and adds its final value to the dashboard total.</p>
   </section>
-  <nav className="rev-nav"><Link href="/">⌂<small>Home</small></Link><Link href="/quote">▤<small>Quote</small></Link><Link href="/quotes" className="rev-nav-current">◷<small>Saved</small></Link><Link href="/units">▦<small>Library</small></Link></nav>
+  <nav className="rev-nav"><Link href="/">⌂<small>Home</small></Link><Link href="/quote?new=1">▤<small>Quote</small></Link><Link href="/quotes" className="rev-nav-current">◷<small>Saved</small></Link><Link href="/units">▦<small>Library</small></Link></nav>
  </div></main>
 }

@@ -154,7 +154,7 @@ const [doorRates,setDoorRates]=useState<Record<string,number>>(DEFAULT_FINISH_RA
   }catch(error){console.error(error);alert('Unable to generate PDF. Please try again.')}
  }
 
- return <main className="dj-preview-desktop min-h-screen bg-gray-100 text-gray-900"><DesktopSidebar active="preview"/><div className="dj-preview-body">
+ return <main className="dj-preview-desktop dj-unified-page dj-preview-page min-h-screen"><DesktopSidebar active="preview"/><div className="dj-preview-body">
  <div className="no-print mx-auto max-w-4xl p-4 flex flex-wrap justify-between items-center gap-3"><Link href="/quote" className="btn-outline">← Edit quotation</Link><button className="btn" onClick={printA4}>Download A4 PDF</button></div>
  <article id="dj-print-sheet" className="dj-quotation-paper mx-auto max-w-4xl bg-white p-7 md:p-12 shadow-sm print:shadow-none print:p-0" style={{minHeight:'90vh'}}>
  <header className="flex items-center justify-between gap-5 border-b-2 border-green-800 pb-7"><Image src="/delta-logo.png" alt="Delta Joinery" width={175} height={50} priority/><div className="text-right"><h1 className="text-xl md:text-2xl font-bold tracking-wide">QUOTATION</h1><p className="text-xs text-gray-500 mt-1">DELTA JOINERY</p><p className="text-xs font-bold text-red-700 mt-2">INTERNAL QUOTATION ONLY</p></div></header>

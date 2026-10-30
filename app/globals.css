@@ -1949,3 +1949,61 @@ body .dj-glass-home .skoda-left{grid-column:1!important;grid-row:2!important}
   }
   .dj-cut-print{display:block!important}
 }
+
+/* Legacy-proof geometry lock: these selectors intentionally outrank old rev/dj desktop rules. */
+@media screen and (min-width:900px){
+  body main.rev-shell.dj-full-desktop.dj-unified-page,
+  body main.dj-desktop.dj-unified-page,
+  body main.dj-preview-desktop.dj-unified-page{
+    display:grid!important;
+    grid-template-columns:var(--dj-shell-offset) minmax(0,1fr)!important;
+    padding:0!important;
+    margin:0!important;
+    width:100%!important;
+    max-width:100vw!important;
+    min-height:100vh!important;
+    overflow:visible!important;
+    background:
+      linear-gradient(115deg,rgba(3,15,27,.67),rgba(3,17,29,.42),rgba(3,15,25,.63)),
+      url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2400&q=92') center/cover fixed no-repeat!important;
+  }
+
+  body main.rev-shell.dj-full-desktop.dj-unified-page>.dj-shared-sidebar,
+  body main.dj-desktop.dj-unified-page>.dj-shared-sidebar,
+  body main.dj-preview-desktop.dj-unified-page>.dj-shared-sidebar{
+    display:flex!important;
+    position:fixed!important;
+    left:var(--dj-edge)!important;
+    top:var(--dj-edge)!important;
+    bottom:var(--dj-edge)!important;
+    width:var(--dj-sidebar-width)!important;
+    min-width:var(--dj-sidebar-width)!important;
+    max-width:var(--dj-sidebar-width)!important;
+    height:auto!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:20px 16px!important;
+    border-radius:16px!important;
+    background:linear-gradient(180deg,rgba(8,29,45,.90),rgba(5,20,33,.87))!important;
+    z-index:100!important;
+  }
+
+  body main.rev-shell.dj-full-desktop.dj-unified-page>.rev-phone,
+  body main.dj-desktop.dj-unified-page>.dj-main,
+  body main.dj-desktop.dj-unified-page>.dj-unified-content,
+  body main.dj-preview-desktop.dj-unified-page>.dj-preview-body{
+    grid-column:2!important;
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    min-height:100vh!important;
+    margin:0!important;
+    padding:var(--dj-page-pad-top) var(--dj-page-pad-x) 32px var(--dj-page-pad-left)!important;
+    background:transparent!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    transform:none!important;
+    zoom:1!important;
+    overflow:visible!important;
+  }
+}

@@ -1017,3 +1017,52 @@ html,body{max-width:100%;overflow-x:hidden!important}
 .dj-quote-glass .dj-area{grid-template-columns:minmax(0,1fr) 280px!important;gap:12px!important}
 .dj-quote-glass .dj-quotation-heading h1{font-size:34px!important}
 }
+
+/* FINAL DESKTOP SHELL LOCK — Home is the master layout for every desktop tab */
+@media(min-width:900px){
+html,body{width:100%;max-width:100%;overflow-x:hidden!important}
+.dj-glass-home,.dj-desktop{
+  width:100%!important;max-width:100vw!important;min-width:0!important;
+  box-sizing:border-box!important;
+}
+.dj-glass-home{grid-template-columns:220px minmax(0,1fr)!important}
+.dj-desktop{display:grid!important;grid-template-columns:220px minmax(0,1fr)!important;align-items:start!important}
+.dj-glass-home>.dj-shared-sidebar,
+.dj-desktop>.dj-shared-sidebar{
+  position:sticky!important;top:10px!important;
+  width:calc(100% - 12px)!important;min-width:0!important;max-width:none!important;
+  height:calc(100vh - 20px)!important;min-height:0!important;
+  margin:0 0 10px 12px!important;
+  box-sizing:border-box!important;
+  border:1px solid rgba(118,196,242,.34)!important;
+  border-radius:16px!important;
+  background:linear-gradient(180deg,rgba(8,29,45,.78),rgba(5,20,33,.72))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 18px 45px rgba(0,0,0,.28)!important;
+  backdrop-filter:blur(22px)!important;
+  overflow:hidden!important;
+}
+.dj-glass-home>.dj-shared-sidebar .dj-shared-brand,
+.dj-desktop>.dj-shared-sidebar .dj-shared-brand{background:transparent!important}
+.dj-glass-home>.dj-shared-sidebar nav,
+.dj-desktop>.dj-shared-sidebar nav{padding:8px 10px!important}
+.dj-glass-home>.dj-shared-sidebar nav>a,
+.dj-desktop>.dj-shared-sidebar nav>a,
+.dj-glass-home>.dj-shared-sidebar nav>button,
+.dj-desktop>.dj-shared-sidebar nav>button{
+  min-height:42px!important;margin:2px 0!important;padding:10px 12px!important;
+  border:1px solid transparent!important;border-radius:10px!important;
+  box-sizing:border-box!important;font-size:13px!important;
+}
+.dj-glass-home>.dj-shared-sidebar nav>a.current,
+.dj-desktop>.dj-shared-sidebar nav>a.current{
+  background:linear-gradient(90deg,rgba(207,135,43,.55),rgba(255,188,85,.28))!important;
+  border-color:rgba(255,194,91,.72)!important;
+  box-shadow:0 0 22px rgba(236,157,54,.30),inset 0 1px 0 rgba(255,255,255,.15)!important;
+}
+.dj-desktop>.dj-main{
+  width:100%!important;max-width:100%!important;min-width:0!important;
+  overflow-x:hidden!important;box-sizing:border-box!important;
+}
+.dj-desktop .dj-top{max-width:calc(100% - 36px)!important}
+.dj-desktop .dj-area{width:100%!important;max-width:100%!important;min-width:0!important}
+}

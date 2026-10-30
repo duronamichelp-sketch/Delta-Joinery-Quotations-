@@ -5,6 +5,7 @@ import Image from 'next/image';
 import {createClient,type SupabaseClient} from '@supabase/supabase-js';
 import DesktopSidebar from '../DesktopSidebar';
 import {Unit,Hardware,Labour,QuoteUnit,QuoteHardware,ExtraCost,DEFAULT_HARDWARE,DOOR_OPTIONS,DEFAULT_FINISH_RATES,doorSqm,pricedDoor,currency,read,UNIT_HEIGHTS,UNIT_WIDTHS,UNIT_DEPTHS,sizePrice,sizeKey,carcassArea} from '../../lib/data';
+import {savedQuoteDetails} from '../../lib/quotationTotals';
 type CostItem={id:string;name:string;price:number;unit:string};
 const DEFAULT_CNC=[{"id":"cnc-0","name":"MDF 22 Strada Handle","price":10,"unit":"door"},{"id":"cnc-1","name":"Frame Door","price":10,"unit":"door"},{"id":"cnc-2","name":"Shaker Door","price":25,"unit":"door"},{"id":"cnc-3","name":"Grooving","price":50,"unit":"m²"},{"id":"cnc-4","name":"Decor Pieces - High Complexity","price":45,"unit":"each"},{"id":"cnc-5","name":"Decor Pieces - Medium Complexity","price":30,"unit":"each"},{"id":"cnc-6","name":"Decor Pieces - Low Complexity","price":15,"unit":"each"},{"id":"cnc-7","name":"Bent Panel","price":120,"unit":"each"},{"id":"cnc-8","name":"Bent Panel - Shaker Door","price":170,"unit":"each"},{"id":"cnc-9","name":"Bent Panel - Big Piece","price":190,"unit":"each"},{"id":"cnc-10","name":"Bent Panel - Big Piece Shaker Door","price":240,"unit":"each"},{"id":"cnc-11","name":"Built-in Handle","price":20,"unit":"door"},{"id":"cnc-12","name":"PVC Film Covering","price":20,"unit":"piece"}];
 const DEFAULT_PRODUCTION:CostItem[]=[];
@@ -104,7 +105,14 @@ const electricTotal=er.reduce((a,x)=>a+x.qty*x.item.price,0),finishTotal=fr.redu
 const base=ur.reduce((a,x)=>a+x.qty*x.item.price,0),doors=ur.reduce((a,x)=>a+(x.adc?x.qty*pricedDoor(x,doorRates,x.item):0),0),hinges=0,hw=hr.reduce((a,x)=>a+x.qty*x.item.price,0),lb=lr.reduce((a,x)=>a+x.qty*x.item.price,0),grand=base+doors+hinges+hw+lb+electricTotal+finishTotal+fillerTotal+timberTotal+worktopTotal+cncTotal+productionTotal;
 const vatAmount=q.includeVat?Math.round(grand*0.135*100)/100:0;
 const finalTotal=grand+vatAmount;
-function save(){const all=read<any[]>('dj_saved_quotes',[]);const previous=all.find(x=>x.id===(q.number||''));const entry={...q,id:q.number||String(Date.now()),name:q.project,savedAt:new Date().toISOString(),totalAmount:Math.round(finalTotal*100)/100,finished:!!previous?.finished,finishedAt:previous?.finishedAt};try{localStorage.setItem('dj_saved_quotes',JSON.stringify([entry,...all.filter(x=>x.id!==entry.id)]));setStatus('Quotation saved — you can reopen it from Saved Quotations.')}catch{setStatus('Could not save. Browser storage may be full.')}}
+function save(){
+ const all=read<any[]>('dj_saved_quotes',[]);
+ const id=q.number||String(Date.now());
+ const previous=all.find(x=>x.id===id);
+ const snapshot=savedQuoteDetails({...q,id});
+ const entry={...q,id,name:q.project,savedAt:new Date().toISOString(),costLines:snapshot.lines,costBreakdown:snapshot.breakdown,subtotalAmount:Math.round(grand*100)/100,vatAmount:Math.round(vatAmount*100)/100,totalAmount:Math.round(finalTotal*100)/100,finished:!!previous?.finished,finishedAt:previous?.finishedAt};
+ try{localStorage.setItem('dj_saved_quotes',JSON.stringify([entry,...all.filter(x=>x.id!==entry.id)]));setStatus('Quotation saved — you can reopen it from Saved Quotations.')}catch{setStatus('Could not save. Browser storage may be full.')}
+}
 function newQuotation(){if(!window.confirm('Start a new quotation? Your saved quotations will be kept. Save the current quotation first if you want to keep it.'))return;setQ({...start(),number:'DJ-'+Date.now().toString()});setExpanded([]);setUc('');setHc('');setLc('');setCc('');setPcost('');setEc('');setFc('');setPc('');setTc('');setTimberFeet('');setWorktopChoice('');setWorktopQty('1');setQuery('');setStatus('');window.scrollTo({top:0,behavior:'smooth'});}
 const match=(name:string)=>name.toLowerCase().includes(query.toLowerCase());
 const counter=(type:'chosenUnits'|'chosenHardware'|'chosenLabour'|'chosenElectrics'|'chosenFinishes'|'chosenFillers'|'chosenCnc'|'chosenProduction',id:string,value:number)=><div className="dj-count"><button aria-label="Decrease" onClick={()=>qty(type,id,value-1)}>−</button><span>{value}</span><button aria-label="Increase" onClick={()=>qty(type,id,value+1)}>+</button></div>;

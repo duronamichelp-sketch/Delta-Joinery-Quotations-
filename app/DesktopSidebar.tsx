@@ -4,7 +4,7 @@ import {useState} from 'react';
 import {usePathname} from 'next/navigation';
 import {useDeltaAccount} from './CloudSync';
 
-export default function DesktopSidebar({active}:{active:'home'|'quote'|'quotes'|'library'|'preview'|'hours'|'tools'}){
+export default function DesktopSidebar({active}:{active:'home'|'quote'|'quotes'|'finished'|'library'|'preview'|'hours'|'tools'}){
   const account=useDeltaAccount();
   const pathname=usePathname();
   const [expanded,setExpanded]=useState(false);
@@ -18,6 +18,7 @@ export default function DesktopSidebar({active}:{active:'home'|'quote'|'quotes'|
       <Link className={active==='home'?'current':''} href="/">⌂ <span>Home</span></Link>
       <Link className={active==='quote'?'current':''} href="/quote">▤ <span>New Quotation</span></Link>
       <Link className={active==='quotes'?'current':''} href="/quotes">▤ <span>Saved Quotations</span></Link>
+      <Link className={active==='finished'?'current':''} href="/finished-quotes">✓ <span>Finished Quotations</span></Link>
       <Link className={active==='library'?'current':''} href="/units">▣ <span>Price Library</span></Link>
       <Link className={active==='preview'?'current':''} href="/preview">▤ <span>Preview / PDF</span></Link>
       <Link className={active==='hours'?'current':''} href="/hours">◷ <span>My Hours</span></Link>

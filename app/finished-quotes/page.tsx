@@ -18,7 +18,11 @@ export default function FinishedQuotes(){
  const filteredLegacy=legacy.filter(t=>[t.client,t.project,t.notes].join(' ').toLowerCase().includes(search.toLowerCase()));
  const total=finishedSaved.reduce((s,q)=>s+savedQuoteTotal(q),0)+legacy.reduce((s,t)=>s+(Number(t.amount)||0),0);
  function open(q:Q){localStorage.setItem('dj_quote',JSON.stringify(q));window.location.href='/quote'}
- function reopen(q:Q){const next=quotes.map(x=>x.id===q.id?{...x,finished:false,finishedAt:undefined}:x);setQuotes(next);localStorage.setItem('dj_saved_quotes',JSON.stringify(next))}
+ function reopen(q:Q){
+  const next=quotes.map(x=>x.id===q.id?{...x,finished:false,finishedAt:undefined}:x);setQuotes(next);localStorage.setItem('dj_saved_quotes',JSON.stringify(next));
+  const updated=tasks.map(t=>clean(t.project)===clean(q.project)&&clean(t.client)===clean(q.client)?{...t,status:'upcoming' as const,finished:undefined}:t);
+  setTasks(updated);localStorage.setItem('dj_quotation_tasks',JSON.stringify(updated));
+ }
  return <main className="rev-shell dj-full-desktop dj-functional dj-unified-page dj-finished-page"><DesktopSidebar active="finished"/><div className="rev-phone rev-inner">
   <header className="rev-screen-head dj-page-header dj-route-toolbar"><Link href="/" className="rev-back-link">‹</Link><b>Finished Quotations</b><div className="dj-header-actions"><Link href="/quotes" className="dj-secondary-action">Saved Quotations</Link><Link href="/quote?new=1" className="rev-mint-pill">＋ New</Link></div></header>
   <section className="rev-screen-body dj-page-body">

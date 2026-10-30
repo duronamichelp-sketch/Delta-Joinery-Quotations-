@@ -64,7 +64,7 @@ export default function FinishedQuotes(){
   const client=q?.client||t?.client||'No client';
   const amount=q?details!.total:Number(t?.amount)||0;
   return <main className="rev-shell dj-full-desktop dj-functional dj-unified-page dj-finished-page"><DesktopSidebar active="finished"/><div className="rev-phone rev-inner">
-   <header className="rev-screen-head dj-page-header dj-route-toolbar"><button type="button" className="rev-back-link" onClick={()=>setSelected(null)}>‹</button><b>Finished Quotation</b><div className="dj-header-actions">{q&&<button className="dj-secondary-action" onClick={()=>reopen(q)}>↶ Reopen to Saved</button>}</div></header>
+   <header className="rev-screen-head dj-page-header dj-route-toolbar"><button type="button" className="rev-back-link" onClick={()=>setSelected(null)}>‹</button><b>Finished Quotation</b><div className="dj-header-actions"><button type="button" className="dj-primary-action" onClick={()=>window.print()}>🖨 Print Quotation</button>{q&&<button className="dj-secondary-action" onClick={()=>reopen(q)}>↶ Reopen to Saved</button>}</div></header>
    <section className="rev-screen-body dj-page-body">
     <div className="dj-finished-original-head">
      <div><p className="rev-kicker-light">{isSaved?'ORIGINAL QUOTATION':'MANUAL / HISTORICAL ENTRY'}</p><h1>{title}</h1><p>{client}</p></div>

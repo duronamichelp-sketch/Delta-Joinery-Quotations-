@@ -14,10 +14,10 @@ const addressLocation=(name:string)=>{
 };
 const supplierKey=(name:string)=>addressSupplier(name).toLocaleLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 const num=(v:string)=>Math.max(0,Number(v)||0);
-const box:React.CSSProperties={background:'#fff',border:'1px solid #dce7df',borderRadius:15,padding:20};
-const field:React.CSSProperties={width:'100%',padding:'12px',borderRadius:9,border:'1px solid #b8d0c3',fontSize:16,color:'#153729',background:'#fff'};
+const box:React.CSSProperties={background:'rgba(7,28,45,.78)',border:'1px solid rgba(112,190,239,.30)',borderRadius:15,padding:20,boxShadow:'inset 0 1px 0 rgba(255,255,255,.06),0 16px 36px rgba(0,0,0,.20)',backdropFilter:'blur(18px)'};
+const field:React.CSSProperties={width:'100%',padding:'12px',borderRadius:9,border:'1px solid rgba(112,190,239,.28)',fontSize:16,color:'#f4f8fb',background:'rgba(3,18,30,.72)'};
 const label:React.CSSProperties={display:'grid',gap:6,fontWeight:600,fontSize:13};
-const primary:React.CSSProperties={background:'#173e2e',color:'white',border:0,borderRadius:9,padding:'12px 17px',cursor:'pointer'};
+const primary:React.CSSProperties={background:'#0c70b8',color:'white',border:'1px solid rgba(101,196,255,.45)',borderRadius:9,padding:'12px 17px',cursor:'pointer',boxShadow:'0 8px 20px rgba(0,76,128,.24)'};
 export default function Tools({section=''}:{section?:string}){
 const account=useDeltaAccount();
 const [saveStatus,setSaveStatus]=useState('');

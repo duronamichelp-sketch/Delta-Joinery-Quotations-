@@ -65,7 +65,25 @@ return <main className="rev-shell dj-full-desktop dj-functional"><DesktopSidebar
  const isOpen=openSupplier===group.key;
  if(!multiple){
   const x=group.items[0];
-  return <div key={x.id} style={{borderBottom:'1px solid #e1e8e3',padding:'14px 0',display:'flex',justifyContent:'space-between',gap:16,flexWrap:'wrap',alignItems:'center'}}><div><strong>{x.name}</strong><div>{x.eircode}</div></div><div style={{display:'flex',alignItems:'center',gap:10}}><button type="button" onClick={()=>{setEditing(x.id);setName(x.name);setEircode(x.eircode);window.scrollTo({top:0,behavior:'smooth'})}} style={{...primary,background:'#eaf4ee',color:'#173e2e'}}>Edit</button><a style={{...primary,textDecoration:'none'}} href={'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(x.eircode+', Ireland')+'&travelmode=driving'} target="_blank" rel="noopener noreferrer">Go Now ↗</a><button type="button" onClick={()=>{void save(addresses.filter(v=>v.id!==x.id))}}>Delete</button></div></div>
+  const isSingleOpen=openSupplier===group.key;
+  return <div key={x.id} style={{borderBottom:'1px solid #e1e8e3',padding:'14px 0'}}>
+   <div style={{display:'flex',justifyContent:'space-between',gap:16,flexWrap:'wrap',alignItems:'center'}}>
+    <div><strong>{x.name}</strong><div>{x.eircode}</div></div>
+    <div style={{display:'flex',alignItems:'center',gap:10}}>
+     <button type="button" onClick={()=>{setOpenSupplier(isSingleOpen?null:group.key);setAddingSupplier(isSingleOpen?null:group.key);setNewLocation('');setNewLocationEircode('')}} style={{...primary,background:'#eaf4ee',color:'#173e2e'}}>Edit</button>
+     <a style={{...primary,textDecoration:'none'}} href={'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(x.eircode+', Ireland')+'&travelmode=driving'} target="_blank" rel="noopener noreferrer">Go Now ↗</a>
+     <button type="button" onClick={()=>{void save(addresses.filter(v=>v.id!==x.id))}}>Delete</button>
+    </div>
+   </div>
+   {isSingleOpen&&<div style={{marginTop:12,padding:'12px 14px',background:'#f7faf8',border:'1px solid #e2ebe5',borderRadius:12,display:'grid',gap:10}}>
+    <button type="button" onClick={()=>{setEditing(x.id);setName(x.name);setEircode(x.eircode);window.scrollTo({top:0,behavior:'smooth'})}} style={{justifySelf:'start',...primary,background:'#eaf4ee',color:'#173e2e',padding:'9px 13px'}}>Edit current location</button>
+    <form onSubmit={async e=>{e.preventDefault();if(!newLocation.trim()||!newLocationEircode.trim())return;const item:Address={id:crypto.randomUUID(),name:`${group.label} (${newLocation.trim()})`,eircode:newLocationEircode.trim().toUpperCase()};if(await save([item,...addresses])){setNewLocation('');setNewLocationEircode('');setAddingSupplier(null);setOpenSupplier(group.key)}}} style={{display:'grid',gridTemplateColumns:'minmax(180px,1fr) minmax(140px,.6fr) auto',gap:8}}>
+     <input aria-label="New location name" placeholder="New location e.g. Sandyford" value={newLocation} onChange={e=>setNewLocation(e.target.value)} style={{...field,padding:'10px'}} required/>
+     <input aria-label="New location Eircode" placeholder="Eircode / postcode" value={newLocationEircode} onChange={e=>setNewLocationEircode(e.target.value)} style={{...field,padding:'10px'}} required/>
+     <button disabled={savingAddress} style={{...primary,padding:'10px 14px'}} type="submit">Add location</button>
+    </form>
+   </div>}
+  </div>
  }
  return <div key={group.key} style={{borderBottom:'1px solid #e1e8e3',padding:'14px 0'}}>
   <div style={{display:'flex',justifyContent:'space-between',gap:16,flexWrap:'wrap',alignItems:'center'}}>

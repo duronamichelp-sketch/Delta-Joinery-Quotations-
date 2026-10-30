@@ -2799,3 +2799,124 @@ body .dj-glass-home .skoda-left{grid-column:1!important;grid-row:2!important}
   .dj-finished-readonly-gallery figure{margin:0;overflow:hidden;border-radius:9px}
   .dj-finished-readonly-gallery img{width:100%;aspect-ratio:4/3;object-fit:cover}
 }
+
+/* FINISHED QUOTATION PRINT */
+@page{size:A4;margin:12mm}
+@media print{
+  html,body{
+    background:#fff!important;
+    color:#111!important;
+    overflow:visible!important;
+  }
+  body main.dj-finished-page{
+    display:block!important;
+    width:100%!important;
+    max-width:none!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    background:#fff!important;
+    color:#111!important;
+  }
+  body main.dj-finished-page>.dj-shared-sidebar,
+  body main.dj-finished-page .dj-route-toolbar,
+  body main.dj-finished-page .dj-page-header,
+  body main.dj-finished-page .rev-nav{
+    display:none!important;
+  }
+  body main.dj-finished-page>.rev-phone,
+  body main.dj-finished-page .rev-screen-body,
+  body main.dj-finished-page .dj-page-body{
+    display:block!important;
+    width:100%!important;
+    max-width:none!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    background:#fff!important;
+    color:#111!important;
+    box-shadow:none!important;
+  }
+  body main.dj-finished-page .dj-finished-original-head,
+  body main.dj-finished-page .dj-finished-original-card{
+    background:#fff!important;
+    color:#111!important;
+    border:1px solid #cfd7df!important;
+    box-shadow:none!important;
+    break-inside:avoid!important;
+  }
+  body main.dj-finished-page .dj-finished-original-head{
+    margin-bottom:10mm!important;
+  }
+  body main.dj-finished-page .dj-finished-original-head h1,
+  body main.dj-finished-page .dj-finished-original-head p,
+  body main.dj-finished-page .dj-finished-original-head strong,
+  body main.dj-finished-page .dj-finished-original-card h2,
+  body main.dj-finished-page .dj-finished-original-card p{
+    color:#111!important;
+  }
+  body main.dj-finished-page .rev-kicker-light{
+    color:#555!important;
+  }
+  body main.dj-finished-page .dj-finished-original-meta{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:6px!important;
+    margin-bottom:8mm!important;
+  }
+  body main.dj-finished-page .dj-finished-original-meta span,
+  body main.dj-finished-page .dj-finished-contact span{
+    background:#fff!important;
+    color:#111!important;
+    border:1px solid #d7dde3!important;
+  }
+  body main.dj-finished-page .dj-finished-original-meta b,
+  body main.dj-finished-page .dj-finished-contact b{
+    color:#555!important;
+  }
+  body main.dj-finished-page .dj-finished-lines{
+    border:1px solid #cfd7df!important;
+  }
+  body main.dj-finished-page .dj-finished-lines>.head{
+    background:#eef2f5!important;
+    color:#111!important;
+  }
+  body main.dj-finished-page .dj-finished-lines>.row{
+    color:#111!important;
+    border-top:1px solid #d9dfe4!important;
+    background:#fff!important;
+  }
+  body main.dj-finished-page .dj-finished-lines>.row span,
+  body main.dj-finished-page .dj-finished-lines>.row strong{
+    color:#111!important;
+  }
+  body main.dj-finished-page .dj-finished-breakdown{
+    background:#fff!important;
+    border:1px solid #cfd7df!important;
+  }
+  body main.dj-finished-page .dj-finished-breakdown>div{
+    border-color:#d9dfe4!important;
+    background:#fff!important;
+  }
+  body main.dj-finished-page .dj-finished-breakdown span,
+  body main.dj-finished-page .dj-finished-breakdown strong{
+    color:#111!important;
+  }
+  body main.dj-finished-page .dj-finished-breakdown .subtotal{
+    background:#f5f7f9!important;
+  }
+  body main.dj-finished-page .dj-finished-breakdown .total{
+    background:#eef2f5!important;
+  }
+  body main.dj-finished-page .dj-finished-breakdown .total span,
+  body main.dj-finished-page .dj-finished-breakdown .total strong{
+    color:#111!important;
+  }
+  body main.dj-finished-page .dj-finished-readonly-gallery figure{
+    break-inside:avoid!important;
+    border:1px solid #cfd7df!important;
+    background:#fff!important;
+  }
+  body main.dj-finished-page .dj-finished-readonly-gallery figcaption{
+    color:#111!important;
+  }
+}

@@ -2300,3 +2300,7 @@ body .dj-glass-home .skoda-left{grid-column:1!important;grid-row:2!important}
   .dj-glass-home .dj-manual-finished-form{grid-template-columns:1fr}
   .dj-glass-home .dj-manual-finished-form>div{grid-column:1}
 }
+
+@media(min-width:900px){
+  .dj-glass-home .quick4{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}

@@ -911,3 +911,30 @@ body .dj-glass-home>.dj-shared-sidebar .dj-shared-brand b{font-size:15px!importa
 body .dj-glass-home>.dj-shared-sidebar nav>a{white-space:nowrap!important}
 body .dj-glass-home>.dj-shared-sidebar .dj-sidebar-account{overflow-wrap:anywhere!important}
 }
+
+/* Home equal outer gutters + layout after Recent Quotations removal */
+@media(min-width:900px){
+body .dj-glass-home>.dj-glass-stage{
+ margin-left:254px!important;
+ width:calc(100vw - 254px)!important;
+ max-width:calc(100vw - 254px)!important;
+ padding-left:18px!important;
+ padding-right:30px!important;
+}
+body .dj-glass-home .dj-glass-cards,
+body .dj-glass-home .dj-glass-grid,
+body .dj-glass-home .dj-glass-top{
+ width:100%!important;
+ max-width:100%!important;
+ box-sizing:border-box!important;
+}
+body .dj-glass-home .dj-glass-grid{
+ grid-template-columns:minmax(0,.95fr) minmax(0,1.15fr)!important;
+ gap:10px!important;
+}
+body .dj-glass-home .hours{grid-column:1!important;grid-row:1!important}
+body .dj-glass-home .quick{grid-column:2!important;grid-row:1!important}
+body .dj-glass-home .library{grid-column:1!important;grid-row:2!important}
+body .dj-glass-home .jobs{grid-column:2!important;grid-row:2!important}
+body .dj-glass-home .skoda{grid-column:2!important;grid-row:3!important}
+}

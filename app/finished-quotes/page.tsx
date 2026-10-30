@@ -8,7 +8,7 @@ import {savedQuoteDetails,type SavedQuotation} from '../../lib/quotationTotals';
 
 type SiteImage={path:string;name:string};
 type Q=SavedQuotation & {id:string;siteImages?:SiteImage[]};
-type Task={id:string;client:string;project:string;due:string;notes:string;status:'upcoming'|'finished';created:string;finished?:string;amount?:number;siteImages?:SiteImage[]};
+type Task={id:string;client:string;project:string;due:string;notes:string;status:'upcoming'|'finished';created:string;finished?:string;amount?:number;siteImages?:SiteImage[];quotationNumber?:string;originalQuotation?:string;costBreakdown?:string};
 type Selected={kind:'saved';quote:Q}|{kind:'manual';task:Task};
 const clean=(v?:string)=>String(v||'').trim().toLowerCase();
 
@@ -67,18 +67,20 @@ export default function FinishedQuotes(){
   const isSaved=selected.kind==='saved';
   const q=isSaved?selected.quote:null;
   const t=!isSaved?selected.task:null;
+  const viewTask=t?(manualEdit&&manualEdit.id===t.id?manualEdit:t):null;
   const details=q?savedQuoteDetails(q):null;
-  const title=q?.project||t?.project||'Finished quotation';
-  const client=q?.client||t?.client||'No client';
-  const amount=q?details!.total:Number(t?.amount)||0;
+  const title=q?.project||viewTask?.project||'Finished quotation';
+  const client=q?.client||viewTask?.client||'No client';
+  const amount=q?details!.total:Number(viewTask?.amount)||0;
+  const editingManual=!!(t&&manualEdit&&manualEdit.id===t.id);
   return <main className="rev-shell dj-full-desktop dj-functional dj-unified-page dj-finished-page"><DesktopSidebar active="finished"/><div className="rev-phone rev-inner">
    <header className="rev-screen-head dj-page-header dj-route-toolbar"><button type="button" className="rev-back-link" onClick={()=>{setManualEdit(null);setSelected(null)}}>‹</button><b>Finished Quotation</b><div className="dj-header-actions"><button type="button" className="dj-primary-action" onClick={()=>window.print()}>🖨 Print Quotation</button>{q&&<button className="dj-secondary-action" onClick={()=>editFull(q)}>✎ Edit Quotation</button>}{t&&<button className="dj-secondary-action" onClick={()=>setManualEdit({...t})}>✎ Edit Details</button>}{q&&<button className="dj-secondary-action" onClick={()=>reopen(q)}>↶ Reopen to Saved</button>}</div></header>
    <section className="rev-screen-body dj-page-body">
     <div className="dj-print-tech-title">
      <div className="brand"><strong>DELTA JOINERY</strong><span>FINISHED QUOTATION RECORD</span></div>
      <div className="project"><span>PROJECT</span><strong>{title}</strong><small>{client}</small></div>
-     <div className="doc"><span>DOCUMENT</span><strong>{q?.number||'MANUAL ENTRY'}</strong><small>{q?.date||t?.created||'—'}</small></div>
-     <div className="status"><span>STATUS</span><strong>FINISHED</strong><small>{q?.finishedAt?.slice(0,10)||t?.finished||'—'}</small></div>
+     <div className="doc"><span>DOCUMENT</span><strong>{q?.number||viewTask?.quotationNumber||'MANUAL ENTRY'}</strong><small>{q?.date||viewTask?.created||'—'}</small></div>
+     <div className="status"><span>STATUS</span><strong>FINISHED</strong><small>{q?.finishedAt?.slice(0,10)||viewTask?.finished||'—'}</small></div>
      <div className="value"><span>TOTAL</span><strong>{currency(amount)}</strong></div>
     </div>
     <div className="dj-finished-original-head">
@@ -86,42 +88,31 @@ export default function FinishedQuotes(){
      <strong>{currency(amount)}</strong>
     </div>
 
-    {t&&manualEdit&&<section className="dj-finished-edit-panel" style={{margin:'0 0 16px',padding:18,border:'1px solid rgba(112,190,239,.28)',borderRadius:14,background:'rgba(7,28,45,.92)',boxShadow:'inset 0 1px 0 rgba(255,255,255,.05),0 14px 34px rgba(0,0,0,.18)'}}>
-     <div className="head" style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:16,marginBottom:16}}>
-      <div><h2 style={{margin:'0 0 4px',fontSize:18,color:'#fff'}}>Edit Finished Quotation</h2><p style={{margin:0,color:'#a9beca',fontSize:12}}>Update the historical/manual entry without changing its finished status.</p></div>
-      <button type="button" onClick={()=>setManualEdit(null)} style={{width:36,height:36,border:'1px solid rgba(112,190,239,.25)',borderRadius:9,background:'rgba(8,37,57,.78)',color:'#fff',cursor:'pointer'}}>✕</button>
-     </div>
-     <div className="fields" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:12,alignItems:'start'}}>
-      <label style={{display:'grid',gap:6,color:'#b8c9d4',fontSize:10,fontWeight:800,letterSpacing:'.04em',textTransform:'uppercase'}}>Client<input style={{width:'100%',minWidth:0,minHeight:42,padding:'10px 12px',border:'1px solid rgba(112,190,239,.28)',borderRadius:9,background:'rgba(3,18,30,.82)',color:'#fff',boxSizing:'border-box'}} value={manualEdit.client} onChange={e=>setManualEdit({...manualEdit,client:e.target.value})}/></label>
-      <label style={{display:'grid',gap:6,color:'#b8c9d4',fontSize:10,fontWeight:800,letterSpacing:'.04em',textTransform:'uppercase'}}>Project<input style={{width:'100%',minWidth:0,minHeight:42,padding:'10px 12px',border:'1px solid rgba(112,190,239,.28)',borderRadius:9,background:'rgba(3,18,30,.82)',color:'#fff',boxSizing:'border-box'}} value={manualEdit.project} onChange={e=>setManualEdit({...manualEdit,project:e.target.value})}/></label>
-      <label style={{display:'grid',gap:6,color:'#b8c9d4',fontSize:10,fontWeight:800,letterSpacing:'.04em',textTransform:'uppercase'}}>Quote Date<input style={{width:'100%',minWidth:0,minHeight:42,padding:'10px 12px',border:'1px solid rgba(112,190,239,.28)',borderRadius:9,background:'rgba(3,18,30,.82)',color:'#fff',boxSizing:'border-box'}} type="date" value={manualEdit.created||''} onChange={e=>setManualEdit({...manualEdit,created:e.target.value})}/></label>
-      <label style={{display:'grid',gap:6,color:'#b8c9d4',fontSize:10,fontWeight:800,letterSpacing:'.04em',textTransform:'uppercase'}}>Finished Date<input style={{width:'100%',minWidth:0,minHeight:42,padding:'10px 12px',border:'1px solid rgba(112,190,239,.28)',borderRadius:9,background:'rgba(3,18,30,.82)',color:'#fff',boxSizing:'border-box'}} type="date" value={manualEdit.finished||''} onChange={e=>setManualEdit({...manualEdit,finished:e.target.value})}/></label>
-      <label style={{display:'grid',gap:6,color:'#b8c9d4',fontSize:10,fontWeight:800,letterSpacing:'.04em',textTransform:'uppercase'}}>Amount (€)<input style={{width:'100%',minWidth:0,minHeight:42,padding:'10px 12px',border:'1px solid rgba(112,190,239,.28)',borderRadius:9,background:'rgba(3,18,30,.82)',color:'#fff',boxSizing:'border-box'}} type="number" min="0" step="0.01" value={manualEdit.amount??''} onChange={e=>setManualEdit({...manualEdit,amount:Number(e.target.value)||0})}/></label>
-      <label className="wide" style={{display:'grid',gridColumn:'1 / -1',gap:6,color:'#b8c9d4',fontSize:10,fontWeight:800,letterSpacing:'.04em',textTransform:'uppercase'}}>Notes<textarea style={{width:'100%',minHeight:90,padding:'10px 12px',border:'1px solid rgba(112,190,239,.28)',borderRadius:9,background:'rgba(3,18,30,.82)',color:'#fff',boxSizing:'border-box',resize:'vertical'}} value={manualEdit.notes||''} onChange={e=>setManualEdit({...manualEdit,notes:e.target.value})}/></label>
-     </div>
-     <div className="actions" style={{display:'flex',justifyContent:'flex-end',gap:8,marginTop:14}}><button type="button" className="dj-primary-action" onClick={saveManualEdit}>Save Changes</button><button type="button" className="dj-secondary-action" onClick={()=>setManualEdit(null)}>Cancel</button></div>
-    </section>}
+    {editingManual&&<div className="dj-inline-edit-actions" style={{display:'flex',justifyContent:'flex-end',gap:8,margin:'0 0 12px'}}>
+     <button type="button" className="dj-primary-action" onClick={saveManualEdit}>Save Changes</button>
+     <button type="button" className="dj-secondary-action" onClick={()=>setManualEdit(null)}>Cancel</button>
+    </div>}
 
     <div className="dj-finished-original-meta">
-     <span><b>Client</b>{client}</span>
-     <span><b>Project</b>{title}</span>
-     <span><b>Quotation No.</b>{q?.number||'—'}</span>
-     <span><b>Quote Date</b>{q?.date||t?.created||'—'}</span>
-     <span><b>Finished</b>{q?.finishedAt?.slice(0,10)||t?.finished||'—'}</span>
-     <span><b>Total</b>{currency(amount)}</span>
+     <span><b>Client</b>{editingManual?<input value={manualEdit!.client} onChange={e=>setManualEdit({...manualEdit!,client:e.target.value})}/>:client}</span>
+     <span><b>Project</b>{editingManual?<input value={manualEdit!.project} onChange={e=>setManualEdit({...manualEdit!,project:e.target.value})}/>:title}</span>
+     <span><b>Quotation No.</b>{editingManual?<input value={manualEdit!.quotationNumber||''} placeholder="Optional" onChange={e=>setManualEdit({...manualEdit!,quotationNumber:e.target.value})}/>:q?.number||viewTask?.quotationNumber||'—'}</span>
+     <span><b>Quote Date</b>{editingManual?<input type="date" value={manualEdit!.created||''} onChange={e=>setManualEdit({...manualEdit!,created:e.target.value})}/>:q?.date||viewTask?.created||'—'}</span>
+     <span><b>Finished</b>{editingManual?<input type="date" value={manualEdit!.finished||''} onChange={e=>setManualEdit({...manualEdit!,finished:e.target.value})}/>:q?.finishedAt?.slice(0,10)||viewTask?.finished||'—'}</span>
+     <span><b>Total</b>{editingManual?<input type="number" min="0" step="0.01" value={manualEdit!.amount??''} onChange={e=>setManualEdit({...manualEdit!,amount:Number(e.target.value)||0})}/>:currency(amount)}</span>
     </div>
 
     {q&&(q.email||q.phone||q.address||q.notes)&&<section className="dj-finished-original-card dj-print-details-card"><h2>Original Details</h2><div className="dj-finished-contact">
      {q.email&&<span><b>Email</b>{q.email}</span>}{q.phone&&<span><b>Phone</b>{q.phone}</span>}{q.address&&<span><b>Address</b>{q.address}</span>}{q.notes&&<span className="wide"><b>Notes</b>{q.notes}</span>}
     </div></section>}
-    {t?.notes&&<section className="dj-finished-original-card dj-print-details-card"><h2>Notes</h2><p>{t.notes}</p></section>}
+    {t&&<section className="dj-finished-original-card dj-print-details-card"><h2>Notes</h2>{editingManual?<textarea className="dj-inline-box-editor" value={manualEdit!.notes||''} placeholder="Type notes here..." onChange={e=>setManualEdit({...manualEdit!,notes:e.target.value})}/>:<p>{viewTask?.notes||''}</p>}</section>}
 
     <section className="dj-finished-original-card dj-print-lines-card">
      <h2>Original Quotation</h2>
      {q&&details&&details.lines.length>0?<div className="dj-finished-lines">
       <div className="head"><span>Category</span><span>Item</span><span>Qty</span><span>Rate</span><span>Amount</span></div>
       {details.lines.map((line,i)=><div className="row" key={i}><span>{line.category}</span><span>{line.description}</span><span>{line.qty}{line.unit?' '+line.unit:''}</span><span>{currency(line.rate)}</span><strong>{currency(line.amount)}</strong></div>)}
-     </div>:<div className="dj-finished-blank"></div>}
+     </div>:t?(editingManual?<textarea className="dj-inline-box-editor dj-inline-large-editor" value={manualEdit!.originalQuotation||''} placeholder="Type the original quotation details here..." onChange={e=>setManualEdit({...manualEdit!,originalQuotation:e.target.value})}/>:<div className="dj-finished-blank dj-manual-text-box">{viewTask?.originalQuotation||''}</div>):<div className="dj-finished-blank"></div>}
     </section>
 
     <section className="dj-finished-original-card dj-print-breakdown-card">
@@ -131,7 +122,7 @@ export default function FinishedQuotes(){
       <div className="subtotal"><span>Subtotal</span><strong>{currency(details.subtotal)}</strong></div>
       {details.vat>0&&<div><span>VAT 13.5%</span><strong>{currency(details.vat)}</strong></div>}
       <div className="total"><span>Total</span><strong>{currency(details.total)}</strong></div>
-     </div>:<div className="dj-finished-blank"></div>}
+     </div>:t?(editingManual?<textarea className="dj-inline-box-editor dj-inline-large-editor" value={manualEdit!.costBreakdown||''} placeholder="Type the cost breakdown here..." onChange={e=>setManualEdit({...manualEdit!,costBreakdown:e.target.value})}/>:<div className="dj-finished-blank dj-manual-text-box">{viewTask?.costBreakdown||''}</div>):<div className="dj-finished-blank"></div>}
     </section>
 
     {q&&(q.siteImages||[]).length>0&&<section className="dj-finished-original-card dj-print-photos-card"><h2>Site Photos</h2><div className="dj-finished-readonly-gallery">{(q.siteImages||[]).map(img=><figure key={img.path}>{imageUrls[img.path]?<img src={imageUrls[img.path]} alt={img.name}/>:<div>Loading…</div>}<figcaption>{img.name}</figcaption></figure>)}</div></section>}

@@ -16,7 +16,7 @@ export default function DesktopSidebar({active}:{active:'home'|'quote'|'quotes'|
     </Link>
     <nav>
       <Link className={active==='home'?'current':''} href="/">⌂ <span>Home</span></Link>
-      <Link className={active==='quote'?'current':''} href="/quote">▤ <span>New Quotation</span></Link>
+      <Link className={active==='quote'?'current':''} href="/quote?new=1">▤ <span>New Quotation</span></Link>
       <Link className={active==='quotes'?'current':''} href="/quotes">▤ <span>Saved Quotations</span></Link>
       <Link className={active==='finished'?'current':''} href="/finished-quotes">✓ <span>Finished Quotations</span></Link>
       <Link className={active==='library'?'current':''} href="/units">▣ <span>Price Library</span></Link>

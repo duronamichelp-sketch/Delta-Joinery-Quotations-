@@ -79,7 +79,7 @@ function save(){const all=read<any[]>('dj_saved_quotes',[]);const previous=all.f
 function newQuotation(){if(!window.confirm('Start a new quotation? Your saved quotations will be kept. Save the current quotation first if you want to keep it.'))return;setQ({...start(),number:'DJ-'+Date.now().toString()});setExpanded([]);setUc('');setHc('');setLc('');setCc('');setPcost('');setEc('');setFc('');setPc('');setTc('');setTimberFeet('');setWorktopChoice('');setWorktopQty('1');setQuery('');setStatus('');window.scrollTo({top:0,behavior:'smooth'});}
 const match=(name:string)=>name.toLowerCase().includes(query.toLowerCase());
 const counter=(type:'chosenUnits'|'chosenHardware'|'chosenLabour'|'chosenElectrics'|'chosenFinishes'|'chosenFillers'|'chosenCnc'|'chosenProduction',id:string,value:number)=><div className="dj-count"><button aria-label="Decrease" onClick={()=>qty(type,id,value-1)}>−</button><span>{value}</span><button aria-label="Increase" onClick={()=>qty(type,id,value+1)}>+</button></div>;
-return <main className="dj-desktop dj-quote-glass">
+return <main className="dj-desktop dj-quote-glass dj-unified-page dj-quote-page">
 <style>{styles}</style>
 <DesktopSidebar active="quote"/>
 <div className="dj-main">

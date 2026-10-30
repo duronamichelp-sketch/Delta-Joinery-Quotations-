@@ -86,17 +86,20 @@ export default function FinishedQuotes(){
      <strong>{currency(amount)}</strong>
     </div>
 
-    {t&&manualEdit&&<section className="dj-finished-edit-panel">
-     <div className="head"><div><h2>Edit Finished Quotation</h2><p>Update the historical/manual entry without changing its finished status.</p></div><button type="button" onClick={()=>setManualEdit(null)}>✕</button></div>
-     <div className="fields">
-      <label>Client<input value={manualEdit.client} onChange={e=>setManualEdit({...manualEdit,client:e.target.value})}/></label>
-      <label>Project<input value={manualEdit.project} onChange={e=>setManualEdit({...manualEdit,project:e.target.value})}/></label>
-      <label>Quote Date<input type="date" value={manualEdit.created||''} onChange={e=>setManualEdit({...manualEdit,created:e.target.value})}/></label>
-      <label>Finished Date<input type="date" value={manualEdit.finished||''} onChange={e=>setManualEdit({...manualEdit,finished:e.target.value})}/></label>
-      <label>Amount (€)<input type="number" min="0" step="0.01" value={manualEdit.amount??''} onChange={e=>setManualEdit({...manualEdit,amount:Number(e.target.value)||0})}/></label>
-      <label className="wide">Notes<textarea value={manualEdit.notes||''} onChange={e=>setManualEdit({...manualEdit,notes:e.target.value})}/></label>
+    {t&&manualEdit&&<section className="dj-finished-edit-panel" style={{margin:'0 0 16px',padding:18,border:'1px solid rgba(112,190,239,.28)',borderRadius:14,background:'rgba(7,28,45,.92)',boxShadow:'inset 0 1px 0 rgba(255,255,255,.05),0 14px 34px rgba(0,0,0,.18)'}}>
+     <div className="head" style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:16,marginBottom:16}}>
+      <div><h2 style={{margin:'0 0 4px',fontSize:18,color:'#fff'}}>Edit Finished Quotation</h2><p style={{margin:0,color:'#a9beca',fontSize:12}}>Update the historical/manual entry without changing its finished status.</p></div>
+      <button type="button" onClick={()=>setManualEdit(null)} style={{width:36,height:36,border:'1px solid rgba(112,190,239,.25)',borderRadius:9,background:'rgba(8,37,57,.78)',color:'#fff',cursor:'pointer'}}>✕</button>
      </div>
-     <div className="actions"><button type="button" className="dj-primary-action" onClick={saveManualEdit}>Save Changes</button><button type="button" className="dj-secondary-action" onClick={()=>setManualEdit(null)}>Cancel</button></div>
+     <div className="fields" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:12,alignItems:'start'}}>
+      <label style={{display:'grid',gap:6,color:'#b8c9d4',fontSize:10,fontWeight:800,letterSpacing:'.04em',textTransform:'uppercase'}}>Client<input style={{width:'100%',minWidth:0,minHeight:42,padding:'10px 12px',border:'1px solid rgba(112,190,239,.28)',borderRadius:9,background:'rgba(3,18,30,.82)',color:'#fff',boxSizing:'border-box'}} value={manualEdit.client} onChange={e=>setManualEdit({...manualEdit,client:e.target.value})}/></label>
+      <label style={{display:'grid',gap:6,color:'#b8c9d4',fontSize:10,fontWeight:800,letterSpacing:'.04em',textTransform:'uppercase'}}>Project<input style={{width:'100%',minWidth:0,minHeight:42,padding:'10px 12px',border:'1px solid rgba(112,190,239,.28)',borderRadius:9,background:'rgba(3,18,30,.82)',color:'#fff',boxSizing:'border-box'}} value={manualEdit.project} onChange={e=>setManualEdit({...manualEdit,project:e.target.value})}/></label>
+      <label style={{display:'grid',gap:6,color:'#b8c9d4',fontSize:10,fontWeight:800,letterSpacing:'.04em',textTransform:'uppercase'}}>Quote Date<input style={{width:'100%',minWidth:0,minHeight:42,padding:'10px 12px',border:'1px solid rgba(112,190,239,.28)',borderRadius:9,background:'rgba(3,18,30,.82)',color:'#fff',boxSizing:'border-box'}} type="date" value={manualEdit.created||''} onChange={e=>setManualEdit({...manualEdit,created:e.target.value})}/></label>
+      <label style={{display:'grid',gap:6,color:'#b8c9d4',fontSize:10,fontWeight:800,letterSpacing:'.04em',textTransform:'uppercase'}}>Finished Date<input style={{width:'100%',minWidth:0,minHeight:42,padding:'10px 12px',border:'1px solid rgba(112,190,239,.28)',borderRadius:9,background:'rgba(3,18,30,.82)',color:'#fff',boxSizing:'border-box'}} type="date" value={manualEdit.finished||''} onChange={e=>setManualEdit({...manualEdit,finished:e.target.value})}/></label>
+      <label style={{display:'grid',gap:6,color:'#b8c9d4',fontSize:10,fontWeight:800,letterSpacing:'.04em',textTransform:'uppercase'}}>Amount (€)<input style={{width:'100%',minWidth:0,minHeight:42,padding:'10px 12px',border:'1px solid rgba(112,190,239,.28)',borderRadius:9,background:'rgba(3,18,30,.82)',color:'#fff',boxSizing:'border-box'}} type="number" min="0" step="0.01" value={manualEdit.amount??''} onChange={e=>setManualEdit({...manualEdit,amount:Number(e.target.value)||0})}/></label>
+      <label className="wide" style={{display:'grid',gridColumn:'1 / -1',gap:6,color:'#b8c9d4',fontSize:10,fontWeight:800,letterSpacing:'.04em',textTransform:'uppercase'}}>Notes<textarea style={{width:'100%',minHeight:90,padding:'10px 12px',border:'1px solid rgba(112,190,239,.28)',borderRadius:9,background:'rgba(3,18,30,.82)',color:'#fff',boxSizing:'border-box',resize:'vertical'}} value={manualEdit.notes||''} onChange={e=>setManualEdit({...manualEdit,notes:e.target.value})}/></label>
+     </div>
+     <div className="actions" style={{display:'flex',justifyContent:'flex-end',gap:8,marginTop:14}}><button type="button" className="dj-primary-action" onClick={saveManualEdit}>Save Changes</button><button type="button" className="dj-secondary-action" onClick={()=>setManualEdit(null)}>Cancel</button></div>
     </section>}
 
     <div className="dj-finished-original-meta">

@@ -82,8 +82,11 @@ export default function Home(){
  }
  function remove(id:string){if(window.confirm('Delete this quotation task?'))setTasks(prev=>prev.filter(t=>t.id!==id))}
  const finishedSaved=savedQuotes.filter(q=>q.finished);
- const finishedTotal=finished.reduce((sum,t)=>sum+(Number(t.amount)||0),0)+finishedSaved.reduce((sum,q)=>sum+savedQuoteTotal(q),0);
- const finishedCount=finished.length+finishedSaved.length;
+ const norm=(v?:string)=>String(v||'').trim().toLowerCase();
+ const legacyFinished=finished.filter(t=>!finishedSaved.some(q=>norm(q.project)===norm(t.project)&&norm(q.client)===norm(t.client)));
+ const finishedTotal=legacyFinished.reduce((sum,t)=>sum+(Number(t.amount)||0),0)+finishedSaved.reduce((sum,q)=>sum+savedQuoteTotal(q),0);
+ const finishedCount=legacyFinished.length+finishedSaved.length;
+ const sentCount=savedQuotes.length+legacyFinished.length;
  const shown=filter==='upcoming'?upcoming:finished;
  return <main className="dj-glass-home">
  <DesktopSidebar active="home"/>
@@ -114,14 +117,14 @@ export default function Home(){
      <span className="thumb">▤</span>
      <div className="dj-upcoming-main"><b>{t.project}</b><small>{t.client}{t.notes?' · '+t.notes:''}</small></div>
      <div className="dj-upcoming-meta"><time>{formatDate(t.due)}</time>{(t.amount??0)>0&&<strong>€{Number(t.amount).toLocaleString('en-IE',{minimumFractionDigits:2,maximumFractionDigits:2})}</strong>}</div>
-     <div className="dj-upcoming-actions"><button type="button" onClick={()=>edit(t)}>Edit</button><button type="button" onClick={()=>status(t.id,true)}>✓ Finish</button><button type="button" className="danger" onClick={()=>remove(t.id)}>Delete</button></div>
+     <div className="dj-upcoming-actions"><button type="button" onClick={()=>edit(t)}>Open Quotation</button><button type="button" className="danger" onClick={()=>remove(t.id)}>Delete</button></div>
     </div>)}
    </div>
   </section>
   <section className="dj-glass-grid">
    <div className="dj-glass-panel hours"><h2>Today’s Hours</h2><div className="hours-ring"><strong>{weekHours===null?'—':weekHours.toFixed(1)}</strong><small>Hours</small></div><div className="hours-meta"><span>Start<br/><b>{todayEntry?.start||'--'}</b></span><span>Finish<br/><b>{todayEntry?.finish||'--'}</b></span></div><Link href="/hours">⊕ &nbsp; Add Entry</Link></div>
    <div className="dj-glass-panel quick"><div className="head"><h2>Quick Tools</h2></div><div className="quick4"><Link href="/tools/measurements">▱<b>Slat Wall<br/>Calculator</b></Link><Link href="/tools/measurements">▦<b>Floor<br/>Coverage</b></Link><Link href="/tools/cutting-list">▤<b>Cutting<br/>List</b></Link></div></div>
-   <div id="quotation-overview" className="dj-glass-panel quote-summary"><div className="head"><h2>Quotation Overview</h2><Link href="/quotes">View All →</Link></div><div className="dj-quote-summary-grid"><div><span>Quotations Sent</span><strong>{savedQuotes.length}</strong><small>Your existing saved quotations</small></div><div><span>Finished Quotations</span><strong>{finishedCount}</strong><small>Completed quotations</small></div><div className="value"><span>Finished Value</span><strong>{new Intl.NumberFormat('en-IE',{style:'currency',currency:'EUR'}).format(finishedTotal)}</strong><small>Total value of finished quotations</small></div></div><button type="button" className="dj-manual-finished" onClick={()=>setShowManual(x=>!x)}>{showManual?'✕ Close':'＋ Manual Finished Amount'}</button>{showManual&&<form className="dj-manual-finished-form" onSubmit={addManual}><label>Client<input required value={manualClient} onChange={e=>setManualClient(e.target.value)} placeholder="Client name"/></label><label>Project<input required value={manualProject} onChange={e=>setManualProject(e.target.value)} placeholder="Project / job"/></label><label>Finished amount (€)<input required type="number" min="0" step="0.01" value={manualAmount} onChange={e=>setManualAmount(e.target.value)} placeholder="0.00"/></label><div><button type="submit">Add Amount</button><button type="button" onClick={()=>setShowManual(false)}>Cancel</button></div></form>}</div>
+   <div id="quotation-overview" className="dj-glass-panel quote-summary"><div className="head"><h2>Quotation Overview</h2><Link href="/finished-quotes">View Finished →</Link></div><div className="dj-quote-summary-grid"><div><span>Quotations Sent</span><strong>{sentCount}</strong><small>Saved and historical quotations</small></div><div><span>Finished Quotations</span><strong>{finishedCount}</strong><small>Completed quotations</small></div><div className="value"><span>Finished Value</span><strong>{new Intl.NumberFormat('en-IE',{style:'currency',currency:'EUR'}).format(finishedTotal)}</strong><small>Total value of finished quotations</small></div></div><button type="button" className="dj-manual-finished" onClick={()=>setShowManual(x=>!x)}>{showManual?'✕ Close':'＋ Manual Finished Amount'}</button>{showManual&&<form className="dj-manual-finished-form" onSubmit={addManual}><label>Client<input required value={manualClient} onChange={e=>setManualClient(e.target.value)} placeholder="Client name"/></label><label>Project<input required value={manualProject} onChange={e=>setManualProject(e.target.value)} placeholder="Project / job"/></label><label>Finished amount (€)<input required type="number" min="0" step="0.01" value={manualAmount} onChange={e=>setManualAmount(e.target.value)} placeholder="0.00"/></label><div><button type="submit">Add Amount</button><button type="button" onClick={()=>setShowManual(false)}>Cancel</button></div></form>}</div>
    <div className="dj-glass-panel skoda skoda-left"><div className="head"><h2>Skoda Installation List</h2><Link href="/tools/skoda">View All →</Link></div><div className="skoda-tabs"><span>Coffee Unit</span><span>Wall Slats</span><span>Free Standing Walls</span><span>Floor Mounted Walls</span></div><Link className="big-action" href="/tools/skoda">Open installation list <span>→</span></Link></div>
   </section>
  </div>

@@ -975,3 +975,26 @@ body .dj-glass-home .skoda-left{grid-column:1!important;grid-row:2!important}
 .dj-quote-glass .dj-mini label{color:#dceaf2}.dj-quote-glass .dj-title h2{color:#fff}.dj-quote-glass .dj-notes-handle{background:#7c4c1e77;border-color:#e6a64666;color:#ffd18b}
 .dj-quote-glass .dj-thumb,.dj-quote-glass .dj-placeholder{display:none!important}
 }
+
+/* Quotation category cleanup — reference icon set + precise rows */
+@media(min-width:901px){
+.dj-quote-glass .dj-left{display:flex!important;flex-direction:column!important;gap:8px!important}
+.dj-quote-glass .dj-fold{margin:0!important;min-height:0!important;border-radius:12px!important}
+.dj-quote-glass .dj-fold .dj-title{height:58px!important;min-height:58px!important;padding:0 14px!important;display:flex!important;align-items:center!important}
+.dj-quote-glass .dj-fold .dj-fold-toggle{height:58px!important;min-height:58px!important;padding:0!important;margin:0!important;grid-template-columns:38px minmax(0,1fr) 24px!important;gap:12px!important;line-height:1!important;text-align:left!important}
+.dj-quote-glass .dj-fold .dj-fold-toggle b{display:block!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;font-size:15px!important;line-height:1.2!important;font-weight:750!important}
+.dj-quote-glass .dj-fold .dj-fold-toggle>span{justify-self:center!important;font-size:16px!important}
+.dj-quote-glass .dj-fold-icon{width:34px!important;height:34px!important;min-width:34px!important;border-radius:8px!important;font-size:18px!important;line-height:34px!important;text-align:center!important}
+.dj-quote-glass .dj-icon-units{color:#32d7ff!important;border-color:#32d7ff99!important;background:#073e5bbb!important;box-shadow:0 0 15px #21c9ff44!important}
+.dj-quote-glass .dj-icon-hardware{color:#ffc23f!important;border-color:#ffc23f99!important;background:#5a3a08bb!important;box-shadow:0 0 15px #ffb92f44!important}
+.dj-quote-glass .dj-icon-labour{color:#5df2c4!important;border-color:#5df2c499!important;background:#0a503fbb!important;box-shadow:0 0 15px #4de0b344!important}
+.dj-quote-glass .dj-icon-chosenElectrics{color:#c26cff!important;border-color:#b65cff99!important;background:#3c1760bb!important;box-shadow:0 0 15px #a94dff44!important}
+.dj-quote-glass .dj-icon-chosenFinishes{color:#ff9a36!important;border-color:#ff8d2499!important;background:#5b2b08bb!important;box-shadow:0 0 15px #ff8b2444!important}
+.dj-quote-glass .dj-icon-chosenFillers{color:#30e4ee!important;border-color:#27dce899!important;background:#074b52bb!important;box-shadow:0 0 15px #27dce844!important}
+.dj-quote-glass .dj-icon-timber{color:#ffd33f!important;border-color:#ffd33f99!important;background:#594408bb!important;box-shadow:0 0 15px #ffd33f44!important}
+.dj-quote-glass .dj-icon-worktops{color:#ff568c!important;border-color:#ff568c99!important;background:#59152fbb!important;box-shadow:0 0 15px #ff4b8544!important}
+.dj-quote-glass .dj-icon-chosenCnc{color:#64ef80!important;border-color:#55df7399!important;background:#124b25bb!important;box-shadow:0 0 15px #4cdd6d44!important}
+.dj-quote-glass .dj-icon-chosenProduction{color:#6f8cff!important;border-color:#6685ff99!important;background:#172c6bbb!important;box-shadow:0 0 15px #5579ff44!important}
+.dj-quote-glass .dj-fold.dj-fold-open .dj-title{border-bottom:1px solid rgba(117,195,242,.18)!important}
+.dj-quote-glass .dj-fold.dj-fold-open{padding-bottom:14px!important}
+}

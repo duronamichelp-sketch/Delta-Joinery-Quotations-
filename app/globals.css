@@ -945,3 +945,8 @@ body .dj-glass-home .skoda{grid-column:2!important;grid-row:3!important}
 .weekly-hours-total span{color:#b9cbd7;font-size:13px}
 .weekly-hours-days{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:14px}
 .weekly-hours-days span{padding:9px 6px;text-align:center;border:1px solid #76c4f244;border-radius:8px;background:#0a294077;color:#dceaf3;font-size:11px}
+
+/* Skoda takes removed lower-left panel position */
+@media(min-width:900px){
+body .dj-glass-home .skoda-left{grid-column:1!important;grid-row:2!important}
+}

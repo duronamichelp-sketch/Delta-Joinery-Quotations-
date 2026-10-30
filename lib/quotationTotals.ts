@@ -1,6 +1,6 @@
 import {read, type Unit,type Hardware,type Labour,type ExtraCost,DEFAULT_HARDWARE,DEFAULT_FINISH_RATES,pricedDoor} from './data';
 export type SavedQuotation={
- id:string;number?:string;date?:string;client?:string;project?:string;name?:string;savedAt?:string;includeVat?:boolean;totalAmount?:number;finished?:boolean;finishedAt?:string;
+ id:string;number?:string;date?:string;client?:string;project?:string;name?:string;savedAt?:string;includeVat?:boolean;totalAmount?:number;finished?:boolean;finishedAt?:string;siteImages?:{path:string;name:string}[];
  chosenUnits?:{id:string;qty:number;adc?:boolean;doorFinish?:string;doorSqm?:number;doorWidth?:number;doorHeight?:number;doorCount?:number}[];chosenHardware?:{id:string;qty:number}[];
  chosenLabour?:{id:string;qty:number}[];chosenElectrics?:{id:string;qty:number}[];chosenFinishes?:{id:string;qty:number}[];chosenFillers?:{id:string;qty:number}[];chosenTimber?:{id:string;qty:number}[];
 };

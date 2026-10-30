@@ -2304,3 +2304,132 @@ body .dj-glass-home .skoda-left{grid-column:1!important;grid-row:2!important}
 @media(min-width:900px){
   .dj-glass-home .quick4{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 }
+
+/* QUOTATION WORKFLOW — site photos, saved drafts and finished history */
+@media(min-width:900px){
+  body main.dj-quote-page .dj-site-images{
+    padding:18px!important;
+  }
+  body main.dj-quote-page .dj-title-row{
+    display:flex!important;
+    align-items:flex-start!important;
+    justify-content:space-between!important;
+    gap:16px!important;
+    margin-bottom:14px!important;
+  }
+  body main.dj-quote-page .dj-title-row h2{
+    margin:0 0 4px!important;
+  }
+  body main.dj-quote-page .dj-title-row p{
+    margin:0!important;
+    color:var(--dj-muted)!important;
+    font-size:12px!important;
+  }
+  body main.dj-quote-page .dj-site-upload{
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    min-height:40px!important;
+    padding:9px 14px!important;
+    border:1px solid rgba(90,194,255,.45)!important;
+    border-radius:9px!important;
+    background:linear-gradient(135deg,var(--dj-blue-strong),var(--dj-blue-deep))!important;
+    color:#fff!important;
+    font-weight:750!important;
+    cursor:pointer!important;
+    white-space:nowrap!important;
+  }
+  body main.dj-quote-page .dj-site-upload input{
+    display:none!important;
+  }
+  body main.dj-quote-page .dj-site-grid{
+    display:grid!important;
+    grid-template-columns:repeat(auto-fill,minmax(150px,1fr))!important;
+    gap:12px!important;
+  }
+  body main.dj-quote-page .dj-site-grid figure{
+    margin:0!important;
+    overflow:hidden!important;
+    border:1px solid rgba(112,190,239,.22)!important;
+    border-radius:12px!important;
+    background:rgba(4,22,35,.74)!important;
+  }
+  body main.dj-quote-page .dj-site-grid figure>div{
+    aspect-ratio:4/3!important;
+    display:grid!important;
+    place-items:center!important;
+    overflow:hidden!important;
+    background:rgba(2,12,20,.72)!important;
+    color:#8ea6b5!important;
+    font-size:11px!important;
+  }
+  body main.dj-quote-page .dj-site-grid img{
+    width:100%!important;
+    height:100%!important;
+    object-fit:cover!important;
+    display:block!important;
+  }
+  body main.dj-quote-page .dj-site-grid figcaption{
+    padding:8px 9px 4px!important;
+    color:#eaf4fa!important;
+    font-size:11px!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  body main.dj-quote-page .dj-site-grid button{
+    width:calc(100% - 16px)!important;
+    min-height:32px!important;
+    margin:5px 8px 8px!important;
+    border:1px solid rgba(223,104,104,.30)!important;
+    border-radius:7px!important;
+    background:rgba(145,46,46,.18)!important;
+    color:#ffb6b6!important;
+    font-size:10px!important;
+  }
+
+  body main.dj-finished-page .dj-finished-summary{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:12px!important;
+    margin:16px 0!important;
+  }
+  body main.dj-finished-page .dj-finished-summary>div{
+    display:grid!important;
+    gap:5px!important;
+    padding:16px!important;
+    border:1px solid var(--dj-line)!important;
+    border-radius:12px!important;
+    background:var(--dj-panel)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05)!important;
+  }
+  body main.dj-finished-page .dj-finished-summary span{
+    color:var(--dj-muted)!important;
+    font-size:10px!important;
+    font-weight:800!important;
+    letter-spacing:.09em!important;
+    text-transform:uppercase!important;
+  }
+  body main.dj-finished-page .dj-finished-summary strong{
+    color:#fff!important;
+    font-size:28px!important;
+  }
+  body main.dj-finished-page .dj-finished-summary>div:last-child strong{
+    color:var(--dj-gold)!important;
+  }
+  body main.dj-finished-page .dj-legacy-finished{
+    opacity:.96!important;
+  }
+  body main.dj-finished-page .dj-legacy-finished .rev-saved-top small{
+    color:#9fb6c5!important;
+  }
+}
+@media(max-width:899px){
+  .dj-site-images .dj-title-row{display:grid;gap:10px}
+  .dj-site-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .dj-site-grid figure{margin:0;overflow:hidden;border-radius:10px}
+  .dj-site-grid figure>div{aspect-ratio:4/3;overflow:hidden}
+  .dj-site-grid img{width:100%;height:100%;object-fit:cover}
+  .dj-site-upload input{display:none}
+  .dj-finished-summary{display:grid;grid-template-columns:1fr;gap:10px}
+}

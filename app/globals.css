@@ -3272,3 +3272,75 @@ body .dj-glass-home .skoda-left{grid-column:1!important;grid-row:2!important}
 @media print{
   body main.dj-finished-page .dj-finished-edit-panel{display:none!important}
 }
+
+/* FINISHED HISTORICAL QUOTATION — edit the displayed boxes in place */
+@media(min-width:900px){
+  body main.dj-finished-page .dj-finished-original-meta input,
+  body main.dj-finished-page .dj-inline-box-editor{
+    width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+    border:1px solid rgba(87,190,255,.52)!important;
+    border-radius:7px!important;
+    background:rgba(2,16,27,.88)!important;
+    color:#fff!important;
+    outline:none!important;
+    box-shadow:0 0 0 2px rgba(28,151,224,.08)!important;
+  }
+  body main.dj-finished-page .dj-finished-original-meta input{
+    min-height:34px!important;
+    padding:7px 8px!important;
+    font-size:11px!important;
+  }
+  body main.dj-finished-page .dj-inline-box-editor{
+    display:block!important;
+    min-height:72px!important;
+    padding:11px 12px!important;
+    resize:vertical!important;
+    font:inherit!important;
+    line-height:1.45!important;
+  }
+  body main.dj-finished-page .dj-inline-large-editor{
+    min-height:130px!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:inset 0 0 0 1px rgba(87,190,255,.42)!important;
+  }
+  body main.dj-finished-page .dj-manual-text-box{
+    display:block!important;
+    min-height:120px!important;
+    padding:12px!important;
+    color:#dce8ef!important;
+    white-space:pre-wrap!important;
+    line-height:1.5!important;
+    box-sizing:border-box!important;
+  }
+  body main.dj-finished-page .dj-inline-edit-actions{
+    position:sticky!important;
+    top:74px!important;
+    z-index:30!important;
+    padding:9px!important;
+    border:1px solid rgba(112,190,239,.22)!important;
+    border-radius:10px!important;
+    background:rgba(5,23,38,.92)!important;
+    backdrop-filter:blur(16px)!important;
+  }
+}
+@media(max-width:899px){
+  .dj-finished-original-meta input,
+  .dj-inline-box-editor{
+    width:100%;
+    box-sizing:border-box;
+    border:1px solid rgba(87,190,255,.52);
+    border-radius:7px;
+    background:rgba(2,16,27,.88);
+    color:#fff;
+    padding:9px;
+  }
+  .dj-inline-box-editor{min-height:80px;resize:vertical}
+  .dj-inline-large-editor{min-height:120px}
+  .dj-manual-text-box{min-height:100px;padding:10px;white-space:pre-wrap}
+}
+@media print{
+  body main.dj-finished-page .dj-inline-edit-actions{display:none!important}
+}

@@ -11,9 +11,19 @@ const clean=(v?:string)=>String(v||'').trim().toLowerCase();
 
 export default function FinishedQuotes(){
  const [quotes,setQuotes]=useState<Q[]>([]),[tasks,setTasks]=useState<Task[]>([]),[search,setSearch]=useState('');
- useEffect(()=>{setQuotes(read('dj_saved_quotes',[]));setTasks(read('dj_quotation_tasks',[]))},[]);
- const finishedSaved=quotes.filter(q=>q.finished);
- const legacy=useMemo(()=>tasks.filter(t=>t.status==='finished'&&!finishedSaved.some(q=>clean(q.project)===clean(t.project)&&clean(q.client)===clean(t.client))),[tasks,quotes]);
+ useEffect(()=>{
+  const load=()=>{setQuotes(read('dj_saved_quotes',[]));setTasks(read('dj_quotation_tasks',[]))};
+  load();
+  const onQuoteSync=(e:Event)=>{const key=(e as CustomEvent<string>).detail;if(key==='dj_saved_quotes'||key==='dj_quotation_tasks')load()};
+  const onStorage=(e:StorageEvent)=>{if(e.key==='dj_saved_quotes'||e.key==='dj_quotation_tasks')load()};
+  window.addEventListener('dj-cloud-received',onQuoteSync);
+  window.addEventListener('dj-cloud-change',onQuoteSync);
+  window.addEventListener('storage',onStorage);
+  window.addEventListener('focus',load);
+  return()=>{window.removeEventListener('dj-cloud-received',onQuoteSync);window.removeEventListener('dj-cloud-change',onQuoteSync);window.removeEventListener('storage',onStorage);window.removeEventListener('focus',load)};
+ },[]);
+ const finishedSaved=quotes.filter(q=>q.finished).sort((a,b)=>String(b.finishedAt||b.savedAt||'').localeCompare(String(a.finishedAt||a.savedAt||'')));
+ const legacy=useMemo(()=>tasks.filter(t=>t.status==='finished'&&!finishedSaved.some(q=>clean(q.project)===clean(t.project)&&clean(q.client)===clean(t.client))).sort((a,b)=>String(b.finished||b.created||'').localeCompare(String(a.finished||a.created||''))),[tasks,quotes]);
  const filteredSaved=finishedSaved.filter(q=>[q.number,q.client,q.project].join(' ').toLowerCase().includes(search.toLowerCase()));
  const filteredLegacy=legacy.filter(t=>[t.client,t.project,t.notes].join(' ').toLowerCase().includes(search.toLowerCase()));
  const total=finishedSaved.reduce((s,q)=>s+savedQuoteTotal(q),0)+legacy.reduce((s,t)=>s+(Number(t.amount)||0),0);

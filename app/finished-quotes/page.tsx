@@ -20,7 +20,7 @@ export default function FinishedQuotes(){
  function open(q:Q){localStorage.setItem('dj_quote',JSON.stringify(q));window.location.href='/quote'}
  function reopen(q:Q){const next=quotes.map(x=>x.id===q.id?{...x,finished:false,finishedAt:undefined}:x);setQuotes(next);localStorage.setItem('dj_saved_quotes',JSON.stringify(next))}
  return <main className="rev-shell dj-full-desktop dj-functional dj-unified-page dj-finished-page"><DesktopSidebar active="finished"/><div className="rev-phone rev-inner">
-  <header className="rev-screen-head dj-page-header dj-route-toolbar"><Link href="/" className="rev-back-link">‹</Link><b>Finished Quotations</b><div className="dj-header-actions"><Link href="/quotes" className="dj-secondary-action">Saved Quotations</Link><Link href="/quote" className="rev-mint-pill">＋ New</Link></div></header>
+  <header className="rev-screen-head dj-page-header dj-route-toolbar"><Link href="/" className="rev-back-link">‹</Link><b>Finished Quotations</b><div className="dj-header-actions"><Link href="/quotes" className="dj-secondary-action">Saved Quotations</Link><Link href="/quote?new=1" className="rev-mint-pill">＋ New</Link></div></header>
   <section className="rev-screen-body dj-page-body">
    <p className="rev-kicker-light">COMPLETED HISTORY</p><h1>Finished quotations</h1><p className="rev-sub">Your completed quotation history, including the older records from the previous dashboard.</p>
    <div className="dj-finished-summary"><div><span>Finished Quotations</span><strong>{finishedSaved.length+legacy.length}</strong></div><div><span>Total Finished Value</span><strong>{currency(total)}</strong></div></div>

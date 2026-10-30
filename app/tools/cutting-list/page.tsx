@@ -33,9 +33,9 @@ function optimize(settings:Settings,parts:Part[]){
  }
  return {sheets:pages.map(p=>p.shelves.flatMap(s=>s.items)),missing,usableL,usableW};
 }
-const inputStyle:React.CSSProperties={width:'100%',boxSizing:'border-box',border:'1px solid #cfddd3',background:'white',borderRadius:9,padding:'10px',fontSize:14,color:'#133d2a'};
-const panel:React.CSSProperties={background:'#fff',border:'1px solid #dce7df',borderRadius:14,padding:18};
-const btn:React.CSSProperties={padding:'10px 14px',border:0,borderRadius:9,background:'#153f2e',color:'#fff',cursor:'pointer'};
+const inputStyle:React.CSSProperties={width:'100%',boxSizing:'border-box',border:'1px solid rgba(112,190,239,.28)',background:'rgba(3,18,30,.72)',borderRadius:9,padding:'10px',fontSize:14,color:'#f4f8fb'};
+const panel:React.CSSProperties={background:'rgba(7,28,45,.78)',border:'1px solid rgba(112,190,239,.30)',borderRadius:14,padding:18,boxShadow:'inset 0 1px 0 rgba(255,255,255,.06),0 16px 36px rgba(0,0,0,.20)',backdropFilter:'blur(18px)',color:'#f4f8fb'};
+const btn:React.CSSProperties={padding:'10px 14px',border:'1px solid rgba(112,190,239,.35)',borderRadius:9,background:'#0c70b8',color:'#fff',cursor:'pointer',boxShadow:'0 8px 20px rgba(0,76,128,.24)'};
 export default function CuttingList(){
  const [settings,setSettings]=useState<Settings>(initial);
  const [parts,setParts]=useState<Part[]>([{id:'starter',name:'Side panel',length:'720',width:'550',qty:'2',grain:true,rotate:false}]);

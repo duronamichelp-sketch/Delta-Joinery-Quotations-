@@ -66,7 +66,7 @@ export default function Home(){
  function addManual(e:React.FormEvent){e.preventDefault();const value=Number(manualAmount);if(!manualClient.trim()||!manualProject.trim()||!Number.isFinite(value)||value<0)return;setTasks(prev=>[{id:crypto.randomUUID(),client:manualClient.trim(),project:manualProject.trim(),due:'',notes:'Manually entered finished quotation',status:'finished',created:dateToday(),finished:dateToday(),amount:Math.round(value*100)/100},...prev]);setManualClient('');setManualProject('');setManualAmount('');setShowManual(false);setFilter('finished')}
  function reset(){setClient('');setProject('');setDue('');setNotes('');setAmount('');setEditing(null);setShowForm(false)}
  function save(e:React.FormEvent){e.preventDefault();if(!client.trim()||!project.trim())return;const now=dateToday();if(editing){setTasks(prev=>prev.map(t=>t.id===editing?{...t,client:client.trim(),project:project.trim(),due,notes,amount:Math.max(0,Number(amount)||0)}:t))}else{setTasks(prev=>[{id:crypto.randomUUID(),client:client.trim(),project:project.trim(),due,notes,amount:Math.max(0,Number(amount)||0),status:'upcoming',created:now},...prev])}reset();setFilter('upcoming')}
- function edit(t:Task){setClient(t.client);setProject(t.project);setDue(t.due);setNotes(t.notes);setAmount(String(t.amount??''));setEditing(t.id);setShowForm(true);window.scrollTo({top:0,behavior:'smooth'})}
+ function edit(t:Task){setClient(t.client);setProject(t.project);setDue(t.due);setNotes(t.notes);setAmount(String(t.amount??''));setEditing(t.id);setShowForm(true);window.setTimeout(()=>document.getElementById('upcoming-quotations')?.scrollIntoView({behavior:'smooth',block:'start'}),0)}
  function status(id:string,done:boolean){
   const item=tasks.find(t=>t.id===id);if(!item)return;
   let quotationAmount=item.amount??0;
@@ -88,6 +88,28 @@ export default function Home(){
    <Link href="/hours"><span className="gold">◷</span><b>My Hours</b><small>{weekHours===null?'—':weekHours.toFixed(1)+' hrs'}</small><i>→</i></Link>
    <Link href="/units"><span className="cyan">⬡</span><b>Price Library</b><small>Materials & Units</small><i>→</i></Link>
    <Link href="/tools/addresses"><span>⌖</span><b>Addresses</b><small>{addressCount} Locations</small><i>→</i></Link>
+  </section>
+  <section id="upcoming-quotations" className="dj-glass-panel dj-upcoming-quotations">
+   <div className="head">
+    <div><h2>Upcoming Quotations</h2><small>{upcoming.length} open quotation{upcoming.length===1?'':'s'}</small></div>
+    <button className="dj-upcoming-add" type="button" onClick={()=>{setClient('');setProject('');setDue('');setNotes('');setAmount('');setEditing(null);setShowForm(true)}}>＋ Add Quotation</button>
+   </div>
+   {showForm&&<form className="dj-upcoming-form" onSubmit={save}>
+    <label>Client<input required value={client} onChange={e=>setClient(e.target.value)} placeholder="Client name"/></label>
+    <label>Project<input required value={project} onChange={e=>setProject(e.target.value)} placeholder="Project / job"/></label>
+    <label>Due date<input type="date" value={due} onChange={e=>setDue(e.target.value)}/></label>
+    <label>Amount (€)<input inputMode="decimal" type="number" min="0" step="0.01" value={amount} onChange={e=>setAmount(e.target.value)} placeholder="0.00"/></label>
+    <label className="dj-upcoming-notes">Notes<textarea value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Optional notes"/></label>
+    <div className="dj-upcoming-form-actions"><button type="submit" className="dj-upcoming-save">{editing?'Save Changes':'Add Quotation'}</button><button type="button" className="dj-upcoming-cancel" onClick={reset}>Cancel</button></div>
+   </form>}
+   <div className="dj-upcoming-list">
+    {upcoming.length===0?<div className="dj-upcoming-empty">No upcoming quotations yet.</div>:upcoming.map(t=><div className="dj-upcoming-row" key={t.id}>
+     <span className="thumb">▤</span>
+     <div className="dj-upcoming-main"><b>{t.project}</b><small>{t.client}{t.notes?' · '+t.notes:''}</small></div>
+     <div className="dj-upcoming-meta"><time>{formatDate(t.due)}</time>{(t.amount??0)>0&&<strong>€{Number(t.amount).toLocaleString('en-IE',{minimumFractionDigits:2,maximumFractionDigits:2})}</strong>}</div>
+     <div className="dj-upcoming-actions"><button type="button" onClick={()=>edit(t)}>Edit</button><button type="button" onClick={()=>status(t.id,true)}>✓ Finished</button><button type="button" className="danger" onClick={()=>remove(t.id)}>Delete</button></div>
+    </div>)}
+   </div>
   </section>
   <section className="dj-glass-grid">
    <div className="dj-glass-panel hours"><h2>Today’s Hours</h2><div className="hours-ring"><strong>{weekHours===null?'—':weekHours.toFixed(1)}</strong><small>Hours</small></div><div className="hours-meta"><span>Start<br/><b>{todayEntry?.start||'--'}</b></span><span>Finish<br/><b>{todayEntry?.finish||'--'}</b></span></div><Link href="/hours">⊕ &nbsp; Add Entry</Link></div>

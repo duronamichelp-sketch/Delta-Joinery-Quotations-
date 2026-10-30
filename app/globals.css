@@ -1066,3 +1066,64 @@ html,body{width:100%;max-width:100%;overflow-x:hidden!important}
 .dj-desktop .dj-top{max-width:calc(100% - 36px)!important}
 .dj-desktop .dj-area{width:100%!important;max-width:100%!important;min-width:0!important}
 }
+
+/* MASTER DESKTOP SHELL — identical geometry on every route */
+@media(min-width:900px){
+:root{--dj-shell-sidebar:220px;--dj-shell-gap:0px;--dj-shell-edge:12px;--dj-shell-top:10px}
+body{overflow-y:scroll!important}
+.dj-glass-home,
+.dj-full-desktop,
+.dj-desktop{
+  display:grid!important;
+  grid-template-columns:var(--dj-shell-sidebar) minmax(0,1fr)!important;
+  column-gap:var(--dj-shell-gap)!important;
+  width:100%!important;max-width:100vw!important;min-width:0!important;
+  margin:0!important;padding:0!important;box-sizing:border-box!important;
+  align-items:start!important;
+}
+.dj-glass-home>.dj-shared-sidebar,
+.dj-full-desktop>.dj-shared-sidebar,
+.dj-desktop>.dj-shared-sidebar{
+  grid-column:1!important;grid-row:1!important;
+  position:sticky!important;top:var(--dj-shell-top)!important;
+  width:calc(var(--dj-shell-sidebar) - var(--dj-shell-edge))!important;
+  min-width:calc(var(--dj-shell-sidebar) - var(--dj-shell-edge))!important;
+  max-width:calc(var(--dj-shell-sidebar) - var(--dj-shell-edge))!important;
+  height:calc(100vh - 20px)!important;
+  margin:0 0 10px var(--dj-shell-edge)!important;
+  flex:none!important;box-sizing:border-box!important;
+  border:1px solid rgba(118,196,242,.34)!important;border-radius:16px!important;
+  background:linear-gradient(180deg,rgba(8,29,45,.78),rgba(5,20,33,.72))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 18px 45px rgba(0,0,0,.28)!important;
+  backdrop-filter:blur(22px)!important;overflow:hidden!important;z-index:20!important;
+}
+.dj-glass-home>.dj-glass-stage,
+.dj-full-desktop>.rev-phone,
+.dj-desktop>.dj-main{
+  grid-column:2!important;grid-row:1!important;
+  width:100%!important;min-width:0!important;max-width:none!important;
+  margin:0!important;box-sizing:border-box!important;
+}
+.dj-full-desktop>.rev-phone{
+  min-height:100vh!important;
+  border-radius:0!important;
+}
+.dj-full-desktop>.rev-phone.rev-inner{
+  max-width:none!important;
+}
+.dj-glass-stage{padding-left:18px!important;padding-right:18px!important}
+.dj-full-desktop>.rev-phone{padding-left:18px!important;padding-right:18px!important}
+.dj-desktop>.dj-main{padding-left:0!important;padding-right:0!important}
+.dj-glass-home>.dj-shared-sidebar nav,
+.dj-full-desktop>.dj-shared-sidebar nav,
+.dj-desktop>.dj-shared-sidebar nav{padding:8px 10px!important}
+.dj-glass-home>.dj-shared-sidebar nav>a,
+.dj-full-desktop>.dj-shared-sidebar nav>a,
+.dj-desktop>.dj-shared-sidebar nav>a,
+.dj-glass-home>.dj-shared-sidebar nav>button,
+.dj-full-desktop>.dj-shared-sidebar nav>button,
+.dj-desktop>.dj-shared-sidebar nav>button{
+  min-height:42px!important;margin:2px 0!important;padding:10px 12px!important;
+  box-sizing:border-box!important;border-radius:10px!important;font-size:13px!important;
+}
+}

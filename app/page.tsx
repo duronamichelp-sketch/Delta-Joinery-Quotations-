@@ -19,6 +19,7 @@ export default function Home(){
  const [savedQuotes,setSavedQuotes]=useState<SavedQuotation[]>([]);
  const [loaded,setLoaded]=useState(false);
  const [timeRecords,setTimeRecords]=useState<TimeRecords|null>(null);
+ const [addressCount,setAddressCount]=useState(0);
  const now=useLiveNow();
  const weekHours=timeRecords===null?null:calculateWeekHours(timeRecords,now);
  const todayDate=localDateKey(now);
@@ -32,7 +33,7 @@ export default function Home(){
  const [client,setClient]=useState(''),[project,setProject]=useState(''),[due,setDue]=useState(''),[notes,setNotes]=useState('');
  const [amount,setAmount]=useState('');
  const [editing,setEditing]=useState<string|null>(null);
- useEffect(()=>{try{const raw=localStorage.getItem(KEY);if(raw){const data=JSON.parse(raw);if(Array.isArray(data))setTasks(data)}}catch{}setSavedQuotes(read<SavedQuotation[]>('dj_saved_quotes',[]));setLoaded(true)},[]);
+ useEffect(()=>{try{const raw=localStorage.getItem(KEY);if(raw){const data=JSON.parse(raw);if(Array.isArray(data))setTasks(data)}const addr=JSON.parse(localStorage.getItem('dj_tool_addresses')||'[]');setAddressCount(Array.isArray(addr)?addr.length:0)}catch{}setSavedQuotes(read<SavedQuotation[]>('dj_saved_quotes',[]));setLoaded(true)},[]);
  useEffect(()=>{if(loaded)localStorage.setItem(KEY,JSON.stringify(tasks))},[tasks,loaded]);
  useEffect(()=>{
   let cancelled=false;
@@ -86,18 +87,16 @@ export default function Home(){
    <Link href="/quotes"><span className="blue">▤</span><b>Quotations</b><small>{savedQuotes.filter(q=>!q.finished).length+upcoming.length} Open</small><i>→</i></Link>
    <Link href="/hours"><span className="gold">◷</span><b>My Hours</b><small>{weekHours===null?'—':weekHours.toFixed(1)+' hrs'}</small><i>→</i></Link>
    <Link href="/units"><span className="cyan">⬡</span><b>Price Library</b><small>Materials & Units</small><i>→</i></Link>
-   <Link href="/tools/addresses"><span>⌖</span><b>Addresses</b><small>Saved locations</small><i>→</i></Link>
+   <Link href="/tools/addresses"><span>⌖</span><b>Addresses</b><small>{addressCount} Locations</small><i>→</i></Link>
   </section>
   <section className="dj-glass-grid">
    <div className="dj-glass-panel recent"><div className="head"><h2>Recent Quotations</h2><Link href="/quotes">View All →</Link></div>{savedQuotes.slice(0,4).map((q,i)=><Link href="/quotes" className="quote-row" key={i}><span className="thumb">▤</span><div><b>{String((q as unknown as {project?:string;client?:string}).project||(q as unknown as {client?:string}).client||'Saved quotation')}</b><small>Saved quotation</small></div><em>Open</em></Link>)}</div>
    <div className="dj-glass-panel hours"><h2>Today’s Hours</h2><div className="hours-ring"><strong>{weekHours===null?'—':weekHours.toFixed(1)}</strong><small>Hours</small></div><div className="hours-meta"><span>Start<br/><b>{todayEntry?.start||'--'}</b></span><span>Finish<br/><b>{todayEntry?.finish||'--'}</b></span></div><Link href="/hours">⊕ &nbsp; Add Entry</Link></div>
    <div className="dj-glass-panel quick"><div className="head"><h2>Quick Tools</h2></div><div className="quick4"><Link href="/tools/measurements">▱<b>Slat Wall<br/>Calculator</b></Link><Link href="/tools/measurements">▦<b>Floor<br/>Coverage</b></Link><Link href="/tools/measurements">◺<b>Angle<br/>Finder</b></Link><Link href="/tools/cutting-list">▤<b>Cutting<br/>List</b></Link></div></div>
-   <div className="dj-glass-panel jobs"><div className="head"><h2>Upcoming / Active Jobs</h2><button onClick={()=>document.getElementById('dj-jobs')?.scrollIntoView({behavior:'smooth'})}>View All →</button></div>{upcoming.slice(0,4).map(t=><div className="job-row" key={t.id}><span className="thumb">▤</span><div><b>{t.project}</b><small>{t.client}</small></div><time>{formatDate(t.due)}</time></div>)}</div>
-   <div className="dj-glass-panel addresses"><div className="head"><h2>Addresses</h2><Link href="/tools/addresses">View All →</Link></div><Link className="big-action" href="/tools/addresses">⌖ &nbsp; Open saved addresses <span>→</span></Link></div>
+   <div className="dj-glass-panel jobs"><div className="head"><h2>Upcoming / Active Jobs</h2><Link href="/quotes">View All →</Link></div>{upcoming.slice(0,4).map(t=><div className="job-row" key={t.id}><span className="thumb">▤</span><div><b>{t.project}</b><small>{t.client}</small></div><time>{formatDate(t.due)}</time></div>)}</div>
    <div className="dj-glass-panel library"><div className="head"><h2>Price Library</h2><Link href="/units">Open →</Link></div><div className="library-tabs"><span>Units</span><span>Doors</span><span>Worktops</span><span>Timber</span><span>Sheet Materials</span><span>Hardware</span></div><Link className="big-action" href="/units">Browse materials & unit rates <span>→</span></Link></div>
    <div className="dj-glass-panel skoda"><div className="head"><h2>Skoda Installation List</h2><Link href="/tools/skoda">View All →</Link></div><div className="skoda-tabs"><span>Coffee Unit</span><span>Wall Slats</span><span>Free Standing Walls</span><span>Floor Mounted Walls</span></div><Link className="big-action" href="/tools/skoda">Open installation list <span>→</span></Link></div>
   </section>
-  <section id="dj-jobs" className="dj-glass-hidden-tracker"><h2>Quotation tracker</h2><div className="dj-filter"><button className={filter==='upcoming'?'active':''} onClick={()=>setFilter('upcoming')}>Upcoming <span>{upcoming.length}</span></button><button className={filter==='finished'?'active':''} onClick={()=>setFilter('finished')}>Finished <span>{finished.length}</span></button></div><div className="dj-task-list">{shown.map(t=><article key={t.id} className="dj-job-card"><h3>{t.project}</h3><p>{t.client}</p><div className="dj-job-actions"><button onClick={()=>status(t.id,t.status!=='finished')}>{t.status==='finished'?'Reopen':'Mark finished'}</button><button onClick={()=>edit(t)}>Edit</button><button onClick={()=>remove(t.id)}>Delete</button></div></article>)}</div></section>
  </div>
  </main>
 }

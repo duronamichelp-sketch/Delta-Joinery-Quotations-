@@ -66,6 +66,13 @@ export default function FinishedQuotes(){
   return <main className="rev-shell dj-full-desktop dj-functional dj-unified-page dj-finished-page"><DesktopSidebar active="finished"/><div className="rev-phone rev-inner">
    <header className="rev-screen-head dj-page-header dj-route-toolbar"><button type="button" className="rev-back-link" onClick={()=>setSelected(null)}>‹</button><b>Finished Quotation</b><div className="dj-header-actions"><button type="button" className="dj-primary-action" onClick={()=>window.print()}>🖨 Print Quotation</button>{q&&<button className="dj-secondary-action" onClick={()=>reopen(q)}>↶ Reopen to Saved</button>}</div></header>
    <section className="rev-screen-body dj-page-body">
+    <div className="dj-print-tech-title">
+     <div className="brand"><strong>DELTA JOINERY</strong><span>FINISHED QUOTATION RECORD</span></div>
+     <div className="project"><span>PROJECT</span><strong>{title}</strong><small>{client}</small></div>
+     <div className="doc"><span>DOCUMENT</span><strong>{q?.number||'MANUAL ENTRY'}</strong><small>{q?.date||t?.created||'—'}</small></div>
+     <div className="status"><span>STATUS</span><strong>FINISHED</strong><small>{q?.finishedAt?.slice(0,10)||t?.finished||'—'}</small></div>
+     <div className="value"><span>TOTAL</span><strong>{currency(amount)}</strong></div>
+    </div>
     <div className="dj-finished-original-head">
      <div><p className="rev-kicker-light">{isSaved?'ORIGINAL QUOTATION':'MANUAL / HISTORICAL ENTRY'}</p><h1>{title}</h1><p>{client}</p></div>
      <strong>{currency(amount)}</strong>
@@ -80,12 +87,12 @@ export default function FinishedQuotes(){
      <span><b>Total</b>{currency(amount)}</span>
     </div>
 
-    {q&&(q.email||q.phone||q.address||q.notes)&&<section className="dj-finished-original-card"><h2>Original Details</h2><div className="dj-finished-contact">
+    {q&&(q.email||q.phone||q.address||q.notes)&&<section className="dj-finished-original-card dj-print-details-card"><h2>Original Details</h2><div className="dj-finished-contact">
      {q.email&&<span><b>Email</b>{q.email}</span>}{q.phone&&<span><b>Phone</b>{q.phone}</span>}{q.address&&<span><b>Address</b>{q.address}</span>}{q.notes&&<span className="wide"><b>Notes</b>{q.notes}</span>}
     </div></section>}
-    {t?.notes&&<section className="dj-finished-original-card"><h2>Notes</h2><p>{t.notes}</p></section>}
+    {t?.notes&&<section className="dj-finished-original-card dj-print-details-card"><h2>Notes</h2><p>{t.notes}</p></section>}
 
-    <section className="dj-finished-original-card">
+    <section className="dj-finished-original-card dj-print-lines-card">
      <h2>Original Quotation</h2>
      {q&&details&&details.lines.length>0?<div className="dj-finished-lines">
       <div className="head"><span>Category</span><span>Item</span><span>Qty</span><span>Rate</span><span>Amount</span></div>
@@ -93,7 +100,7 @@ export default function FinishedQuotes(){
      </div>:<div className="dj-finished-blank"></div>}
     </section>
 
-    <section className="dj-finished-original-card">
+    <section className="dj-finished-original-card dj-print-breakdown-card">
      <h2>Cost Breakdown</h2>
      {q&&details?<div className="dj-finished-breakdown">
       {details.breakdown.filter(x=>x.amount>0).map(x=><div key={x.key}><span>{x.label}</span><strong>{currency(x.amount)}</strong></div>)}
@@ -103,7 +110,7 @@ export default function FinishedQuotes(){
      </div>:<div className="dj-finished-blank"></div>}
     </section>
 
-    {q&&(q.siteImages||[]).length>0&&<section className="dj-finished-original-card"><h2>Site Photos</h2><div className="dj-finished-readonly-gallery">{(q.siteImages||[]).map(img=><figure key={img.path}>{imageUrls[img.path]?<img src={imageUrls[img.path]} alt={img.name}/>:<div>Loading…</div>}<figcaption>{img.name}</figcaption></figure>)}</div></section>}
+    {q&&(q.siteImages||[]).length>0&&<section className="dj-finished-original-card dj-print-photos-card"><h2>Site Photos</h2><div className="dj-finished-readonly-gallery">{(q.siteImages||[]).map(img=><figure key={img.path}>{imageUrls[img.path]?<img src={imageUrls[img.path]} alt={img.name}/>:<div>Loading…</div>}<figcaption>{img.name}</figcaption></figure>)}</div></section>}
    </section>
   </div></main>
  }

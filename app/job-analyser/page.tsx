@@ -283,5 +283,5 @@ export default function JobAnalyser(){
    </div>
   </div>
  </div>
- }</section></section></div></section></div></main>
+ }</section></div></section></div></main>
 }

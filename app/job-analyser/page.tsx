@@ -89,7 +89,28 @@ function quantityFrom(line:string){
  return q?Math.max(1,Number(q[1])):1;
 }
 function materialFrom(line:string){
- const n=norm(line);return MATERIALS.find(x=>n.includes(norm(x)))||'Not specified';
+ const n=norm(line);
+
+ const phrases:[RegExp,string][]=[
+  [/\b(?:laminated|laminate)\s+mdf\b|\bmdf\s+(?:laminated|laminate)\b/i,'MDF Laminate'],
+  [/\b(?:oak|walnut|ash|beech|maple|sapele|mahogany|iroko|teak|cedar)\s+veneer(?:ed)?\s+mdf\b/i,(line.match(/\b(oak|walnut|ash|beech|maple|sapele|mahogany|iroko|teak|cedar)\b/i)?.[1]||'Timber')+' Veneer MDF'],
+  [/\bpainted\s+mdf\b|\bmdf\s+paint(?:ed)?\b/i,'Painted MDF'],
+  [/\b(?:laminated|laminate)\s+mfc\b|\bmfc\s+(?:laminated|laminate)\b/i,'MFC Laminate'],
+  [/\bveneered?\s+mdf\b|\bmdf\s+veneer(?:ed)?\b/i,'Veneered MDF'],
+  [/\bsolid\s+timber\b/i,'Solid Timber'],
+  [/\bbirch\s+ply(?:wood)?\b/i,'Birch Ply']
+ ];
+ for(const [rx,label] of phrases){if(rx.test(line))return label}
+
+ const candidates=MATERIALS
+  .filter(x=>n.includes(norm(x)))
+  .sort((a,b)=>norm(b).length-norm(a).length);
+ if(candidates.length>1){
+  const hasMdf=candidates.some(x=>norm(x)==='mdf');
+  const hasLaminate=candidates.some(x=>norm(x)==='laminate');
+  if(hasMdf&&hasLaminate)return 'MDF Laminate';
+ }
+ return candidates[0]||'Not specified';
 }
 function itemName(line:string){
  const n=norm(line);const hit=JOINERY_WORDS.find(x=>n.includes(norm(x)));
@@ -164,7 +185,7 @@ function analyseDocs(docs:Doc[],projectName:string):Analysis{
    const source=page?`${doc.name} · Page ${page}`:sheet?`${doc.name} · ${sheet[1]} row ${sheet[2]}`:doc.name;
    const confidence:Confidence=!measure?'Missing':direct?(measure.calculated?'Calculated':'Confirmed'):'Estimated';
    raw.push({ref:`J${String(idx++).padStart(2,'0')}`,item:name,qty,measure:measure?.label||`${qty} units`,material,description:context.replace(/^\[[^\]]+\]\s*/,'').slice(0,520),source,confidence,estimatedCost:estimated});
-   if(material==='Not specified')rfis.push({ref:'',item:name,question:'Material / finish is not clearly identified. Confirm the specification before final pricing.',source});
+   if(material==='Not specified')rfis.push({ref:'',item:name,question:'Material / finish could not be identified in the extracted text. Check the referenced drawing and confirm the specification.',source});
    if(!measure)rfis.push({ref:'',item:name,question:'No reliable m², linear metre, unit quantity or calculable mm dimensions were found for this item. Confirm dimensions / quantity.',source});
    if(!priced)rfis.push({ref:'',item:name,question:'Missing pricing basis: no usable measurement/rate was available for this work item. Confirm dimensions, quantity and rate.',source});
   });

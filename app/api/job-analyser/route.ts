@@ -1,4 +1,5 @@
 import {NextResponse} from 'next/server';
+import {getVercelOidcToken} from '@vercel/oidc';
 
 export const runtime='nodejs';
 export const maxDuration=60;
@@ -29,8 +30,11 @@ function normalise(x:any, fallbackName:string){
 
 export async function POST(req:Request){
  try{
-  const token=process.env.AI_GATEWAY_API_KEY||process.env.VERCEL_OIDC_TOKEN;
-  if(!token)return NextResponse.json({error:'AI analysis is not available on this deployment yet.'},{status:503});
+  let token=process.env.AI_GATEWAY_API_KEY;
+  if(!token){
+   try{token=await getVercelOidcToken()}catch(e){console.error('job-analyser-oidc',e)}
+  }
+  if(!token)return NextResponse.json({error:'AI Gateway authentication failed on this deployment.'},{status:503});
   const form=await req.formData();
   const files=form.getAll('files').filter((x):x is File=>x instanceof File);
   const projectName=String(form.get('projectName')||'');

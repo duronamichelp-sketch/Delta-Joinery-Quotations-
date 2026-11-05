@@ -290,12 +290,22 @@ return <main className={'rev-shell dj-full-desktop dj-functional dj-unified-page
   <div style={{display:'flex',justifyContent:'space-between',gap:10,alignItems:'baseline',flexWrap:'wrap'}}><h3 style={{margin:0}}>Top profile / depth</h3><small>Finished wall thickness</small></div>
   <svg width="100%" viewBox="0 0 620 230" role="img" aria-label="Depth section showing slat depth, backing thickness and overall finished depth">
    <text x="70" y="38" fill="#aabfb3" fontSize="11">ROOM SIDE</text><text x="548" y="38" textAnchor="end" fill="#aabfb3" fontSize="11">WALL SIDE</text>
-   <rect x="120" y="72" width={Math.max(110,(slatD/Math.max(overallDepth,.1))*330)} height="72" fill="#b98d5b" stroke="#d7b786"/>
-   {hasBacking&&<rect x={120+Math.max(110,(slatD/Math.max(overallDepth,.1))*330)} y="72" width={Math.max(55,(backingD/Math.max(overallDepth,.1))*330)} height="72" fill="#77838a" stroke="#9fb6a8"/>}
-   <text x={120+Math.max(110,(slatD/Math.max(overallDepth,.1))*330)/2} y="112" textAnchor="middle" fill="#101c23" fontSize="13">SLAT</text>
-   {hasBacking&&<text x={120+Math.max(110,(slatD/Math.max(overallDepth,.1))*330)+Math.max(55,(backingD/Math.max(overallDepth,.1))*330)/2} y="112" textAnchor="middle" fill="#eef5f1" fontSize="12">BACKING</text>}
-   <path d="M120 164 V178 M500 164 V178 M120 171 H500" stroke="#9fb6a8"/><text x="310" y="197" textAnchor="middle" fill="#dce8e1" fontSize="14">OVERALL DEPTH {overallDepth.toFixed(2)} mm</text>
-   <text x="120" y="220" fill="#dce8e1" fontSize="11">Slat depth {slatD.toFixed(2)} mm</text><text x="305" y="220" fill="#dce8e1" fontSize="11">Backing {hasBacking?backingD.toFixed(0)+' mm':'none'}</text>
+   {(()=>{
+     const mmScale=8;
+     const slatW=Math.max(28,slatD*mmScale);
+     const backingW=hasBacking?Math.max(14,backingD*mmScale):0;
+     const totalW=slatW+backingW;
+     const startX=310-totalW/2;
+     return <g>
+       <rect x={startX} y="82" width={slatW} height="52" fill="#b98d5b" stroke="#d7b786"/>
+       {hasBacking&&<rect x={startX+slatW} y="82" width={backingW} height="52" fill="#77838a" stroke="#9fb6a8"/>}
+       <text x={startX+slatW/2} y="112" textAnchor="middle" fill="#101c23" fontSize="12">SLAT</text>
+       {hasBacking&&backingW>=42&&<text x={startX+slatW+backingW/2} y="112" textAnchor="middle" fill="#eef5f1" fontSize="11">BACKING</text>}
+       <path d={`M${startX} 154 V168 M${startX+totalW} 154 V168 M${startX} 161 H${startX+totalW}`} stroke="#9fb6a8"/>
+       <text x="310" y="187" textAnchor="middle" fill="#dce8e1" fontSize="14">OVERALL DEPTH {overallDepth.toFixed(2)} mm</text>
+     </g>
+   })()}
+   <text x="195" y="216" fill="#dce8e1" fontSize="11">Slat depth {slatD.toFixed(2)} mm</text><text x="360" y="216" fill="#dce8e1" fontSize="11">Backing {hasBacking?backingD.toFixed(0)+' mm':'none'}</text>
   </svg>
  </div>
 </div>

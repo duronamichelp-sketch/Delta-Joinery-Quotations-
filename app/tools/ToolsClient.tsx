@@ -109,24 +109,47 @@ const downloadSlatDrawing=()=>{
   if(effectiveGap>0){doc.line(firstEnd,fT-10,secondStart,fT-10);doc.line(firstEnd,fT-11.5,firstEnd,fT-8.5);doc.line(secondStart,fT-11.5,secondStart,fT-8.5);doc.text(`${effectiveGap.toFixed(2)} gap`,(firstEnd+secondStart)/2,fT-12,{align:'center'});}
  }
 
- // TOP PROFILE
- const tx=204,ty=42,tw=78,th=38;
- doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.text('TOP PROFILE',204,34);
- const topScale=Math.min(tw/Math.max(W,1),th/Math.max(overallDepth,1));
- const topW=W*topScale;
- const topDepth=Math.max(5,overallDepth*topScale);
- const backH=hasBacking?Math.max(1.5,backingD*topScale):0;
- if(hasBacking){doc.setFillColor(120,130,138);doc.rect(tx,ty+topDepth-backH,topW,backH,'F');}
+ // TOP PROFILE — plan view through the slats
+ const tx=204,ty=42,tw=78,frontY=42;
+ doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.text('TOP PROFILE / PLAN',204,34);
+ const topXScale=tw/Math.max(W,1);
+ const slatDrawDepth=10;
+ const backingDrawDepth=hasBacking?4:0;
+ const topW=W*topXScale;
+ const backingY=frontY+slatDrawDepth;
+ doc.setDrawColor(70);doc.setLineWidth(.25);
+ if(hasBacking){
+  doc.setFillColor(130,140,146);
+  doc.rect(tx,backingY,topW,backingDrawDepth,'F');
+  doc.rect(tx,backingY,topW,backingDrawDepth);
+ }
  doc.setFillColor(174,128,78);
  for(let i=0;i<qty;i++){
-  const sx=tx+i*(effectiveSlatFace+effectiveGap)*topScale;
-  doc.rect(sx,ty,Math.max(.25,effectiveSlatFace*topScale),Math.max(2,slatD*topScale),'F');
+  const px=tx+i*(effectiveSlatFace+effectiveGap)*topXScale;
+  doc.rect(px,frontY,Math.max(.28,effectiveSlatFace*topXScale),slatDrawDepth,'F');
+  doc.rect(px,frontY,Math.max(.28,effectiveSlatFace*topXScale),slatDrawDepth);
  }
- doc.setDrawColor(70);doc.rect(tx,ty,topW,topDepth);
- doc.setFont('helvetica','normal');doc.setFontSize(7);
- doc.text(`Slat depth ${slatD.toFixed(1)}`,tx,ty+topDepth+6);
- doc.text(`Backing ${hasBacking?backingD.toFixed(0)+' mm':'none'}`,tx+38,ty+topDepth+6);
- doc.text(`Overall depth ${overallDepth.toFixed(1)}`,tx,ty+topDepth+12);
+ // face width and gap dimensions over first bay
+ const firstFaceEnd=tx+effectiveSlatFace*topXScale;
+ const secondFaceStart=tx+(effectiveSlatFace+effectiveGap)*topXScale;
+ doc.line(tx,frontY-4,firstFaceEnd,frontY-4);doc.line(tx,frontY-5.5,tx,frontY-2.5);doc.line(firstFaceEnd,frontY-5.5,firstFaceEnd,frontY-2.5);
+ doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.text(`${effectiveSlatFace.toFixed(2)}`,(tx+firstFaceEnd)/2,frontY-6,{align:'center'});
+ if(effectiveGap>0){
+  doc.line(firstFaceEnd,frontY-9,secondFaceStart,frontY-9);doc.line(firstFaceEnd,frontY-10.5,firstFaceEnd,frontY-7.5);doc.line(secondFaceStart,frontY-10.5,secondFaceStart,frontY-7.5);
+  doc.text(`${effectiveGap.toFixed(2)} gap`,(firstFaceEnd+secondFaceStart)/2,frontY-11,{align:'center'});
+ }
+ // overall length dimension
+ const lenY=backingY+backingDrawDepth+6;
+ doc.line(tx,lenY,tx+topW,lenY);doc.line(tx,lenY-1.8,tx,lenY+1.8);doc.line(tx+topW,lenY-1.8,tx+topW,lenY+1.8);
+ doc.text(`WALL LENGTH ${W.toFixed(1)}`,tx+topW/2,lenY-2,{align:'center'});
+ // depth stack at right side
+ const dx=tx+topW+5;
+ doc.line(dx,frontY,dx,backingY+backingDrawDepth);doc.line(dx-1.5,frontY,dx+1.5,frontY);doc.line(dx-1.5,backingY+backingDrawDepth,dx+1.5,backingY+backingDrawDepth);
+ doc.text(`OVERALL ${overallDepth.toFixed(1)}`,dx+2,frontY+(slatDrawDepth+backingDrawDepth)/2,{angle:90,align:'center'});
+ doc.setFontSize(6.5);
+ doc.text(`Slat depth: ${slatD.toFixed(1)} mm`,tx,backingY+backingDrawDepth+13);
+ doc.text(`Backing: ${hasBacking?backingD.toFixed(0)+' mm':'none'}`,tx+37,backingY+backingDrawDepth+13);
+ doc.text('Depth shown enlarged for clarity — written dimensions control.',tx,backingY+backingDrawDepth+18);
 
  // SIDE PROFILE
  const sx=214,sy=103,sw=42,sh=55;
@@ -240,7 +263,15 @@ return <main className={'rev-shell dj-full-desktop dj-functional dj-unified-page
  </div>
 
  <div style={{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:14}}>
-  <div className="dj-glass-card" style={box}><h3>Top profile</h3><svg width="100%" viewBox="0 0 420 190" role="img" aria-label="Top profile of slatted wall"><rect x="30" y="55" width="350" height="72" fill="none" stroke="#9fb6a8"/>{hasBacking&&<rect x="30" y="111" width="350" height="16" fill="#77838a"/>}{slatLayoutValid&&Array.from({length:Math.min(qty,80)},(_,i)=><rect key={i} x={30+(i*(effectiveSlatFace+effectiveGap)/Math.max(W,1))*350} y="55" width={Math.max(.7,effectiveSlatFace/Math.max(W,1)*350)} height="43" fill="#b98d5b"/>)}<text x="30" y="148" fill="#dce8e1" fontSize="12">Slat depth {slatD.toFixed(2)} mm</text><text x="210" y="148" fill="#dce8e1" fontSize="12">Backing {hasBacking?backingD.toFixed(0)+' mm':'none'}</text><text x="30" y="170" fill="#aabfb3" fontSize="12">Overall depth {overallDepth.toFixed(2)} mm</text></svg></div>
+  <div className="dj-glass-card" style={box}><div style={{display:'flex',justifyContent:'space-between',gap:10,alignItems:'baseline',flexWrap:'wrap'}}><h3 style={{margin:0}}>Top profile / plan</h3><small>Viewed from above</small></div><svg width="100%" viewBox="0 0 520 260" role="img" aria-label="Plan view showing slat faces, gaps, backing and finished depth">
+   <text x="42" y="24" fill="#aabfb3" fontSize="11">FRONT / ROOM SIDE</text>
+   {hasBacking&&<><rect x="42" y="142" width="410" height="28" fill="#77838a" stroke="#9fb6a8"/><text x="247" y="160" textAnchor="middle" fill="#eef5f1" fontSize="11">BACKING BOARD {backingD.toFixed(0)} mm</text></>}
+   {slatLayoutValid&&Array.from({length:Math.min(qty,120)},(_,i)=><rect key={i} x={42+(i*(effectiveSlatFace+effectiveGap)/Math.max(W,1))*410} y="58" width={Math.max(1,effectiveSlatFace/Math.max(W,1)*410)} height="84" fill="#b98d5b" stroke="#d7b786" strokeWidth=".35"/>)}
+   <path d="M42 188 V200 M452 188 V200 M42 195 H452" stroke="#9fb6a8"/><text x="247" y="218" textAnchor="middle" fill="#dce8e1" fontSize="12">WALL LENGTH {W.toFixed(1)} mm</text>
+   {slatLayoutValid&&qty>=2&&<><path d={'M42 46 H'+(42+(effectiveSlatFace/Math.max(W,1))*410)} stroke="#9fb6a8"/><path d={'M42 43 V49 M'+(42+(effectiveSlatFace/Math.max(W,1))*410)+' 43 V49'} stroke="#9fb6a8"/><text x={42+(effectiveSlatFace/Math.max(W,1))*205} y="40" textAnchor="middle" fill="#dce8e1" fontSize="10">{effectiveSlatFace.toFixed(2)} slat face</text><path d={'M'+(42+(effectiveSlatFace/Math.max(W,1))*410)+' 31 H'+(42+((effectiveSlatFace+effectiveGap)/Math.max(W,1))*410)} stroke="#9fb6a8"/><text x={42+((effectiveSlatFace+effectiveGap/2)/Math.max(W,1))*410} y="26" textAnchor="middle" fill="#dce8e1" fontSize="10">{effectiveGap.toFixed(2)} gap</text></>}
+   <path d="M474 58 H488 M474 170 H488 M482 58 V170" stroke="#9fb6a8"/><text x="505" y="114" textAnchor="middle" fill="#dce8e1" fontSize="10" transform="rotate(90 505 114)">OVERALL DEPTH {overallDepth.toFixed(2)} mm</text>
+   <text x="42" y="239" fill="#dce8e1" fontSize="11">Slat depth {slatD.toFixed(2)} mm</text><text x="190" y="239" fill="#dce8e1" fontSize="11">Backing {hasBacking?backingD.toFixed(0)+' mm':'none'}</text><text x="322" y="239" fill="#aabfb3" fontSize="10">Depth enlarged for clarity</text>
+  </svg></div>
   <div className="dj-glass-card" style={box}><h3>Side profile</h3><svg width="100%" viewBox="0 0 420 190" role="img" aria-label="Side profile of slatted wall"><rect x="150" y="25" width="90" height="125" fill="none" stroke="#9fb6a8"/>{hasBacking&&<rect x="150" y="25" width="22" height="125" fill="#77838a"/>}<rect x={hasBacking?172:150} y="25" width="48" height="125" fill="#b98d5b"/><text x="260" y="88" fill="#dce8e1" fontSize="12" transform="rotate(90 260 88)">HEIGHT {H.toFixed(1)} mm</text><text x="150" y="172" fill="#dce8e1" fontSize="12">Overall depth {overallDepth.toFixed(2)} mm</text></svg></div>
  </div>
 </div>

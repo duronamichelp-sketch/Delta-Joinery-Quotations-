@@ -24,7 +24,7 @@ const account=useDeltaAccount();
 const [saveStatus,setSaveStatus]=useState('');
 const [savingAddress,setSavingAddress]=useState(false);
 const [mode,setMode]=useState('slats');
-const [width,setWidth]=useState('1800'),[height,setHeight]=useState('2400');
+const [wallName,setWallName]=useState(''),[width,setWidth]=useState('1800'),[height,setHeight]=useState('2400');
 const [slatFace,setSlatFace]=useState('40'),[slatDepth,setSlatDepth]=useState('18'),[slatCount,setSlatCount]=useState('30');
 const [gapInput,setGapInput]=useState('20'),[layoutDriver,setLayoutDriver]=useState<'slat'|'gap'>('slat');
 const [hasBacking,setHasBacking]=useState(false),[backingThickness,setBackingThickness]=useState('6');
@@ -82,85 +82,131 @@ const downloadSlatDrawing=()=>{
  if(!slatLayoutValid)return;
  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
  const pageW=297,pageH=210;
- doc.setFont('helvetica','bold');doc.setFontSize(14);doc.text('DELTA JOINERY',12,12);
- doc.setFontSize(12);doc.text('Slatted Wall Technical Drawing',12,19);
- doc.setFont('helvetica','normal');doc.setFontSize(7.5);
- doc.text('All dimensions in millimetres. Site dimensions to be verified before manufacture.',12,25);
+ const wallLabel=(wallName.trim()||'Unnamed wall').slice(0,80);
+ const safeName=(wallName.trim()||'slatted-wall').replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'').toLowerCase()||'slatted-wall';
 
- // FRONT ELEVATION
- doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.text('FRONT ELEVATION',12,34);
- const fx=22,fy=42,fw=166,fh=103;
- const fs=Math.min(fw/Math.max(W,1),fh/Math.max(H,1));
- const fW=W*fs,fH=H*fs,fL=fx+(fw-fW)/2,fT=fy+(fh-fH)/2;
- doc.setDrawColor(55);doc.setLineWidth(.3);doc.rect(fL,fT,fW,fH);
- doc.setFillColor(174,128,78);
+ // PAGE FRAME + HEADER
+ doc.setDrawColor(40);doc.setLineWidth(.35);doc.rect(8,8,281,194);
+ doc.setFont('helvetica','bold');doc.setFontSize(14);doc.text('DELTA JOINERY',12,16);
+ doc.setFontSize(10);doc.text('SLATTED WALL TECHNICAL SETTING-OUT',12,24);
+ doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.text('ALL DIMENSIONS IN MILLIMETRES · VERIFY SITE DIMENSIONS BEFORE MANUFACTURE',12,30);
+ doc.line(198,8,198,34);
+ doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.text('WALL / LOCATION',202,14);
+ doc.setFontSize(10);
+ const nameLines=doc.splitTextToSize(wallLabel,82).slice(0,2);
+ doc.text(nameLines,202,21);
+ doc.line(8,34,289,34);
+
+ // FRONT ELEVATION ZONE
+ const boxX=12,boxY=40,boxW=184,boxH=108;
+ doc.setLineWidth(.25);doc.rect(boxX,boxY,boxW,boxH);
+ doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.text('A · FRONT ELEVATION',boxX+3,boxY+6);
+ doc.setFont('helvetica','normal');doc.setFontSize(6);doc.text('FIRST + LAST VERTICAL SLATS FULL HEIGHT',boxX+3,boxY+11);
+
+ const drawX=28,drawY=56,drawWMax=150,drawHMax=72;
+ const fs=Math.min(drawWMax/Math.max(W,1),drawHMax/Math.max(H,1));
+ const fW=W*fs,fH=H*fs;
+ const fL=drawX+(drawWMax-fW)/2;
+ const fT=drawY+(drawHMax-fH)/2;
  const pdfFace=Math.max(.25,effectiveSlatFace*fs);
+
+ doc.setDrawColor(70);doc.rect(fL,fT,fW,fH);
+ doc.setFillColor(174,128,78);
  const shortTop=fT+(topHorizontal?pdfFace:0);
  const shortH=Math.max(.25,fH-(topHorizontal?pdfFace:0)-(bottomHorizontal?pdfFace:0));
  for(let i=0;i<qty;i++){
-  const px=fL+(i*(effectiveSlatFace+effectiveGap))*fs;
-  const isEnd=i===0||i===qty-1;
-  doc.rect(px,isEnd?fT:shortTop,pdfFace,isEnd?fH:shortH,'F');
+   const px=fL+i*(effectiveSlatFace+effectiveGap)*fs;
+   const isEnd=i===0||i===qty-1;
+   doc.rect(px,isEnd?fT:shortTop,pdfFace,isEnd?fH:shortH,'F');
  }
  const horizontalX=fL+pdfFace;
  const horizontalW=Math.max(.25,fW-2*pdfFace);
  if(topHorizontal)doc.rect(horizontalX,fT,horizontalW,pdfFace,'F');
  if(bottomHorizontal)doc.rect(horizontalX,fT+fH-pdfFace,horizontalW,pdfFace,'F');
- const frontDimY=fT+fH+8;
- doc.setDrawColor(80);doc.line(fL,frontDimY,fL+fW,frontDimY);doc.line(fL,frontDimY-2,fL,frontDimY+2);doc.line(fL+fW,frontDimY-2,fL+fW,frontDimY+2);
- doc.setFontSize(7);doc.text(`${W.toFixed(1)}`,fL+fW/2,frontDimY-2,{align:'center'});
- const frontDimX=fL-7;doc.line(frontDimX,fT,frontDimX,fT+fH);doc.line(frontDimX-2,fT,frontDimX+2,fT);doc.line(frontDimX-2,fT+fH,frontDimX+2,fT+fH);
- doc.text(`${H.toFixed(1)}`,frontDimX-2,fT+fH/2,{angle:90,align:'center'});
- if(qty>=2){
-  const firstEnd=fL+effectiveSlatFace*fs;
-  const secondStart=fL+(effectiveSlatFace+effectiveGap)*fs;
-  doc.line(fL,fT-4,firstEnd,fT-4);doc.line(fL,fT-5.5,fL,fT-2.5);doc.line(firstEnd,fT-5.5,firstEnd,fT-2.5);
-  doc.text(`${effectiveSlatFace.toFixed(2)} slat`,(fL+firstEnd)/2,fT-6,{align:'center'});
-  if(effectiveGap>0){doc.line(firstEnd,fT-10,secondStart,fT-10);doc.line(firstEnd,fT-11.5,firstEnd,fT-8.5);doc.line(secondStart,fT-11.5,secondStart,fT-8.5);doc.text(`${effectiveGap.toFixed(2)} gap`,(firstEnd+secondStart)/2,fT-12,{align:'center'});}
- }
 
- // TOP PROFILE / DEPTH SECTION
- doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.text('TOP PROFILE / DEPTH SECTION',204,34);
- const secX=214,secY=50,secH=28;
- const maxDepthDraw=58;
- const totalD=Math.max(overallDepth,.1);
- const depthScale=maxDepthDraw/totalD;
- const slatDraw=Math.max(8,slatD*depthScale);
- const backDraw=hasBacking?Math.max(4,backingD*depthScale):0;
- doc.setDrawColor(70);doc.setLineWidth(.3);
+ // Front width dimension
+ const widthDimY=fT+fH+8;
+ doc.setDrawColor(65);doc.line(fL,widthDimY,fL+fW,widthDimY);
+ doc.line(fL,widthDimY-2,fL,widthDimY+2);doc.line(fL+fW,widthDimY-2,fL+fW,widthDimY+2);
+ doc.setFontSize(6.5);doc.text(`WALL LENGTH  ${W.toFixed(1)}`,fL+fW/2,widthDimY-2,{align:'center'});
+ // Front height dimension
+ const heightDimX=fL-8;
+ doc.line(heightDimX,fT,heightDimX,fT+fH);
+ doc.line(heightDimX-2,fT,heightDimX+2,fT);doc.line(heightDimX-2,fT+fH,heightDimX+2,fT+fH);
+ doc.text(`WALL HEIGHT  ${H.toFixed(1)}`,heightDimX-2,fT+fH/2,{angle:90,align:'center'});
+
+ // Slat + gap detail
+ if(qty>=2){
+   const firstEnd=fL+pdfFace;
+   const secondStart=fL+(effectiveSlatFace+effectiveGap)*fs;
+   const dim1=fT-6,dim2=fT-12;
+   doc.line(fL,dim1,firstEnd,dim1);doc.line(fL,dim1-1.5,fL,dim1+1.5);doc.line(firstEnd,dim1-1.5,firstEnd,dim1+1.5);
+   doc.text(`${effectiveSlatFace.toFixed(2)} SLAT`,(fL+firstEnd)/2,dim1-2,{align:'center'});
+   if(effectiveGap>0){
+     doc.line(firstEnd,dim2,secondStart,dim2);doc.line(firstEnd,dim2-1.5,firstEnd,dim2+1.5);doc.line(secondStart,dim2-1.5,secondStart,dim2+1.5);
+     doc.text(`${effectiveGap.toFixed(2)} GAP`,(firstEnd+secondStart)/2,dim2-2,{align:'center'});
+   }
+ }
+ doc.setFontSize(6);doc.text(`${qty} VERTICAL SLATS · ${qty-1} EQUAL GAPS`,boxX+3,boxY+boxH-5);
+
+ // DEPTH SECTION ZONE
+ const dx=202,dy=40,dw=83,dh=54;
+ doc.rect(dx,dy,dw,dh);
+ doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.text('B · DEPTH SECTION',dx+3,dy+6);
+ doc.setFont('helvetica','normal');doc.setFontSize(6);doc.text('ROOM SIDE',dx+7,dy+14);doc.text('WALL SIDE',dx+dw-7,dy+14,{align:'right'});
+ const secX=dx+12,secY=dy+21,secH=15;
+ const maxDepthW=50;
+ const depthScale=maxDepthW/Math.max(overallDepth,.1);
+ const slatDraw=Math.max(10,slatD*depthScale);
+ const backDraw=hasBacking?Math.max(5,backingD*depthScale):0;
  doc.setFillColor(174,128,78);doc.rect(secX,secY,slatDraw,secH,'F');doc.rect(secX,secY,slatDraw,secH);
  if(hasBacking){doc.setFillColor(130,140,146);doc.rect(secX+slatDraw,secY,backDraw,secH,'F');doc.rect(secX+slatDraw,secY,backDraw,secH);}
- doc.setFont('helvetica','normal');doc.setFontSize(6.8);
- doc.text('ROOM SIDE',secX,secY-4);
- doc.text('WALL SIDE',secX+slatDraw+backDraw,secY-4,{align:'right'});
- const dimY=secY+secH+8;
- doc.line(secX,dimY,secX+slatDraw+backDraw,dimY);doc.line(secX,dimY-2,secX,dimY+2);doc.line(secX+slatDraw+backDraw,dimY-2,secX+slatDraw+backDraw,dimY+2);
- doc.text(`OVERALL DEPTH ${overallDepth.toFixed(2)} mm`,secX+(slatDraw+backDraw)/2,dimY-2,{align:'center'});
- doc.text(`Slat depth: ${slatD.toFixed(2)} mm`,secX,dimY+7);
- doc.text(`Backing: ${hasBacking?backingD.toFixed(0)+' mm':'none'}`,secX,dimY+13);
- if(hasBacking)doc.text(`${slatD.toFixed(2)} + ${backingD.toFixed(0)} = ${overallDepth.toFixed(2)} mm finished depth`,secX,dimY+19);
- else doc.text(`Finished depth = ${slatD.toFixed(2)} mm`,secX,dimY+19);
+ const depthDimY=secY+secH+7;
+ doc.line(secX,depthDimY,secX+slatDraw+backDraw,depthDimY);
+ doc.line(secX,depthDimY-1.5,secX,depthDimY+1.5);doc.line(secX+slatDraw+backDraw,depthDimY-1.5,secX+slatDraw+backDraw,depthDimY+1.5);
+ doc.setFontSize(6.5);doc.text(`OVERALL DEPTH  ${overallDepth.toFixed(2)}`,secX+(slatDraw+backDraw)/2,depthDimY-2,{align:'center'});
 
- // SETTING OUT
- const iy=168;
- doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.text('SETTING OUT / MATERIAL',12,iy);
- doc.setFont('helvetica','normal');doc.setFontSize(7.5);
- doc.text(`Wall: ${W.toFixed(1)} × ${H.toFixed(1)}`,12,iy+7);
- doc.text(`Vertical slats: ${qty}`,58,iy+7);
- doc.text(`Slat face: ${effectiveSlatFace.toFixed(2)}`,100,iy+7);
- doc.text(`Equal gap: ${effectiveGap.toFixed(2)}`,142,iy+7);
- doc.text(`Slat depth: ${slatD.toFixed(2)}`,184,iy+7);
- doc.text(`Backing: ${hasBacking?backingD.toFixed(0)+' mm':'none'}`,231,iy+7);
- doc.text(`First slat: 0.00 from left edge`,12,iy+14);
- doc.text(`Last slat ends: ${W.toFixed(2)} at right edge`,74,iy+14);
- doc.text(`End slats: ${H.toFixed(2)} high · inner slats: ${innerVerticalLength.toFixed(2)} high`,151,iy+14);
- doc.text(`Top horizontal: ${topHorizontal?'YES – '+horizontalSlatLength.toFixed(1)+' long':'NO'}`,12,iy+21);
- doc.text(`Bottom horizontal: ${bottomHorizontal?'YES – '+horizontalSlatLength.toFixed(1)+' long':'NO'}`,89,iy+21);
- doc.text(`Total slat length: ${slatLinearM.toFixed(3)} m`,177,iy+21);
- doc.text(`Slat face area: ${slatFaceArea.toFixed(3)} m²`,12,iy+28);
- doc.text(`Layout mode: ${layoutDriver==='gap'?'gap entered / slat face calculated':'slat face entered / gap calculated'}`,89,iy+28);
- doc.setFontSize(6.5);doc.text('Technical setting-out drawing generated by Delta Joinery Tools',12,pageH-7);
- doc.save(`delta-joinery-slatted-wall-${Math.round(W)}x${Math.round(H)}.pdf`);
+ // COMPONENT DETAIL ZONE
+ const cx=202,cy=99,cw=83,ch=49;
+ doc.rect(cx,cy,cw,ch);
+ doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.text('C · COMPONENT DETAILS',cx+3,cy+6);
+ doc.setFont('helvetica','normal');doc.setFontSize(6.4);
+ const line1=cy+14,lineStep=6;
+ doc.text(`Slat face`,cx+4,line1);doc.text(`${effectiveSlatFace.toFixed(2)}`,cx+cw-4,line1,{align:'right'});
+ doc.text(`Slat depth`,cx+4,line1+lineStep);doc.text(`${slatD.toFixed(2)}`,cx+cw-4,line1+lineStep,{align:'right'});
+ doc.text(`Backing`,cx+4,line1+lineStep*2);doc.text(hasBacking?`${backingD.toFixed(0)}`:'NONE',cx+cw-4,line1+lineStep*2,{align:'right'});
+ doc.text(`Overall depth`,cx+4,line1+lineStep*3);doc.text(`${overallDepth.toFixed(2)}`,cx+cw-4,line1+lineStep*3,{align:'right'});
+ doc.text(`Inner vertical height`,cx+4,line1+lineStep*4);doc.text(`${innerVerticalLength.toFixed(2)}`,cx+cw-4,line1+lineStep*4,{align:'right'});
+
+ // BOTTOM TECHNICAL TITLE BLOCK / SCHEDULE
+ const tx=12,ty=154,tw=273,th=42;
+ doc.rect(tx,ty,tw,th);
+ doc.setFont('helvetica','bold');doc.setFontSize(7);doc.text('SETTING-OUT SCHEDULE',tx+3,ty+6);
+ doc.line(tx,ty+9,tx+tw,ty+9);
+ doc.setFont('helvetica','normal');doc.setFontSize(6.2);
+
+ const col1=tx+3,col2=tx+70,col3=tx+140,col4=tx+210;
+ const row1=ty+16,row2=ty+23,row3=ty+30,row4=ty+37;
+ doc.text('Wall size',col1,row1);doc.text(`${W.toFixed(1)} × ${H.toFixed(1)}`,col1+25,row1);
+ doc.text('Vertical slats',col2,row1);doc.text(String(qty),col2+27,row1);
+ doc.text('Equal gap',col3,row1);doc.text(`${effectiveGap.toFixed(2)}`,col3+25,row1);
+ doc.text('Slat face',col4,row1);doc.text(`${effectiveSlatFace.toFixed(2)}`,col4+23,row1);
+
+ doc.text('End slats',col1,row2);doc.text(`${H.toFixed(2)} FULL HEIGHT`,col1+25,row2);
+ doc.text('Inner slats',col2,row2);doc.text(`${innerVerticalLength.toFixed(2)}`,col2+27,row2);
+ doc.text('Slat depth',col3,row2);doc.text(`${slatD.toFixed(2)}`,col3+25,row2);
+ doc.text('Backing',col4,row2);doc.text(hasBacking?`${backingD.toFixed(0)}`:'NONE',col4+23,row2);
+
+ doc.text('Top horizontal',col1,row3);doc.text(topHorizontal?`${horizontalSlatLength.toFixed(2)} LONG`:'NONE',col1+25,row3);
+ doc.text('Bottom horizontal',col2,row3);doc.text(bottomHorizontal?`${horizontalSlatLength.toFixed(2)} LONG`:'NONE',col2+27,row3);
+ doc.text('Overall depth',col3,row3);doc.text(`${overallDepth.toFixed(2)}`,col3+25,row3);
+ doc.text('Total slat',col4,row3);doc.text(`${slatLinearM.toFixed(3)} m`,col4+23,row3);
+
+ doc.setFontSize(5.7);
+ doc.text('Layout rule: first and last vertical slats full height; top/bottom horizontals fit between them.',col1,row4);
+ doc.text('Generated by Delta Joinery Tools',tx+tw-3,row4,{align:'right'});
+
+ doc.save(`delta-joinery-${safeName}-${Math.round(W)}x${Math.round(H)}.pdf`);
 };
 const link=(dest:string,text:string)=><Link href={dest} className="dj-tool-home-card" style={{display:'block',...box,textDecoration:'none',fontWeight:700}}>{text} →</Link>;
 const input=(title:string,value:string,set:(v:string)=>void,unit='mm')=><label style={label}>{title} ({unit})<input style={field} inputMode="decimal" type="number" min="0" step="any" value={value} onChange={e=>set(e.target.value)}/></label>;
@@ -199,6 +245,7 @@ return <main className={'rev-shell dj-full-desktop dj-functional dj-unified-page
  <h2>Slatted wall setting-out</h2>
  <p>Enter the finished wall size. The first slat starts flush at the left edge and the last slat finishes flush at the right edge.</p>
  <div style={{display:'grid',gap:14}}>
+  <label style={label}>Wall name / location<input style={field} value={wallName} onChange={e=>setWallName(e.target.value)} placeholder="e.g. Reception feature wall"/></label>
   <div style={{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:10}}>
    {input('Wall length',width,setWidth)}
    {input('Wall height',height,setHeight)}

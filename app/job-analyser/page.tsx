@@ -203,5 +203,5 @@ export default function JobAnalyser(){
 
  <div className="dj-ja-columns"><div className="dj-ja-card"><h3>Materials List</h3><div className="dj-ja-list">{analysis.materials.length?analysis.materials.map((x,i)=><div className="dj-ja-row" key={i}><b>{x.material}</b><span style={{float:'right',fontWeight:800}}>{x.quantity}</span>{x.basis&&<small style={{display:'block',marginTop:4,color:'#68766d'}}>{x.basis}</small>}</div>):<p>No materials were clearly identified. See missing information.</p>}</div></div>
  <div className="dj-ja-card"><h3>Questions + Missing Information</h3><div className="dj-ja-list">{analysis.rfis.length?analysis.rfis.map((x,i)=><div className="dj-ja-row" key={i}><b>{i+1}. {x.item}</b><p style={{margin:'5px 0 0'}}>{x.question}</p>{x.source&&<small style={{display:'block',marginTop:4,color:'#68766d'}}>{x.source}</small>}</div>):<p>No major missing information was detected.</p>}</div></div></div>
- </>}</section></section></div></section></div></main>
+ </>}</section></div></section></div></main>
 }

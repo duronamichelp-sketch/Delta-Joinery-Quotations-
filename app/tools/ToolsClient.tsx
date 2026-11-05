@@ -101,9 +101,10 @@ const downloadSlatDrawing=()=>{
  const boxX=12,boxY=40,boxW=184,boxH=108;
  doc.setLineWidth(.25);doc.rect(boxX,boxY,boxW,boxH);
  doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.text('A · FRONT ELEVATION',boxX+3,boxY+6);
- doc.setFont('helvetica','normal');doc.setFontSize(6);doc.text('FIRST + LAST VERTICAL SLATS FULL HEIGHT',boxX+3,boxY+11);
+ doc.setFont('helvetica','normal');doc.setFontSize(5.7);doc.text('FIRST + LAST VERTICAL SLATS FULL HEIGHT',boxX+3,boxY+12);
+ doc.line(boxX+3,boxY+15,boxX+boxW-3,boxY+15);
 
- const drawX=28,drawY=56,drawWMax=150,drawHMax=72;
+ const drawX=28,drawY=66,drawWMax=150,drawHMax=62;
  const fs=Math.min(drawWMax/Math.max(W,1),drawHMax/Math.max(H,1));
  const fW=W*fs,fH=H*fs;
  const fL=drawX+(drawWMax-fW)/2;
@@ -139,12 +140,12 @@ const downloadSlatDrawing=()=>{
  if(qty>=2){
    const firstEnd=fL+pdfFace;
    const secondStart=fL+(effectiveSlatFace+effectiveGap)*fs;
-   const dim1=fT-6,dim2=fT-12;
+   const dim1=fT-5,dim2=fT-10;
    doc.line(fL,dim1,firstEnd,dim1);doc.line(fL,dim1-1.5,fL,dim1+1.5);doc.line(firstEnd,dim1-1.5,firstEnd,dim1+1.5);
-   doc.text(`${effectiveSlatFace.toFixed(2)} SLAT`,(fL+firstEnd)/2,dim1-2,{align:'center'});
+   doc.setFontSize(5.6);doc.text(`${effectiveSlatFace.toFixed(2)} SLAT`,(fL+firstEnd)/2,dim1-1.8,{align:'center'});
    if(effectiveGap>0){
      doc.line(firstEnd,dim2,secondStart,dim2);doc.line(firstEnd,dim2-1.5,firstEnd,dim2+1.5);doc.line(secondStart,dim2-1.5,secondStart,dim2+1.5);
-     doc.text(`${effectiveGap.toFixed(2)} GAP`,(firstEnd+secondStart)/2,dim2-2,{align:'center'});
+     doc.text(`${effectiveGap.toFixed(2)} GAP`,(firstEnd+secondStart)/2,dim2-1.8,{align:'center'});
    }
  }
  doc.setFontSize(6);doc.text(`${qty} VERTICAL SLATS · ${qty-1} EQUAL GAPS`,boxX+3,boxY+boxH-5);

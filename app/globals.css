@@ -1655,10 +1655,15 @@ body .dj-glass-home .skoda-left{grid-column:1!important;grid-row:2!important}
     color:#eef6fa!important;
   }
   body main.dj-quote-page .dj-item,
-  body main.dj-quote-page .dj-add,
   body main.dj-quote-page .dj-adc-options{
     background:rgba(9,42,65,.48)!important;
     border-color:rgba(112,190,239,.16)!important;
+    color:#eef6fa!important;
+  }
+  body main.dj-quote-page .dj-add{
+    background:transparent!important;
+    border-color:transparent!important;
+    box-shadow:none!important;
     color:#eef6fa!important;
   }
   body main.dj-quote-page .dj-more{

@@ -23,6 +23,8 @@
     "typescript": "5.2.2",
     "jspdf": "2.5.2",
     "@supabase/supabase-js": "2.57.0",
-    "@vercel/oidc": "4.0.6"
+    "pdfjs-dist": "6.5.438",
+    "xlsx": "0.18.5",
+    "mammoth": "1.13.0"
   }
 }

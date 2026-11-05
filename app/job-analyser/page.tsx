@@ -13,7 +13,7 @@ const money=(n:number)=>new Intl.NumberFormat('en-IE',{style:'currency',currency
 const confidenceClass=(x:string)=>'dj-ja-confidence '+x.toLowerCase();
 const norm=(s:string)=>s.toLowerCase().replace(/[^a-z0-9²]+/g,' ').replace(/\s+/g,' ').trim();
 
-const JOINERY_WORDS=['joinery','cabinet','cabinetry','wardrobe','reception desk','desk','counter','banquette','bench seating','bench','shelving','shelf','storage unit','storage','locker','vanity','wall panelling','wall paneling','panelling','paneling','slatted wall','slat','timber screen','kitchen','worktop','countertop','plinth','coving','skirting','bespoke furniture','fitted furniture','furniture','door set','doors','timber trim','feature wall'];
+const JOINERY_WORDS=['reception desk','bench seating','bespoke furniture','fitted furniture','storage unit','wall panelling','wall paneling','slatted wall','timber screen','feature wall','tea station','printer unit','wall unit','base unit','tall unit','media unit','cabinetry','cabinet','wardrobe','banquette','bookcase','shelving','shelf','locker','vanity','kitchen','worktop','countertop','servery','counter','desk','bench','storage','panelling','paneling','slat','plinth','coving','skirting','door set','doors','timber trim','joinery','furniture'];
 const MATERIALS=['oak veneer','oak','walnut','ash','beech','maple','sapele','mahogany','iroko','teak','cedar','mfc','mdf veneer','veneered mdf','painted mdf','mdf','plywood','birch ply','laminate','solid timber','corian','quartz','upholstery','acoustic panel'];
 
 function projectLibrary(){
@@ -39,18 +39,37 @@ function bestRate(label:string,rates:{name:string;rate:number;unit?:string}[]){
  const words=new Set(norm(label).split(' ').filter(x=>x.length>2));
  let best:{name:string;rate:number;unit?:string}|undefined,score=0;
  for(const r of rates){
-  const rw=norm(r.name).split(' ').filter(x=>x.length>2);
+  const rn=norm(r.name);const rw=rn.split(' ').filter(x=>x.length>2);
   const s=rw.reduce((n,w)=>n+(words.has(w)?1:0),0);
-  if(s>score){score=s;best=r}
+  const exact=rn.length>2&&(norm(label).includes(rn)||rn.includes(norm(label)));
+  if((exact?10:s)>score){score=exact?10:s;best=r}
  }
- return score>0?best:undefined;
+ return score>=2||score===10?best:undefined;
+}
+function compatibleRate(rate:{name:string;rate:number;unit?:string}|undefined,measure:{value:number;unit:string}|null){
+ if(!rate||!measure)return false;
+ const u=norm(rate.unit||'');
+ if(measure.unit==='m²')return /m2|sqm|square metre|square meter/.test(u);
+ if(measure.unit==='lm')return /lm|linear metre|linear meter|metre|meter/.test(u);
+ return /unit|each|ea|item|set|no/.test(u);
+}
+function isScopeLine(line:string){
+ const n=norm(line);
+ return JOINERY_WORDS.some(k=>n.includes(norm(k)))||/\b(?:j|jn|joinery)[-_. ]?\d{1,3}[a-z]?\b/i.test(line)||/\b(?:item|type)\s+[a-z]?\d{1,3}\b/i.test(line);
 }
 function numberMeasure(line:string){
- const m=line.match(/(\d+(?:\.\d+)?)\s*(m²|m2|sqm|sq\.?\s*m|lm|lin(?:ear)?\.?\s*m|metres?|meters?|units?|pcs|pieces|nr|no\.?)/i);
- if(!m)return null;
- const n=Number(m[1]);let u=m[2].toLowerCase();
- if(/m²|m2|sqm|sq/.test(u))u='m²'; else if(/lm|lin|metre|meter/.test(u))u='lm'; else u='units';
- return {value:n,unit:u,label:`${n} ${u}`};
+ const explicit=line.match(/(\d+(?:\.\d+)?)\s*(m²|m2|sqm|sq\.?\s*m|lm|lin(?:ear)?\.?\s*m|metres?|meters?|units?|pcs|pieces|nr|no\.?)/i);
+ if(explicit){
+  const n=Number(explicit[1]);let u=explicit[2].toLowerCase();
+  if(/m²|m2|sqm|sq/.test(u))u='m²'; else if(/lm|lin|metre|meter/.test(u))u='lm'; else u='units';
+  return {value:n,unit:u,label:`${Math.round(n*100)/100} ${u}`,calculated:false};
+ }
+ const dims=line.match(/(?:\b|[^\d])(\d{2,5})\s*(?:mm)?\s*[x×]\s*(\d{2,5})\s*(?:mm)?(?:\s*[x×]\s*\d{2,5}\s*(?:mm)?)?/i);
+ if(dims){
+  const a=Number(dims[1]),b=Number(dims[2]);
+  if(a>=100&&b>=100){const sqm=Math.round((a*b/1000000)*1000)/1000;return {value:sqm,unit:'m²',label:`${sqm} m² (${a}×${b} mm)`,calculated:true}}
+ }
+ return null;
 }
 function quantityFrom(line:string){
  const q=line.match(/(?:qty|quantity|no\.?|nr|x)\s*[:.-]?\s*(\d+)/i)||line.match(/(\d+)\s*(?:no\.?|nr|units?|pcs|pieces)\b/i);
@@ -70,14 +89,37 @@ async function extractFile(file:File):Promise<Doc>{
  if(ext==='pdf'){
   const pdfjs=await import('pdfjs-dist/webpack.mjs');
   const bytes=new Uint8Array(await file.arrayBuffer());
-  const pdf=await pdfjs.getDocument({data:bytes}).promise;const pages:string[]=[];
-  for(let p=1;p<=pdf.numPages;p++){const page=await pdf.getPage(p);const tc=await page.getTextContent();pages.push(`[Page ${p}] `+(tc.items as any[]).map(x=>x.str||'').join(' '))}
-  return {name:file.name,text:pages.join('\n')};
+  const pdf=await pdfjs.getDocument({data:bytes}).promise;const lines:string[]=[];
+  for(let p=1;p<=pdf.numPages;p++){
+   const page=await pdf.getPage(p);const tc=await page.getTextContent();
+   const items=(tc.items as any[]).filter(x=>String(x?.str||'').trim());
+   const rows:{y:number;parts:{x:number;text:string}[]}[]=[];
+   items.forEach(item=>{
+    const x=Number(item?.transform?.[4]||0),y=Number(item?.transform?.[5]||0),text=String(item.str||'').trim();
+    let row=rows.find(r=>Math.abs(r.y-y)<=2.5);
+    if(!row){row={y,parts:[]};rows.push(row)}
+    row.parts.push({x,text});
+   });
+   rows.sort((a,b)=>b.y-a.y);
+   rows.forEach(row=>{
+    row.parts.sort((a,b)=>a.x-b.x);
+    const text=row.parts.map(part=>part.text).join(' ').replace(/\s+/g,' ').trim();
+    if(text)lines.push(`[Page ${p}] ${text}`);
+   });
+  }
+  return {name:file.name,text:lines.join('\n')};
  }
  if(['xlsx','xls'].includes(ext)){
   const XLSX=await import('xlsx');const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});
-  const text=wb.SheetNames.map(n=>`[Sheet ${n}]\n`+XLSX.utils.sheet_to_csv(wb.Sheets[n])).join('\n');
-  return {name:file.name,text};
+  const lines:string[]=[];
+  wb.SheetNames.forEach(sheetName=>{
+   const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:''}) as any[][];
+   rows.forEach((row,rowIndex)=>{
+    const text=row.map(cell=>String(cell??'').trim()).filter(Boolean).join(' | ').replace(/\s+/g,' ').trim();
+    if(text)lines.push(`[Sheet ${sheetName} Row ${rowIndex+1}] ${text}`);
+   });
+  });
+  return {name:file.name,text:lines.join('\n')};
  }
  if(ext==='docx'){
   const mammoth=await import('mammoth');const r=await mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()});return {name:file.name,text:r.value};
@@ -91,38 +133,42 @@ function analyseDocs(docs:Doc[],projectName:string):Analysis{
  let idx=1;
  for(const doc of docs){
   const lines=doc.text.split(/\n|\r/).map(x=>x.replace(/\s+/g,' ').trim()).filter(Boolean);
-  refs.push({reference:doc.name,description:`Analysed locally in your browser · ${lines.length} text lines extracted`});
+  refs.push({reference:doc.name,description:`Analysed locally in your browser · ${lines.length} logical text lines extracted`});
   lines.forEach((line,i)=>{
-   const n=norm(line);if(!JOINERY_WORDS.some(k=>n.includes(norm(k))))return;
-   const context=[lines[i-1],line,lines[i+1]].filter(Boolean).join(' · ').slice(0,340);
+   if(!isScopeLine(line))return;
+   const prefix=line.match(/^(\[Page \d+\]|\[Sheet [^\]]+\])/i)?.[1]||'';
+   const nearby=lines.slice(Math.max(0,i-2),Math.min(lines.length,i+3)).filter(x=>!prefix||x.startsWith(prefix));
+   const context=nearby.join(' · ').slice(0,700);
    const measure=numberMeasure(context);const qty=quantityFrom(context);const material=materialFrom(context);const name=itemName(line);
    const rate=bestRate(name+' '+material,rates);
-   const basis=measure?.value||qty;const estimated=rate?Math.round(basis*rate.rate*100)/100:0;
+   const priced=compatibleRate(rate,measure);
+   const estimated=priced&&measure?Math.round(measure.value*Number(rate?.rate||0)*100)/100:0;
    const page=line.match(/\[Page\s+(\d+)\]/i)?.[1];
-   const source=page?`${doc.name} · Page ${page}`:doc.name;
-   raw.push({ref:`J${String(idx++).padStart(2,'0')}`,item:name,qty,measure:measure?.label||`${qty} units`,material,description:context,source,confidence:measure?'Confirmed':'Estimated',estimatedCost:estimated});
-   if(material==='Not specified')rfis.push({ref:'',item:name,question:'Material / finish is not clearly identified in the extracted information. Confirm specification.',source});
-   if(!measure)rfis.push({ref:'',item:name,question:'No reliable m², linear metre or unit measurement was found beside this item. Confirm quantity/dimensions before final pricing.',source});
-   if(!rate)rfis.push({ref:'',item:name,question:'No matching rate was found in the current Delta Price Library. Add/confirm a rate before treating the estimate as final.',source});
+   const sheet=line.match(/\[Sheet\s+(.+?)\s+Row\s+(\d+)\]/i);
+   const source=page?`${doc.name} · Page ${page}`:sheet?`${doc.name} · ${sheet[1]} row ${sheet[2]}`:doc.name;
+   const confidence:Confidence=measure?.calculated?'Calculated':measure?'Confirmed':'Estimated';
+   raw.push({ref:`J${String(idx++).padStart(2,'0')}`,item:name,qty,measure:measure?.label||`${qty} units`,material,description:context.replace(/^\[[^\]]+\]\s*/,'').slice(0,520),source,confidence,estimatedCost:estimated});
+   if(material==='Not specified')rfis.push({ref:'',item:name,question:'Material / finish is not clearly identified. Confirm the specification before final pricing.',source});
+   if(!measure)rfis.push({ref:'',item:name,question:'No reliable m², linear metre, unit quantity or calculable mm dimensions were found for this item. Confirm dimensions / quantity.',source});
+   if(!priced)rfis.push({ref:'',item:name,question:'This item has not been priced automatically because no compatible rate and measurement basis were confirmed in the Delta Price Library.',source});
   });
  }
- const scope=unique(raw,x=>norm(x.item+' '+x.measure+' '+x.material+' '+x.source)).map((x,i)=>({...x,ref:`J${String(i+1).padStart(2,'0')}`}));
+ const scope=unique(raw,x=>norm(x.item+' '+x.measure+' '+x.material+' '+x.source+' '+x.description.slice(0,80))).map((x,i)=>({...x,ref:`J${String(i+1).padStart(2,'0')}`}));
  const matMap=new Map<string,{qty:number;units:Set<string>}>();
  scope.forEach(x=>{if(x.material==='Not specified')return;const m=numberMeasure(x.measure);const v=matMap.get(x.material)||{qty:0,units:new Set<string>()};v.qty+=m?.value||x.qty;v.units.add(m?.unit||'units');matMap.set(x.material,v)});
- const materials=Array.from(matMap.entries()).map(([material,v])=>({material,quantity:`${Math.round(v.qty*100)/100} ${Array.from(v.units)[0]||'units'}`,basis:'Extracted from identified joinery scope'}));
+ const materials=Array.from(matMap.entries()).map(([material,v])=>({material,quantity:`${Math.round(v.qty*1000)/1000} ${Array.from(v.units)[0]||'units'}`,basis:'Extracted / calculated from identified joinery scope'}));
  const materialsCost=scope.reduce((s,x)=>s+x.estimatedCost,0);
- const productionRate=bestRate('production labour',rates)?.rate||0,installationRate=bestRate('installation labour',rates)?.rate||0,cncRate=bestRate('cnc production',rates)?.rate||0,finishingRate=bestRate('finishing',rates)?.rate||0;
- const production=productionRate?scope.length*productionRate:0,cnc=cncRate?scope.length*cncRate:0,finishing=finishingRate?scope.length*finishingRate:0,installation=installationRate?scope.length*installationRate:0;
- const subtotal=materialsCost+production+cnc+finishing+installation;const margin=Math.round(subtotal*.15*100)/100;
+ const subtotal=materialsCost;const margin=Math.round(subtotal*.15*100)/100;
  const uniqueRfis=unique(rfis,x=>norm(x.item+' '+x.question+' '+x.source)).map((x,i)=>({...x,ref:`RFI-${String(i+1).padStart(2,'0')}`}));
  const assumptions=[
-  'Free Local Mode: files are processed in this browser. No Vercel AI Gateway or paid AI model is called.',
-  'Text-bearing PDFs, BOQs, Excel schedules and DOCX files are analysed. Image-only/scanned drawings may contain information this mode cannot read.',
-  'Prices are taken from the current Delta Price Library when a matching rate can be identified. Unmatched items are left at €0 and flagged for review.',
-  '15% margin is applied to the calculated subtotal.'
+  'Free Local Mode: project files are processed in this browser. No paid AI Gateway or external AI model is called.',
+  'PDF text is reconstructed into logical drawing rows using its page coordinates. Excel BOQs are read row-by-row.',
+  'Dimensions written as width × height in millimetres can be converted to m². Calculated values are marked Calculated.',
+  'Only items with a compatible measurement basis and matching Delta Price Library rate are auto-priced. Unconfirmed CNC, production, finishing and installation charges are not invented.',
+  '15% margin is applied only to the automatically priced subtotal.'
  ];
- if(!scope.length)uniqueRfis.push({ref:`RFI-${String(uniqueRfis.length+1).padStart(2,'0')}`,item:'Project package',question:'No joinery/furniture scope could be reliably extracted from the readable document text. Check whether the drawings are scanned/image-only or use different terminology.',source:docs.map(d=>d.name).join(', ')});
- return {project:{name:projectName||'Project Analysis',client:'',architect:'',contractor:'',location:'',revision:'',summary:scope.length?`Local analysis identified ${scope.length} possible joinery / custom furniture scope items across ${docs.length} file(s).`:`No reliable joinery scope was extracted from ${docs.length} file(s).`},scope,materials,rfis:uniqueRfis,drawingReferences:refs,costs:{materials:materialsCost,production,cnc,finishing,installation,transport:0,other:0,subtotal,margin,total:subtotal+margin},assumptions};
+ if(!scope.length)uniqueRfis.push({ref:`RFI-${String(uniqueRfis.length+1).padStart(2,'0')}`,item:'Project package',question:'No joinery/furniture scope could be reliably extracted from the readable document text. The drawings may be image-only or may require manual review.',source:docs.map(d=>d.name).join(', ')});
+ return {project:{name:projectName||'Project Analysis',client:'',architect:'',contractor:'',location:'',revision:'',summary:scope.length?`Local analysis identified ${scope.length} possible joinery / custom furniture scope items across ${docs.length} file(s). Review RFIs before treating quantities or pricing as final.`:`No reliable joinery scope was extracted from ${docs.length} file(s).`},scope,materials,rfis:uniqueRfis,drawingReferences:refs,costs:{materials:materialsCost,production:0,cnc:0,finishing:0,installation:0,transport:0,other:0,subtotal,margin,total:subtotal+margin},assumptions};
 }
 
 export default function JobAnalyser(){

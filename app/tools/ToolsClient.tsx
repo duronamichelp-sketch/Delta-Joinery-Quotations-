@@ -72,6 +72,9 @@ const slatLayoutValid=W>0&&H>0&&qty>=2&&effectiveSlatFace>0&&effectiveGap>=0&&in
 const verticalLengthTotal=qty===2?2*H:2*H+(qty-2)*innerVerticalLength;
 const slatLinearM=(verticalLengthTotal+horizontalCount*horizontalSlatLength)/1000;
 const slatFaceArea=((verticalLengthTotal*effectiveSlatFace)+(horizontalCount*horizontalSlatLength*effectiveSlatFace))/1000000;
+const liveFrontScale=Math.min(540/Math.max(W,1),286/Math.max(H,1));
+const liveFrontW=W*liveFrontScale,liveFrontH=H*liveFrontScale;
+const liveFrontL=84+(540-liveFrontW)/2,liveFrontT=58+(286-liveFrontH)/2;
 const A=num(sideA),B=num(sideB),C=num(diagonal);const validTriangle=A>0&&B>0&&C>0&&C<A+B&&C>Math.abs(A-B);const angleDeg=validTriangle?Math.acos(Math.max(-1,Math.min(1,(A*A+B*B-C*C)/(2*A*B))))*180/Math.PI:0;const sawAngle=(180-angleDeg)/2;
 const area=num(floorL)*num(floorW);
 const downloadSlatDrawing=()=>{
@@ -223,14 +226,14 @@ return <main className={'rev-shell dj-full-desktop dj-functional dj-unified-page
 <div style={{display:'grid',gap:14}}>
  <div className="dj-glass-card" style={box}><div style={{display:'flex',justifyContent:'space-between',gap:12,alignItems:'baseline',flexWrap:'wrap'}}><h2 style={{margin:0}}>Front profile</h2><small>First + last slats fixed to wall edges</small></div>
   <svg width="100%" viewBox="0 0 680 410" role="img" aria-label="Front elevation of slatted wall with dimensions">
-   <rect x="84" y="58" width="540" height="286" fill="#26382e" stroke="#9fb6a8"/>
-   {slatLayoutValid&&Array.from({length:Math.min(qty,250)},(_,i)=>{const isEnd=i===0||i===qty-1;return <rect key={i} x={84+(i*(effectiveSlatFace+effectiveGap)/Math.max(W,1))*540} y={isEnd?58:58+(topHorizontal?effectiveSlatFace/Math.max(H,1)*286:0)} width={Math.max(.7,effectiveSlatFace/Math.max(W,1)*540)} height={isEnd?286:Math.max(1,innerVerticalLength/Math.max(H,1)*286)} fill="#b98d5b"/>})}
-   {topHorizontal&&<rect x={84+(effectiveSlatFace/Math.max(W,1))*540} y="58" width={Math.max(.8,horizontalSlatLength/Math.max(W,1)*540)} height={Math.max(.8,effectiveSlatFace/Math.max(H,1)*286)} fill="#b98d5b"/>}
-   {bottomHorizontal&&<rect x={84+(effectiveSlatFace/Math.max(W,1))*540} y={344-Math.max(.8,effectiveSlatFace/Math.max(H,1)*286)} width={Math.max(.8,horizontalSlatLength/Math.max(W,1)*540)} height={Math.max(.8,effectiveSlatFace/Math.max(H,1)*286)} fill="#b98d5b"/>}
-   <path d="M84 358 V370 M624 358 V370 M84 365 H624" stroke="#9fb6a8"/><text x="354" y="386" textAnchor="middle" fill="#dce8e1" fontSize="14">LENGTH {W.toFixed(1)} mm</text>
-   <path d="M68 58 H56 M68 344 H56 M61 58 V344" stroke="#9fb6a8"/><text x="38" y="201" textAnchor="middle" fill="#dce8e1" fontSize="13" transform="rotate(-90 38 201)">HEIGHT {H.toFixed(1)} mm</text>
-   {slatLayoutValid&&qty>=2&&<><path d={'M84 42 H'+(84+(effectiveSlatFace/Math.max(W,1))*540)} stroke="#9fb6a8"/><text x={84+(effectiveSlatFace/Math.max(W,1))*270} y="36" textAnchor="middle" fill="#dce8e1" fontSize="10">{effectiveSlatFace.toFixed(2)} slat</text><path d={'M'+(84+(effectiveSlatFace/Math.max(W,1))*540)+' 24 H'+(84+((effectiveSlatFace+effectiveGap)/Math.max(W,1))*540)} stroke="#9fb6a8"/><text x={84+((effectiveSlatFace+effectiveGap/2)/Math.max(W,1))*540} y="18" textAnchor="middle" fill="#dce8e1" fontSize="10">{effectiveGap.toFixed(2)} gap</text></>}
-   <text x="84" y="405" fill="#aabfb3" fontSize="11">{qty} vertical slats · end slats full height {H.toFixed(2)} mm · inner slats {innerVerticalLength.toFixed(2)} mm</text>
+   <rect x={liveFrontL} y={liveFrontT} width={liveFrontW} height={liveFrontH} fill="#26382e" stroke="#9fb6a8"/>
+   {slatLayoutValid&&Array.from({length:Math.min(qty,250)},(_,i)=>{const isEnd=i===0||i===qty-1;return <rect key={i} x={liveFrontL+i*(effectiveSlatFace+effectiveGap)*liveFrontScale} y={isEnd?liveFrontT:liveFrontT+(topHorizontal?effectiveSlatFace*liveFrontScale:0)} width={Math.max(.7,effectiveSlatFace*liveFrontScale)} height={isEnd?liveFrontH:Math.max(1,innerVerticalLength*liveFrontScale)} fill="#b98d5b"/>})}
+   {topHorizontal&&<rect x={liveFrontL+effectiveSlatFace*liveFrontScale} y={liveFrontT} width={Math.max(.8,horizontalSlatLength*liveFrontScale)} height={Math.max(.8,effectiveSlatFace*liveFrontScale)} fill="#b98d5b"/>}
+   {bottomHorizontal&&<rect x={liveFrontL+effectiveSlatFace*liveFrontScale} y={liveFrontT+liveFrontH-Math.max(.8,effectiveSlatFace*liveFrontScale)} width={Math.max(.8,horizontalSlatLength*liveFrontScale)} height={Math.max(.8,effectiveSlatFace*liveFrontScale)} fill="#b98d5b"/>}
+   <path d={`M${liveFrontL} ${liveFrontT+liveFrontH+14} V${liveFrontT+liveFrontH+26} M${liveFrontL+liveFrontW} ${liveFrontT+liveFrontH+14} V${liveFrontT+liveFrontH+26} M${liveFrontL} ${liveFrontT+liveFrontH+21} H${liveFrontL+liveFrontW}`} stroke="#9fb6a8"/><text x={liveFrontL+liveFrontW/2} y={liveFrontT+liveFrontH+42} textAnchor="middle" fill="#dce8e1" fontSize="14">LENGTH {W.toFixed(1)} mm</text>
+   <path d={`M${liveFrontL-16} ${liveFrontT} H${liveFrontL-28} M${liveFrontL-16} ${liveFrontT+liveFrontH} H${liveFrontL-28} M${liveFrontL-23} ${liveFrontT} V${liveFrontT+liveFrontH}`} stroke="#9fb6a8"/><text x={liveFrontL-46} y={liveFrontT+liveFrontH/2} textAnchor="middle" fill="#dce8e1" fontSize="13" transform={`rotate(-90 ${liveFrontL-46} ${liveFrontT+liveFrontH/2})`}>HEIGHT {H.toFixed(1)} mm</text>
+   {slatLayoutValid&&qty>=2&&<><path d={`M${liveFrontL} ${liveFrontT-16} H${liveFrontL+effectiveSlatFace*liveFrontScale}`} stroke="#9fb6a8"/><text x={liveFrontL+(effectiveSlatFace*liveFrontScale)/2} y={liveFrontT-22} textAnchor="middle" fill="#dce8e1" fontSize="10">{effectiveSlatFace.toFixed(2)} slat</text><path d={`M${liveFrontL+effectiveSlatFace*liveFrontScale} ${liveFrontT-34} H${liveFrontL+(effectiveSlatFace+effectiveGap)*liveFrontScale}`} stroke="#9fb6a8"/><text x={liveFrontL+(effectiveSlatFace+effectiveGap/2)*liveFrontScale} y={liveFrontT-40} textAnchor="middle" fill="#dce8e1" fontSize="10">{effectiveGap.toFixed(2)} gap</text></>}
+   <text x={liveFrontL} y="405" fill="#aabfb3" fontSize="11">{qty} vertical slats · end slats full height {H.toFixed(2)} mm · inner slats {innerVerticalLength.toFixed(2)} mm</text>
   </svg>
  </div>
 

@@ -66,10 +66,12 @@ const slatD=Math.max(.1,num(slatDepth));
 const backingD=hasBacking?num(backingThickness):0;
 const overallDepth=slatD+backingD;
 const horizontalCount=(topHorizontal?1:0)+(bottomHorizontal?1:0);
-const verticalSlatLength=Math.max(0,H-horizontalCount*effectiveSlatFace);
-const slatLayoutValid=W>0&&H>0&&qty>=2&&effectiveSlatFace>0&&effectiveGap>=0&&verticalSlatLength>0&&Math.abs(qty*effectiveSlatFace+(qty-1)*effectiveGap-W)<.11;
-const slatLinearM=(qty*verticalSlatLength+horizontalCount*W)/1000;
-const slatFaceArea=((qty*effectiveSlatFace*verticalSlatLength)+(horizontalCount*W*effectiveSlatFace))/1000000;
+const innerVerticalLength=Math.max(0,H-horizontalCount*effectiveSlatFace);
+const horizontalSlatLength=Math.max(0,W-2*effectiveSlatFace);
+const slatLayoutValid=W>0&&H>0&&qty>=2&&effectiveSlatFace>0&&effectiveGap>=0&&innerVerticalLength>0&&horizontalSlatLength>=0&&Math.abs(qty*effectiveSlatFace+(qty-1)*effectiveGap-W)<.11;
+const verticalLengthTotal=qty===2?2*H:2*H+(qty-2)*innerVerticalLength;
+const slatLinearM=(verticalLengthTotal+horizontalCount*horizontalSlatLength)/1000;
+const slatFaceArea=((verticalLengthTotal*effectiveSlatFace)+(horizontalCount*horizontalSlatLength*effectiveSlatFace))/1000000;
 const A=num(sideA),B=num(sideB),C=num(diagonal);const validTriangle=A>0&&B>0&&C>0&&C<A+B&&C>Math.abs(A-B);const angleDeg=validTriangle?Math.acos(Math.max(-1,Math.min(1,(A*A+B*B-C*C)/(2*A*B))))*180/Math.PI:0;const sawAngle=(180-angleDeg)/2;
 const area=num(floorL)*num(floorW);
 const downloadSlatDrawing=()=>{
@@ -88,14 +90,17 @@ const downloadSlatDrawing=()=>{
  const fW=W*fs,fH=H*fs,fL=fx+(fw-fW)/2,fT=fy+(fh-fH)/2;
  doc.setDrawColor(55);doc.setLineWidth(.3);doc.rect(fL,fT,fW,fH);
  doc.setFillColor(174,128,78);
- const vertTop=fT+(topHorizontal?effectiveSlatFace*fs:0);
- const vertH=verticalSlatLength*fs;
+ const shortTop=fT+(topHorizontal?effectiveSlatFace*fs:0);
+ const shortH=innerVerticalLength*fs;
  for(let i=0;i<qty;i++){
-  const sx=fL+(i*(effectiveSlatFace+effectiveGap))*fs;
-  doc.rect(sx,vertTop,Math.max(.25,effectiveSlatFace*fs),vertH,'F');
+  const px=fL+(i*(effectiveSlatFace+effectiveGap))*fs;
+  const isEnd=i===0||i===qty-1;
+  doc.rect(px,isEnd?fT:shortTop,Math.max(.25,effectiveSlatFace*fs),isEnd?fH:shortH,'F');
  }
- if(topHorizontal)doc.rect(fL,fT,fW,Math.max(.25,effectiveSlatFace*fs),'F');
- if(bottomHorizontal)doc.rect(fL,fT+fH-Math.max(.25,effectiveSlatFace*fs),fW,Math.max(.25,effectiveSlatFace*fs),'F');
+ const horizontalX=fL+effectiveSlatFace*fs;
+ const horizontalW=Math.max(.25,horizontalSlatLength*fs);
+ if(topHorizontal)doc.rect(horizontalX,fT,horizontalW,Math.max(.25,effectiveSlatFace*fs),'F');
+ if(bottomHorizontal)doc.rect(horizontalX,fT+fH-Math.max(.25,effectiveSlatFace*fs),horizontalW,Math.max(.25,effectiveSlatFace*fs),'F');
  const frontDimY=fT+fH+8;
  doc.setDrawColor(80);doc.line(fL,frontDimY,fL+fW,frontDimY);doc.line(fL,frontDimY-2,fL,frontDimY+2);doc.line(fL+fW,frontDimY-2,fL+fW,frontDimY+2);
  doc.setFontSize(7);doc.text(`${W.toFixed(1)}`,fL+fW/2,frontDimY-2,{align:'center'});
@@ -109,60 +114,27 @@ const downloadSlatDrawing=()=>{
   if(effectiveGap>0){doc.line(firstEnd,fT-10,secondStart,fT-10);doc.line(firstEnd,fT-11.5,firstEnd,fT-8.5);doc.line(secondStart,fT-11.5,secondStart,fT-8.5);doc.text(`${effectiveGap.toFixed(2)} gap`,(firstEnd+secondStart)/2,fT-12,{align:'center'});}
  }
 
- // TOP PROFILE — plan view through the slats
- const tx=204,ty=42,tw=78,frontY=42;
- doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.text('TOP PROFILE / PLAN',204,34);
- const topXScale=tw/Math.max(W,1);
- const slatDrawDepth=10;
- const backingDrawDepth=hasBacking?4:0;
- const topW=W*topXScale;
- const backingY=frontY+slatDrawDepth;
- doc.setDrawColor(70);doc.setLineWidth(.25);
- if(hasBacking){
-  doc.setFillColor(130,140,146);
-  doc.rect(tx,backingY,topW,backingDrawDepth,'F');
-  doc.rect(tx,backingY,topW,backingDrawDepth);
- }
- doc.setFillColor(174,128,78);
- for(let i=0;i<qty;i++){
-  const px=tx+i*(effectiveSlatFace+effectiveGap)*topXScale;
-  doc.rect(px,frontY,Math.max(.28,effectiveSlatFace*topXScale),slatDrawDepth,'F');
-  doc.rect(px,frontY,Math.max(.28,effectiveSlatFace*topXScale),slatDrawDepth);
- }
- // face width and gap dimensions over first bay
- const firstFaceEnd=tx+effectiveSlatFace*topXScale;
- const secondFaceStart=tx+(effectiveSlatFace+effectiveGap)*topXScale;
- doc.line(tx,frontY-4,firstFaceEnd,frontY-4);doc.line(tx,frontY-5.5,tx,frontY-2.5);doc.line(firstFaceEnd,frontY-5.5,firstFaceEnd,frontY-2.5);
- doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.text(`${effectiveSlatFace.toFixed(2)}`,(tx+firstFaceEnd)/2,frontY-6,{align:'center'});
- if(effectiveGap>0){
-  doc.line(firstFaceEnd,frontY-9,secondFaceStart,frontY-9);doc.line(firstFaceEnd,frontY-10.5,firstFaceEnd,frontY-7.5);doc.line(secondFaceStart,frontY-10.5,secondFaceStart,frontY-7.5);
-  doc.text(`${effectiveGap.toFixed(2)} gap`,(firstFaceEnd+secondFaceStart)/2,frontY-11,{align:'center'});
- }
- // overall length dimension
- const lenY=backingY+backingDrawDepth+6;
- doc.line(tx,lenY,tx+topW,lenY);doc.line(tx,lenY-1.8,tx,lenY+1.8);doc.line(tx+topW,lenY-1.8,tx+topW,lenY+1.8);
- doc.text(`WALL LENGTH ${W.toFixed(1)}`,tx+topW/2,lenY-2,{align:'center'});
- // depth stack at right side
- const dx=tx+topW+5;
- doc.line(dx,frontY,dx,backingY+backingDrawDepth);doc.line(dx-1.5,frontY,dx+1.5,frontY);doc.line(dx-1.5,backingY+backingDrawDepth,dx+1.5,backingY+backingDrawDepth);
- doc.text(`OVERALL ${overallDepth.toFixed(1)}`,dx+2,frontY+(slatDrawDepth+backingDrawDepth)/2,{angle:90,align:'center'});
- doc.setFontSize(6.5);
- doc.text(`Slat depth: ${slatD.toFixed(1)} mm`,tx,backingY+backingDrawDepth+13);
- doc.text(`Backing: ${hasBacking?backingD.toFixed(0)+' mm':'none'}`,tx+37,backingY+backingDrawDepth+13);
- doc.text('Depth shown enlarged for clarity — written dimensions control.',tx,backingY+backingDrawDepth+18);
-
- // SIDE PROFILE
- const sx=214,sy=103,sw=42,sh=55;
- doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.text('SIDE PROFILE',204,96);
- const sideScale=Math.min(sh/Math.max(H,1),sw/Math.max(overallDepth,1));
- const sideH=H*sideScale;
- const sideD=Math.max(5,overallDepth*sideScale);
- if(hasBacking){doc.setFillColor(120,130,138);doc.rect(sx,sy,Math.max(1.5,backingD*sideScale),sideH,'F');}
- doc.setFillColor(174,128,78);doc.rect(sx+(hasBacking?Math.max(1.5,backingD*sideScale):0),sy,Math.max(2,slatD*sideScale),sideH,'F');
- doc.setDrawColor(70);doc.rect(sx,sy,sideD,sideH);
- doc.setFont('helvetica','normal');doc.setFontSize(7);
- doc.text(`Height ${H.toFixed(1)}`,sx+sideD+4,sy+sideH/2,{angle:90,align:'center'});
- doc.text(`Depth ${overallDepth.toFixed(1)}`,sx,sy+sideH+6);
+ // TOP PROFILE / DEPTH SECTION
+ doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.text('TOP PROFILE / DEPTH SECTION',204,34);
+ const secX=214,secY=50,secH=28;
+ const maxDepthDraw=58;
+ const totalD=Math.max(overallDepth,.1);
+ const depthScale=maxDepthDraw/totalD;
+ const slatDraw=Math.max(8,slatD*depthScale);
+ const backDraw=hasBacking?Math.max(4,backingD*depthScale):0;
+ doc.setDrawColor(70);doc.setLineWidth(.3);
+ doc.setFillColor(174,128,78);doc.rect(secX,secY,slatDraw,secH,'F');doc.rect(secX,secY,slatDraw,secH);
+ if(hasBacking){doc.setFillColor(130,140,146);doc.rect(secX+slatDraw,secY,backDraw,secH,'F');doc.rect(secX+slatDraw,secY,backDraw,secH);}
+ doc.setFont('helvetica','normal');doc.setFontSize(6.8);
+ doc.text('ROOM SIDE',secX,secY-4);
+ doc.text('WALL SIDE',secX+slatDraw+backDraw,secY-4,{align:'right'});
+ const dimY=secY+secH+8;
+ doc.line(secX,dimY,secX+slatDraw+backDraw,dimY);doc.line(secX,dimY-2,secX,dimY+2);doc.line(secX+slatDraw+backDraw,dimY-2,secX+slatDraw+backDraw,dimY+2);
+ doc.text(`OVERALL DEPTH ${overallDepth.toFixed(2)} mm`,secX+(slatDraw+backDraw)/2,dimY-2,{align:'center'});
+ doc.text(`Slat depth: ${slatD.toFixed(2)} mm`,secX,dimY+7);
+ doc.text(`Backing: ${hasBacking?backingD.toFixed(0)+' mm':'none'}`,secX,dimY+13);
+ if(hasBacking)doc.text(`${slatD.toFixed(2)} + ${backingD.toFixed(0)} = ${overallDepth.toFixed(2)} mm finished depth`,secX,dimY+19);
+ else doc.text(`Finished depth = ${slatD.toFixed(2)} mm`,secX,dimY+19);
 
  // SETTING OUT
  const iy=168;
@@ -176,9 +148,9 @@ const downloadSlatDrawing=()=>{
  doc.text(`Backing: ${hasBacking?backingD.toFixed(0)+' mm':'none'}`,231,iy+7);
  doc.text(`First slat: 0.00 from left edge`,12,iy+14);
  doc.text(`Last slat ends: ${W.toFixed(2)} at right edge`,74,iy+14);
- doc.text(`Vertical slat length: ${verticalSlatLength.toFixed(2)}`,151,iy+14);
- doc.text(`Top horizontal: ${topHorizontal?'YES – '+W.toFixed(1)+' long':'NO'}`,12,iy+21);
- doc.text(`Bottom horizontal: ${bottomHorizontal?'YES – '+W.toFixed(1)+' long':'NO'}`,89,iy+21);
+ doc.text(`End slats: ${H.toFixed(2)} high · inner slats: ${innerVerticalLength.toFixed(2)} high`,151,iy+14);
+ doc.text(`Top horizontal: ${topHorizontal?'YES – '+horizontalSlatLength.toFixed(1)+' long':'NO'}`,12,iy+21);
+ doc.text(`Bottom horizontal: ${bottomHorizontal?'YES – '+horizontalSlatLength.toFixed(1)+' long':'NO'}`,89,iy+21);
  doc.text(`Total slat length: ${slatLinearM.toFixed(3)} m`,177,iy+21);
  doc.text(`Slat face area: ${slatFaceArea.toFixed(3)} m²`,12,iy+28);
  doc.text(`Layout mode: ${layoutDriver==='gap'?'gap entered / slat face calculated':'slat face entered / gap calculated'}`,89,iy+28);
@@ -231,48 +203,48 @@ return <main className={'rev-shell dj-full-desktop dj-functional dj-unified-page
    <label style={label}>Slat face width (mm)<input style={field} inputMode="decimal" type="number" min=".1" step=".01" value={layoutDriver==='gap'?effectiveSlatFace.toFixed(2):slatFace} onChange={e=>{setSlatFace(e.target.value);setLayoutDriver('slat')}}/><span style={{fontWeight:400,opacity:.68}}>Editing this recalculates the gap.</span></label>
    <label style={label}>Gap (mm)<input style={field} inputMode="decimal" type="number" min="0" step=".01" value={layoutDriver==='slat'&&autoGapFromSlat>=0?effectiveGap.toFixed(2):gapInput} onChange={e=>{setGapInput(e.target.value);setLayoutDriver('gap')}}/><span style={{fontWeight:400,opacity:.68}}>Editing this recalculates the slat face.</span></label>
   </div>
-  <label style={label}>Slat depth / thickness (mm)<input style={field} inputMode="decimal" type="number" min=".1" step=".01" value={slatDepth} onChange={e=>setSlatDepth(e.target.value)}/><span style={{fontWeight:400,opacity:.68}}>Used for the top and side profile.</span></label>
+  <label style={label}>Slat depth / thickness (mm)<input style={field} inputMode="decimal" type="number" min=".1" step=".01" value={slatDepth} onChange={e=>setSlatDepth(e.target.value)}/><span style={{fontWeight:400,opacity:.68}}>Used for the finished wall depth.</span></label>
   <div style={{display:'grid',gap:10,padding:'13px 0',borderTop:'1px solid rgba(112,190,239,.18)',borderBottom:'1px solid rgba(112,190,239,.18)'}}>
    <label style={{...label,display:'flex',alignItems:'center',gap:10}}><input type="checkbox" checked={hasBacking} onChange={e=>setHasBacking(e.target.checked)} style={{width:18,height:18}}/>Include backing board</label>
    {hasBacking&&<div style={{display:'flex',gap:8,flexWrap:'wrap'}}>{['6','9','18','22'].map(t=><button key={t} type="button" onClick={()=>setBackingThickness(t)} style={{...primary,background:backingThickness===t?'#0c70b8':'rgba(255,255,255,.08)',padding:'9px 14px'}}>{t} mm</button>)}</div>}
   </div>
   <div style={{display:'grid',gap:9}}>
    <strong style={{fontSize:13}}>Horizontal end-to-end slats</strong>
-   <label style={{...label,display:'flex',alignItems:'center',gap:10}}><input type="checkbox" checked={topHorizontal} onChange={e=>setTopHorizontal(e.target.checked)} style={{width:18,height:18}}/>Add top horizontal slat — full wall length</label>
-   <label style={{...label,display:'flex',alignItems:'center',gap:10}}><input type="checkbox" checked={bottomHorizontal} onChange={e=>setBottomHorizontal(e.target.checked)} style={{width:18,height:18}}/>Add bottom horizontal slat — full wall length</label>
+   <label style={{...label,display:'flex',alignItems:'center',gap:10}}><input type="checkbox" checked={topHorizontal} onChange={e=>setTopHorizontal(e.target.checked)} style={{width:18,height:18}}/>Add top horizontal slat — between first and last slat</label>
+   <label style={{...label,display:'flex',alignItems:'center',gap:10}}><input type="checkbox" checked={bottomHorizontal} onChange={e=>setBottomHorizontal(e.target.checked)} style={{width:18,height:18}}/>Add bottom horizontal slat — between first and last slat</label>
   </div>
  </div>
  <div style={{marginTop:18,background:'#eaf4ec',padding:15,borderRadius:12,color:'#173e2e'}}>
-  {slatLayoutValid?<><strong>Setting-out fits exactly</strong><p>First slat starts: <b>0.00 mm</b></p><p>Last slat finishes: <b>{W.toFixed(2)} mm</b></p><p>Vertical slats: <b>{qty}</b> · Equal gaps: <b>{Math.max(0,qty-1)}</b></p><p>Slat face: <b>{effectiveSlatFace.toFixed(2)} mm</b> · Gap: <b>{effectiveGap.toFixed(2)} mm</b></p><p>Vertical slat length: <b>{verticalSlatLength.toFixed(2)} mm</b></p><p>Slat depth: <b>{slatD.toFixed(2)} mm</b>{hasBacking&&<> · Backing: <b>{backingD.toFixed(0)} mm</b> · Overall depth: <b>{overallDepth.toFixed(2)} mm</b></>}</p>{topHorizontal&&<p>Top horizontal: <b>{W.toFixed(2)} × {effectiveSlatFace.toFixed(2)} × {slatD.toFixed(2)} mm</b></p>}{bottomHorizontal&&<p>Bottom horizontal: <b>{W.toFixed(2)} × {effectiveSlatFace.toFixed(2)} × {slatD.toFixed(2)} mm</b></p>}</>:<><strong>Layout cannot fit.</strong><p>Check the wall dimensions, slat count, slat face width or gap.</p></>}
+  {slatLayoutValid?<><strong>Setting-out fits exactly</strong><p>First slat starts: <b>0.00 mm</b></p><p>Last slat finishes: <b>{W.toFixed(2)} mm</b></p><p>Vertical slats: <b>{qty}</b> · Equal gaps: <b>{Math.max(0,qty-1)}</b></p><p>Slat face: <b>{effectiveSlatFace.toFixed(2)} mm</b> · Gap: <b>{effectiveGap.toFixed(2)} mm</b></p><p>First + last slats: <b>{H.toFixed(2)} mm full height</b></p><p>Inner vertical slats: <b>{innerVerticalLength.toFixed(2)} mm</b></p><p>Slat depth: <b>{slatD.toFixed(2)} mm</b>{hasBacking&&<> · Backing: <b>{backingD.toFixed(0)} mm</b> · Overall depth: <b>{overallDepth.toFixed(2)} mm</b></>}</p>{topHorizontal&&<p>Top horizontal: <b>{horizontalSlatLength.toFixed(2)} × {effectiveSlatFace.toFixed(2)} × {slatD.toFixed(2)} mm</b></p>}{bottomHorizontal&&<p>Bottom horizontal: <b>{horizontalSlatLength.toFixed(2)} × {effectiveSlatFace.toFixed(2)} × {slatD.toFixed(2)} mm</b></p>}</>:<><strong>Layout cannot fit.</strong><p>Check the wall dimensions, slat count, slat face width or gap.</p></>}
  </div>
- <button type="button" disabled={!slatLayoutValid} onClick={downloadSlatDrawing} style={{...primary,marginTop:14,width:'100%',opacity:slatLayoutValid?1:.45,cursor:slatLayoutValid?'pointer':'not-allowed'}}>Download 3-view technical drawing (PDF)</button>
+ <button type="button" disabled={!slatLayoutValid} onClick={downloadSlatDrawing} style={{...primary,marginTop:14,width:'100%',opacity:slatLayoutValid?1:.45,cursor:slatLayoutValid?'pointer':'not-allowed'}}>Download technical drawing (PDF)</button>
 </div>
 
 <div style={{display:'grid',gap:14}}>
  <div className="dj-glass-card" style={box}><div style={{display:'flex',justifyContent:'space-between',gap:12,alignItems:'baseline',flexWrap:'wrap'}}><h2 style={{margin:0}}>Front profile</h2><small>First + last slats fixed to wall edges</small></div>
   <svg width="100%" viewBox="0 0 680 410" role="img" aria-label="Front elevation of slatted wall with dimensions">
    <rect x="84" y="58" width="540" height="286" fill="#26382e" stroke="#9fb6a8"/>
-   {slatLayoutValid&&Array.from({length:Math.min(qty,250)},(_,i)=><rect key={i} x={84+(i*(effectiveSlatFace+effectiveGap)/Math.max(W,1))*540} y={58+(topHorizontal?effectiveSlatFace/Math.max(H,1)*286:0)} width={Math.max(.7,effectiveSlatFace/Math.max(W,1)*540)} height={Math.max(1,verticalSlatLength/Math.max(H,1)*286)} fill="#b98d5b"/>)}
-   {topHorizontal&&<rect x="84" y="58" width="540" height={Math.max(.8,effectiveSlatFace/Math.max(H,1)*286)} fill="#b98d5b"/>}
-   {bottomHorizontal&&<rect x="84" y={344-Math.max(.8,effectiveSlatFace/Math.max(H,1)*286)} width="540" height={Math.max(.8,effectiveSlatFace/Math.max(H,1)*286)} fill="#b98d5b"/>}
+   {slatLayoutValid&&Array.from({length:Math.min(qty,250)},(_,i)=>{const isEnd=i===0||i===qty-1;return <rect key={i} x={84+(i*(effectiveSlatFace+effectiveGap)/Math.max(W,1))*540} y={isEnd?58:58+(topHorizontal?effectiveSlatFace/Math.max(H,1)*286:0)} width={Math.max(.7,effectiveSlatFace/Math.max(W,1)*540)} height={isEnd?286:Math.max(1,innerVerticalLength/Math.max(H,1)*286)} fill="#b98d5b"/>})}
+   {topHorizontal&&<rect x={84+(effectiveSlatFace/Math.max(W,1))*540} y="58" width={Math.max(.8,horizontalSlatLength/Math.max(W,1)*540)} height={Math.max(.8,effectiveSlatFace/Math.max(H,1)*286)} fill="#b98d5b"/>}
+   {bottomHorizontal&&<rect x={84+(effectiveSlatFace/Math.max(W,1))*540} y={344-Math.max(.8,effectiveSlatFace/Math.max(H,1)*286)} width={Math.max(.8,horizontalSlatLength/Math.max(W,1)*540)} height={Math.max(.8,effectiveSlatFace/Math.max(H,1)*286)} fill="#b98d5b"/>}
    <path d="M84 358 V370 M624 358 V370 M84 365 H624" stroke="#9fb6a8"/><text x="354" y="386" textAnchor="middle" fill="#dce8e1" fontSize="14">LENGTH {W.toFixed(1)} mm</text>
    <path d="M68 58 H56 M68 344 H56 M61 58 V344" stroke="#9fb6a8"/><text x="38" y="201" textAnchor="middle" fill="#dce8e1" fontSize="13" transform="rotate(-90 38 201)">HEIGHT {H.toFixed(1)} mm</text>
    {slatLayoutValid&&qty>=2&&<><path d={'M84 42 H'+(84+(effectiveSlatFace/Math.max(W,1))*540)} stroke="#9fb6a8"/><text x={84+(effectiveSlatFace/Math.max(W,1))*270} y="36" textAnchor="middle" fill="#dce8e1" fontSize="10">{effectiveSlatFace.toFixed(2)} slat</text><path d={'M'+(84+(effectiveSlatFace/Math.max(W,1))*540)+' 24 H'+(84+((effectiveSlatFace+effectiveGap)/Math.max(W,1))*540)} stroke="#9fb6a8"/><text x={84+((effectiveSlatFace+effectiveGap/2)/Math.max(W,1))*540} y="18" textAnchor="middle" fill="#dce8e1" fontSize="10">{effectiveGap.toFixed(2)} gap</text></>}
-   <text x="84" y="405" fill="#aabfb3" fontSize="11">{qty} vertical slats · {Math.max(0,qty-1)} equal gaps · vertical length {verticalSlatLength.toFixed(2)} mm</text>
+   <text x="84" y="405" fill="#aabfb3" fontSize="11">{qty} vertical slats · end slats full height {H.toFixed(2)} mm · inner slats {innerVerticalLength.toFixed(2)} mm</text>
   </svg>
  </div>
 
- <div style={{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:14}}>
-  <div className="dj-glass-card" style={box}><div style={{display:'flex',justifyContent:'space-between',gap:10,alignItems:'baseline',flexWrap:'wrap'}}><h3 style={{margin:0}}>Top profile / plan</h3><small>Viewed from above</small></div><svg width="100%" viewBox="0 0 520 260" role="img" aria-label="Plan view showing slat faces, gaps, backing and finished depth">
-   <text x="42" y="24" fill="#aabfb3" fontSize="11">FRONT / ROOM SIDE</text>
-   {hasBacking&&<><rect x="42" y="142" width="410" height="28" fill="#77838a" stroke="#9fb6a8"/><text x="247" y="160" textAnchor="middle" fill="#eef5f1" fontSize="11">BACKING BOARD {backingD.toFixed(0)} mm</text></>}
-   {slatLayoutValid&&Array.from({length:Math.min(qty,120)},(_,i)=><rect key={i} x={42+(i*(effectiveSlatFace+effectiveGap)/Math.max(W,1))*410} y="58" width={Math.max(1,effectiveSlatFace/Math.max(W,1)*410)} height="84" fill="#b98d5b" stroke="#d7b786" strokeWidth=".35"/>)}
-   <path d="M42 188 V200 M452 188 V200 M42 195 H452" stroke="#9fb6a8"/><text x="247" y="218" textAnchor="middle" fill="#dce8e1" fontSize="12">WALL LENGTH {W.toFixed(1)} mm</text>
-   {slatLayoutValid&&qty>=2&&<><path d={'M42 46 H'+(42+(effectiveSlatFace/Math.max(W,1))*410)} stroke="#9fb6a8"/><path d={'M42 43 V49 M'+(42+(effectiveSlatFace/Math.max(W,1))*410)+' 43 V49'} stroke="#9fb6a8"/><text x={42+(effectiveSlatFace/Math.max(W,1))*205} y="40" textAnchor="middle" fill="#dce8e1" fontSize="10">{effectiveSlatFace.toFixed(2)} slat face</text><path d={'M'+(42+(effectiveSlatFace/Math.max(W,1))*410)+' 31 H'+(42+((effectiveSlatFace+effectiveGap)/Math.max(W,1))*410)} stroke="#9fb6a8"/><text x={42+((effectiveSlatFace+effectiveGap/2)/Math.max(W,1))*410} y="26" textAnchor="middle" fill="#dce8e1" fontSize="10">{effectiveGap.toFixed(2)} gap</text></>}
-   <path d="M474 58 H488 M474 170 H488 M482 58 V170" stroke="#9fb6a8"/><text x="505" y="114" textAnchor="middle" fill="#dce8e1" fontSize="10" transform="rotate(90 505 114)">OVERALL DEPTH {overallDepth.toFixed(2)} mm</text>
-   <text x="42" y="239" fill="#dce8e1" fontSize="11">Slat depth {slatD.toFixed(2)} mm</text><text x="190" y="239" fill="#dce8e1" fontSize="11">Backing {hasBacking?backingD.toFixed(0)+' mm':'none'}</text><text x="322" y="239" fill="#aabfb3" fontSize="10">Depth enlarged for clarity</text>
-  </svg></div>
-  <div className="dj-glass-card" style={box}><h3>Side profile</h3><svg width="100%" viewBox="0 0 420 190" role="img" aria-label="Side profile of slatted wall"><rect x="150" y="25" width="90" height="125" fill="none" stroke="#9fb6a8"/>{hasBacking&&<rect x="150" y="25" width="22" height="125" fill="#77838a"/>}<rect x={hasBacking?172:150} y="25" width="48" height="125" fill="#b98d5b"/><text x="260" y="88" fill="#dce8e1" fontSize="12" transform="rotate(90 260 88)">HEIGHT {H.toFixed(1)} mm</text><text x="150" y="172" fill="#dce8e1" fontSize="12">Overall depth {overallDepth.toFixed(2)} mm</text></svg></div>
+ <div className="dj-glass-card" style={box}>
+  <div style={{display:'flex',justifyContent:'space-between',gap:10,alignItems:'baseline',flexWrap:'wrap'}}><h3 style={{margin:0}}>Top profile / depth</h3><small>Finished wall thickness</small></div>
+  <svg width="100%" viewBox="0 0 620 230" role="img" aria-label="Depth section showing slat depth, backing thickness and overall finished depth">
+   <text x="70" y="38" fill="#aabfb3" fontSize="11">ROOM SIDE</text><text x="548" y="38" textAnchor="end" fill="#aabfb3" fontSize="11">WALL SIDE</text>
+   <rect x="120" y="72" width={Math.max(110,(slatD/Math.max(overallDepth,.1))*330)} height="72" fill="#b98d5b" stroke="#d7b786"/>
+   {hasBacking&&<rect x={120+Math.max(110,(slatD/Math.max(overallDepth,.1))*330)} y="72" width={Math.max(55,(backingD/Math.max(overallDepth,.1))*330)} height="72" fill="#77838a" stroke="#9fb6a8"/>}
+   <text x={120+Math.max(110,(slatD/Math.max(overallDepth,.1))*330)/2} y="112" textAnchor="middle" fill="#101c23" fontSize="13">SLAT</text>
+   {hasBacking&&<text x={120+Math.max(110,(slatD/Math.max(overallDepth,.1))*330)+Math.max(55,(backingD/Math.max(overallDepth,.1))*330)/2} y="112" textAnchor="middle" fill="#eef5f1" fontSize="12">BACKING</text>}
+   <path d="M120 164 V178 M500 164 V178 M120 171 H500" stroke="#9fb6a8"/><text x="310" y="197" textAnchor="middle" fill="#dce8e1" fontSize="14">OVERALL DEPTH {overallDepth.toFixed(2)} mm</text>
+   <text x="120" y="220" fill="#dce8e1" fontSize="11">Slat depth {slatD.toFixed(2)} mm</text><text x="305" y="220" fill="#dce8e1" fontSize="11">Backing {hasBacking?backingD.toFixed(0)+' mm':'none'}</text>
+  </svg>
  </div>
 </div>
 </div>}

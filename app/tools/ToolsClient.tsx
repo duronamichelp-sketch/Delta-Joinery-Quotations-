@@ -3,6 +3,7 @@ import {useEffect,useState} from 'react';
 import Link from 'next/link';
 import DesktopSidebar from '../DesktopSidebar';
 import {useDeltaAccount} from '../CloudSync';
+import {jsPDF} from 'jspdf';
 type Address={id:string;name:string;eircode:string};
 const addressSupplier=(name:string)=>{
  const withoutLocation=name.replace(/\s*\([^)]*\)\s*$/,'').trim();
@@ -23,7 +24,7 @@ const account=useDeltaAccount();
 const [saveStatus,setSaveStatus]=useState('');
 const [savingAddress,setSavingAddress]=useState(false);
 const [mode,setMode]=useState('slats');
-const [width,setWidth]=useState('1800'),[height,setHeight]=useState('2400'),[slat,setSlat]=useState('40'),[gap,setGap]=useState('20');
+const [width,setWidth]=useState('1800'),[height,setHeight]=useState('2400'),[slat,setSlat]=useState('40'),[slatCount,setSlatCount]=useState('30'),[gapOverride,setGapOverride]=useState('');
 const [floorL,setFloorL]=useState('4.2'),[floorW,setFloorW]=useState('3.6');
 const [sideA,setSideA]=useState('1000'),[sideB,setSideB]=useState('1000'),[diagonal,setDiagonal]=useState('1414.21');
 const [name,setName]=useState(''),[eircode,setEircode]=useState(''),[addresses,setAddresses]=useState<Address[]>([]),[editing,setEditing]=useState<string|null>(null);
@@ -49,12 +50,65 @@ const save=async(next:Address[])=>{
  }catch(e){setSaveStatus('Not saved to cloud: '+(e instanceof Error?e.message:'Unknown error'));return false}
  finally{setSavingAddress(false)}
 };
-const W=num(width),H=num(height),S=Math.max(.1,num(slat)),G=num(gap);
-const qty=W>=2*S?Math.max(2,Math.round((W+G)/(S+G))):0;
-const actualGap=qty>1?Math.max(0,(W-qty*S)/(qty-1)):0;
+const W=num(width),H=num(height),S=Math.max(.1,num(slat));
+const qty=Math.max(0,Math.min(500,Math.floor(num(slatCount))));
+const autoGap=qty>1?(W-qty*S)/(qty-1):0;
+const hasGapOverride=gapOverride.trim()!=='';
+const actualGap=hasGapOverride?num(gapOverride):Math.max(0,autoGap);
+const usedWidth=qty>0?qty*S+Math.max(0,qty-1)*actualGap:0;
+const remainingWidth=W-usedWidth;
+const sideMargin=hasGapOverride?remainingWidth/2:0;
 const slatTotal=qty*S;
+const slatLayoutValid=qty>=2&&W>0&&H>0&&W>=qty*S&&(!hasGapOverride||usedWidth<=W);
 const A=num(sideA),B=num(sideB),C=num(diagonal);const validTriangle=A>0&&B>0&&C>0&&C<A+B&&C>Math.abs(A-B);const angleDeg=validTriangle?Math.acos(Math.max(-1,Math.min(1,(A*A+B*B-C*C)/(2*A*B))))*180/Math.PI:0;const sawAngle=(180-angleDeg)/2;
 const area=num(floorL)*num(floorW);
+const downloadSlatDrawing=()=>{
+ if(!slatLayoutValid)return;
+ const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+ const pageW=297,pageH=210;
+ doc.setFont('helvetica','bold');doc.setFontSize(15);doc.text('DELTA JOINERY',14,14);
+ doc.setFontSize(13);doc.text('Slatted Wall Technical Drawing',14,22);
+ doc.setFont('helvetica','normal');doc.setFontSize(8);
+ doc.text('All dimensions in millimetres. Verify site dimensions before manufacture.',14,28);
+ const x=34,y=47,maxW=226,maxH=112;
+ const scale=Math.min(maxW/Math.max(W,1),maxH/Math.max(H,1));
+ const drawW=W*scale,drawH=H*scale;
+ const left=x+(maxW-drawW)/2,top=y+(maxH-drawH)/2;
+ doc.setDrawColor(40);doc.setLineWidth(.35);doc.rect(left,top,drawW,drawH);
+ const startMm=Math.max(0,sideMargin);
+ const capped=Math.min(qty,500);
+ doc.setFillColor(170,125,78);
+ for(let i=0;i<capped;i++){
+  const sx=left+(startMm+i*(S+actualGap))*scale;
+  doc.rect(sx,top,Math.max(.2,S*scale),drawH,'F');
+ }
+ const dimY=top+drawH+12;
+ doc.setDrawColor(70);doc.line(left,dimY,left+drawW,dimY);doc.line(left,dimY-2,left,dimY+2);doc.line(left+drawW,dimY-2,left+drawW,dimY+2);
+ doc.setFontSize(8);doc.text(`WALL WIDTH ${W.toFixed(1)} mm`,left+drawW/2,dimY-2,{align:'center'});
+ const dimX=left-12;doc.line(dimX,top,dimX,top+drawH);doc.line(dimX-2,top,dimX+2,top);doc.line(dimX-2,top+drawH,dimX+2,top+drawH);
+ doc.text(`WALL HEIGHT ${H.toFixed(1)} mm`,dimX-3,top+drawH/2,{angle:90,align:'center'});
+ const detailY=174;
+ doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text('SETTING OUT',14,detailY);
+ doc.setFont('helvetica','normal');doc.setFontSize(8);
+ doc.text(`Slats: ${qty}`,14,detailY+7);
+ doc.text(`Slat width: ${S.toFixed(2)} mm`,54,detailY+7);
+ doc.text(`Equal gap: ${actualGap.toFixed(2)} mm${hasGapOverride?' (manual)':' (automatic)'}`,104,detailY+7);
+ doc.text(`Wall: ${W.toFixed(1)} × ${H.toFixed(1)} mm`,174,detailY+7);
+ if(hasGapOverride)doc.text(`Side margins: ${Math.max(0,sideMargin).toFixed(2)} mm each`,14,detailY+14);
+ doc.text(`Total slat face width: ${slatTotal.toFixed(1)} mm`,104,detailY+14);
+ doc.text(`Slat face area: ${(slatTotal*H/1000000).toFixed(3)} m²`,174,detailY+14);
+ if(qty>=2){
+  const sx=left+(Math.max(0,sideMargin))*scale;
+  const firstEnd=sx+S*scale;
+  const secondStart=sx+(S+actualGap)*scale;
+  const localY=top+Math.min(drawH+5,18);
+  doc.setDrawColor(85);doc.line(sx,top-7,firstEnd,top-7);doc.line(sx,top-9,sx,top-5);doc.line(firstEnd,top-9,firstEnd,top-5);
+  doc.text(`${S.toFixed(2)} slat`,(sx+firstEnd)/2,top-9,{align:'center'});
+  if(actualGap>0){doc.line(firstEnd,top-15,secondStart,top-15);doc.line(firstEnd,top-17,firstEnd,top-13);doc.line(secondStart,top-17,secondStart,top-13);doc.text(`${actualGap.toFixed(2)} gap`,(firstEnd+secondStart)/2,top-17,{align:'center'});}
+ }
+ doc.setFontSize(7);doc.text('Technical setting-out drawing generated by Delta Joinery Tools',14,pageH-8);
+ doc.save(`delta-joinery-slatted-wall-${Math.round(W)}x${Math.round(H)}.pdf`);
+};
 const link=(dest:string,text:string)=><Link href={dest} className="dj-tool-home-card" style={{display:'block',...box,textDecoration:'none',fontWeight:700}}>{text} →</Link>;
 const input=(title:string,value:string,set:(v:string)=>void,unit='mm')=><label style={label}>{title} ({unit})<input style={field} inputMode="decimal" type="number" min="0" step="any" value={value} onChange={e=>set(e.target.value)}/></label>;
 const pageTitle=section==='addresses'?'Addresses':section==='measurements'?'Measurements':'Tools';
@@ -87,7 +141,7 @@ return <main className={'rev-shell dj-full-desktop dj-functional dj-unified-page
  </div>
 })}{addresses.length===0?<p>No addresses saved yet.</p>:matchingAddresses.length===0?<p>No matches found. Try a different name or Eircode.</p>:null}</div></div></div>}
 {section==='measurements'&&<><div className="dj-segmented-control" style={{display:'flex',gap:9,flexWrap:'wrap',marginBottom:18}}>{[['slats','Slatted Wall'],['floor','Floor Coverage'],['angle','Angle Finder']].map(([id,title])=><button type="button" key={id} className={'dj-segment-btn '+(mode===id?'active':'')} style={{...primary}} onClick={()=>setMode(id)}>{title}</button>)}</div>
-{mode==='slats'&&<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,350px),1fr))',gap:18}}><div className="dj-glass-card" style={box}><h2>Slatted wall calculator</h2><p>Full finished slat on both ends; equal gaps in between.</p><div style={{display:'grid',gap:12}}>{input('Wall width',width,setWidth)}{input('Wall height',height,setHeight)}{input('Slat width',slat,setSlat)}{input('Preferred gap',gap,setGap)}</div><div style={{marginTop:18,background:'#eaf4ec',padding:15,borderRadius:12}}><strong>Slats: {qty}</strong><p>Gaps: {Math.max(0,qty-1)}</p><p>Actual equal gap: <b>{actualGap.toFixed(2)} mm</b></p><p>Total slat material: {(slatTotal/1000).toFixed(2)} linear m across the wall</p><p>Slat face area: {(slatTotal*H/1000000).toFixed(2)} m²</p>{qty===0&&<p>The wall is too narrow for two finished end slats.</p>}</div></div><div className="dj-glass-card" style={box}><h2>Live wall elevation</h2><svg width="100%" viewBox="0 0 540 350" role="img" aria-label="Slat wall scaled elevation with a finished slat at each end"><rect x="18" y="24" width="504" height="280" fill="#26382e"/>{qty>1&&Array.from({length:Math.min(qty,250)},(_,i)=><rect key={i} x={18+(i*(S+actualGap)/Math.max(W,1))*504} y="24" width={Math.max(.6,S/Math.max(W,1)*504)} height="280" fill="#b98d5b"/>)}<path d="M18 315 V323 M522 315 V323 M18 320 H522" stroke="#476753"/><text x="270" y="339" textAnchor="middle" fill="#223b2d" fontSize="15">{W} mm wide · {H} mm high</text></svg><p style={{color:'#516e5c',fontSize:13}}>Both ends terminate in a full finished slat. Preview shows equalized spacing, not your preferred gap if it needs adjustment.</p></div></div>}
+{mode==='slats'&&<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,350px),1fr))',gap:18}}><div className="dj-glass-card" style={box}><h2>Slatted wall calculator</h2><p>Enter the wall size, slat width and exact number of slats. The equal gap is calculated automatically.</p><div style={{display:'grid',gap:12}}>{input('Wall width',width,setWidth)}{input('Wall height',height,setHeight)}{input('Slat width',slat,setSlat)}<label style={label}>Number of slats<input style={field} inputMode="numeric" type="number" min="2" max="500" step="1" value={slatCount} onChange={e=>setSlatCount(e.target.value)}/></label><label style={label}>Gap override (mm) <span style={{fontWeight:400,opacity:.72}}>Leave blank for perfect equal spacing</span><input style={field} inputMode="decimal" type="number" min="0" step="0.01" placeholder={autoGap>=0?autoGap.toFixed(2):'Not enough wall width'} value={gapOverride} onChange={e=>setGapOverride(e.target.value)}/></label>{hasGapOverride&&<button type="button" onClick={()=>setGapOverride('')} style={{...primary,background:'rgba(255,255,255,.08)',width:'fit-content'}}>Use automatic gap</button>}</div><div style={{marginTop:18,background:'#eaf4ec',padding:15,borderRadius:12,color:'#173e2e'}}>{slatLayoutValid?<><strong>Perfect equal gap: {Math.max(0,autoGap).toFixed(2)} mm</strong><p>Using gap: <b>{actualGap.toFixed(2)} mm</b>{hasGapOverride?' (manual override)':' (automatic)'}</p><p>Slats: <b>{qty}</b> · Gaps: <b>{Math.max(0,qty-1)}</b></p>{hasGapOverride&&<p>Side margins after centring: <b>{Math.max(0,sideMargin).toFixed(2)} mm each</b></p>}<p>Total slat face width: {(slatTotal/1000).toFixed(3)} m</p><p>Slat face area: {(slatTotal*H/1000000).toFixed(3)} m²</p></>:<><strong>Layout cannot fit.</strong><p>Reduce the number/width of slats or increase the wall width{hasGapOverride?' / reduce the manual gap':''}.</p></>}</div><button type="button" disabled={!slatLayoutValid} onClick={downloadSlatDrawing} style={{...primary,marginTop:14,opacity:slatLayoutValid?1:.45,cursor:slatLayoutValid?'pointer':'not-allowed'}}>Download technical drawing (PDF)</button></div><div className="dj-glass-card" style={box}><h2>Dimensioned wall elevation</h2><svg width="100%" viewBox="0 0 620 390" role="img" aria-label="Dimensioned slatted wall technical elevation"><defs><marker id="dj-dim-arrow" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M6 0 L0 3 L6 6" fill="none" stroke="#9fb6a8" strokeWidth="1"/></marker></defs><rect x="72" y="48" width="500" height="270" fill="#26382e" stroke="#a6b9ad" strokeWidth="1"/>{slatLayoutValid&&Array.from({length:Math.min(qty,250)},(_,i)=>{const start=Math.max(0,sideMargin);return <rect key={i} x={72+((start+i*(S+actualGap))/Math.max(W,1))*500} y="48" width={Math.max(.65,S/Math.max(W,1)*500)} height="270" fill="#b98d5b"/>})}<path d="M72 332 V344 M572 332 V344 M72 339 H572" stroke="#9fb6a8"/><text x="322" y="360" textAnchor="middle" fill="#dce8e1" fontSize="14">WALL WIDTH {W.toFixed(1)} mm</text><path d="M56 48 H44 M56 318 H44 M49 48 V318" stroke="#9fb6a8"/><text x="27" y="183" textAnchor="middle" fill="#dce8e1" fontSize="13" transform="rotate(-90 27 183)">WALL HEIGHT {H.toFixed(1)} mm</text>{slatLayoutValid&&qty>=2&&<><path d={'M72 34 H'+(72+(S/Math.max(W,1))*500)} stroke="#9fb6a8"/><text x={72+(S/Math.max(W,1))*250} y="28" textAnchor="middle" fill="#dce8e1" fontSize="11">{S.toFixed(2)} mm slat</text>{actualGap>0&&<><path d={'M'+(72+(S/Math.max(W,1))*500)+' 18 H'+(72+((S+actualGap)/Math.max(W,1))*500)} stroke="#9fb6a8"/><text x={72+((S+actualGap/2)/Math.max(W,1))*500} y="13" textAnchor="middle" fill="#dce8e1" fontSize="10">{actualGap.toFixed(2)} mm gap</text></>}</>}<text x="72" y="380" fill="#aabfb3" fontSize="11">{qty} slats · {Math.max(0,qty-1)} equal gaps{hasGapOverride?' · manual gap override':''}</text></svg><p style={{color:'#9fb6a8',fontSize:13}}>Drawing dimensions update live. Automatic mode fits the first and last slat exactly to the wall edges. If you override the gap, the slat field is centred and the remaining side margins are shown in the calculation.</p></div></div>}
 {mode==='floor'&&<div className="dj-glass-card" style={box}><h2>Floor coverage</h2><p>Enter the length and width of your space to calculate the floor area.</p><div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:14,maxWidth:650}}>{input('Length',floorL,setFloorL,'m')}{input('Width',floorW,setFloorW,'m')}</div><div style={{marginTop:20,background:'#eaf4ec',padding:22,borderRadius:12}}><span style={{fontSize:13}}>Total area</span><h2 style={{fontSize:35,margin:'8px 0',color:'#173e2e'}}>{area.toFixed(2)} m²</h2><p style={{margin:0}}>{num(floorL)} m × {num(floorW)} m</p></div></div>}
 {mode==='angle'&&<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',gap:16}}><div className="dj-glass-card" style={box}><h2>Angle finder</h2><p>Measure from a corner along both walls, then measure diagonally between those two points. Enter all three measurements in mm.</p><div style={{display:'grid',gap:13}}>{input('Distance along wall A',sideA,setSideA)}{input('Distance along wall B',sideB,setSideB)}{input('Diagonal between marks',diagonal,setDiagonal)}</div><div style={{marginTop:18,background:'#eaf4ec',padding:18,borderRadius:12}}>{validTriangle?<><div>Actual corner angle</div><h2 style={{fontSize:32,color:'#153e2b'}}>{angleDeg.toFixed(2)}°</h2><div>Equal mitre saw cut (each piece)</div><h2 style={{fontSize:27,color:'#153e2b'}}>{sawAngle.toFixed(2)}°</h2><p style={{fontSize:13}}>Saw setting measured from a square (90°) cut for a standard two-piece internal corner.</p></>:<p>Enter three measurements that form a valid triangle.</p>}</div></div><div className="dj-glass-card" style={box}><h2>Measuring guide</h2><svg viewBox="0 0 360 280" width="100%" role="img" aria-label="Triangle showing two wall measurements and the diagonal"><path d="M45 235 L45 45 L305 235 Z" fill="#eaf3ec" stroke="#b88951" strokeWidth="5" strokeLinejoin="round"/><text x="10" y="148" fontSize="15" fill="#143d2b">A</text><text x="176" y="258" fontSize="15" fill="#143d2b">B</text><text x="172" y="120" fontSize="15" fill="#143d2b">Diagonal</text><path d="M45 203 Q82 202 82 235" stroke="#175c3a" strokeWidth="2" fill="none"/></svg><p style={{fontSize:13,color:'#52675a'}}>Mark the same corner on both walls, measure to each mark and then between marks. The angle is calculated using the cosine rule. For unequal pieces or non-standard joinery, check the cutting orientation on a test piece.</p></div></div>}
 </>}

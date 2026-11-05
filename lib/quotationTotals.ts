@@ -19,7 +19,7 @@ export type SavedQuotation={
  chosenFillers?:{id:string;qty:number}[];
  chosenTimber?:{id:string;qty:number}[];
  chosenWorktops?:{id:string;name:string;qty:number;rate:number;unit:string}[];
- chosenCustomProducts?:{id:string;name:string;lines:{id:string;description:string;price:number}[]}[];
+ chosenCustomProducts?:{id:string;name:string;price?:number;lines?:{id:string;description:string;price:number}[]}[];
 };
 
 const DEFAULT_CNC=[
@@ -77,7 +77,7 @@ export function savedQuoteDetails(q:SavedQuotation){
  for(const x of q.chosenWorktops||[]){addLine('Worktops',x.name,x.qty,x.rate,x.unit)}
  for(const x of q.chosenCnc||[]){const row=cnc.find(z=>z.id===x.id);if(row)addLine('CNC Production',row.name,x.qty,row.price,row.unit)}
  for(const x of q.chosenProduction||[]){const row=production.find(z=>z.id===x.id);if(row)addLine('Production Costs',row.name,x.qty,row.price,row.unit)}
- for(const product of q.chosenCustomProducts||[]){for(const line of product.lines||[]){addLine('Custom Products',`${product.name} — ${line.description}`,1,line.price,'item')}}
+ for(const product of q.chosenCustomProducts||[]){const price=typeof product.price==='number'?product.price:(product.lines||[]).reduce((s,l)=>s+(Number(l.price)||0),0);addLine('Custom Products',product.name,1,price,'item')}
 
  const effectiveLines=q.costLines?.length?q.costLines:lines;
  const categoryOrder=['Units','Hardware','Labour','Electrics','Finishes','Fillers / Plinths & Coving','Timber','Worktops','CNC Production','Production Costs','Custom Products'];

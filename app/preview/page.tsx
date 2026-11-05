@@ -179,6 +179,17 @@ const [doorRates,setDoorRates]=useState<Record<string,number>>(DEFAULT_FINISH_RA
  #dj-print-sheet td { padding-top: 16px; padding-bottom: 16px; }
  @media (max-width: 700px) { #dj-print-sheet { padding: 24px 18px !important; min-height: 800px !important; } }
 }
+#dj-print-sheet{color:#111827!important;background:#fff!important}
+ #dj-print-sheet p,#dj-print-sheet span,#dj-print-sheet td,#dj-print-sheet strong,#dj-print-sheet b,#dj-print-sheet h1,#dj-print-sheet h2{color:#111827}
+ #dj-print-sheet .text-gray-500{color:#6b7280!important}
+ #dj-print-sheet .text-gray-600{color:#4b5563!important}
+ #dj-print-sheet .text-gray-400{color:#9ca3af!important}
+ #dj-print-sheet thead th{background:#14532d!important;color:#fff!important}
+ #dj-print-sheet tbody td{color:#111827!important;border-color:#d1d5db!important}
+ #dj-print-sheet tbody td strong{color:#111827!important}
+ #dj-print-sheet tbody td .text-gray-500{color:#6b7280!important}
+ #dj-print-sheet .text-green-800{color:#166534!important}
+ #dj-print-sheet .text-red-700{color:#b91c1c!important}
 @media print {
  html,body { margin:0!important;padding:0!important;width:210mm!important;min-width:0!important;max-width:none!important;height:auto!important;overflow:visible!important;background:#fff!important; }
  .dj-preview-desktop { display:block!important;position:static!important;width:210mm!important;min-width:0!important;min-height:0!important;height:auto!important;overflow:visible!important;padding:0!important;margin:0!important;background:#fff!important; }
@@ -192,6 +203,10 @@ const [doorRates,setDoorRates]=useState<Record<string,number>>(DEFAULT_FINISH_RA
  #dj-print-sheet thead {display:table-header-group!important}
  #dj-print-sheet tr {break-inside:avoid!important;page-break-inside:avoid!important}
  #dj-print-sheet th {background:#14532d!important;color:white!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+ #dj-print-sheet td,#dj-print-sheet p,#dj-print-sheet span,#dj-print-sheet strong,#dj-print-sheet b,#dj-print-sheet h1,#dj-print-sheet h2{color:#111827!important}
+ #dj-print-sheet tbody td .text-gray-500{color:#6b7280!important}
+ #dj-print-sheet .text-green-800{color:#166534!important}
+ #dj-print-sheet .text-red-700{color:#b91c1c!important}
  #dj-print-sheet .border-t-2 {break-inside:avoid!important}
 }
 `}</style>

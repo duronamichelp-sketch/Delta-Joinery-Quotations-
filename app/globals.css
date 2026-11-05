@@ -3472,3 +3472,140 @@ body .dj-glass-home .skoda-left{grid-column:1!important;grid-row:2!important}
     max-width:300px!important;
   }
 }
+
+
+/* QUOTATION SIDEBAR FINAL LAYOUT FIX */
+@media screen and (min-width:900px){
+  body main.dj-quote-page .dj-area{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) 330px!important;
+    gap:18px!important;
+    align-items:start!important;
+  }
+  body main.dj-quote-page .dj-right{
+    position:sticky!important;
+    top:18px!important;
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:14px!important;
+    width:330px!important;
+    min-width:330px!important;
+    max-width:330px!important;
+    align-self:start!important;
+  }
+  body main.dj-quote-page .dj-right>.dj-total,
+  body main.dj-quote-page .dj-right>.dj-card{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:18px!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+  body main.dj-quote-page .dj-total h2{
+    display:block!important;
+    margin:0 0 8px!important;
+    font-size:14px!important;
+    line-height:1.25!important;
+  }
+  body main.dj-quote-page .dj-grand{
+    display:block!important;
+    margin:0 0 18px!important;
+    font-size:34px!important;
+    line-height:1!important;
+  }
+  body main.dj-quote-page .dj-total-line{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) max-content!important;
+    align-items:center!important;
+    gap:12px!important;
+    width:100%!important;
+    margin:0 0 9px!important;
+    font-size:12px!important;
+    line-height:1.25!important;
+  }
+  body main.dj-quote-page .dj-total-line>*{
+    min-width:0!important;
+  }
+  body main.dj-quote-page .dj-total-line>*:last-child{
+    justify-self:end!important;
+    white-space:nowrap!important;
+    text-align:right!important;
+  }
+  body main.dj-quote-page .dj-vat-option{
+    display:flex!important;
+    align-items:center!important;
+    gap:9px!important;
+    width:100%!important;
+    margin:14px 0!important;
+    font-size:12px!important;
+    line-height:1.2!important;
+  }
+  body main.dj-quote-page .dj-vat-option input{
+    flex:0 0 auto!important;
+    width:17px!important;
+    height:17px!important;
+    margin:0!important;
+  }
+  body main.dj-quote-page .dj-final-total{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) max-content!important;
+    align-items:center!important;
+    gap:12px!important;
+    margin-top:10px!important;
+    padding:12px 13px!important;
+    box-sizing:border-box!important;
+  }
+  body main.dj-quote-page .dj-total button,
+  body main.dj-quote-page .dj-total>a{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    width:100%!important;
+    min-height:42px!important;
+    margin:8px 0 0!important;
+    padding:10px 12px!important;
+    box-sizing:border-box!important;
+    text-decoration:none!important;
+  }
+  body main.dj-quote-page .dj-mini h2{
+    margin:0 0 12px!important;
+    font-size:17px!important;
+  }
+  body main.dj-quote-page .dj-mini label{
+    display:grid!important;
+    grid-template-columns:18px minmax(0,1fr)!important;
+    align-items:center!important;
+    gap:8px!important;
+    width:100%!important;
+    margin:8px 0!important;
+  }
+  body main.dj-quote-page .dj-mini input,
+  body main.dj-quote-page .dj-mini textarea{
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+  }
+  body main.dj-quote-page .dj-mini input{
+    height:38px!important;
+    padding:8px 10px!important;
+  }
+  body main.dj-quote-page .dj-mini textarea{
+    min-height:86px!important;
+    padding:10px!important;
+    resize:vertical!important;
+  }
+}
+@media screen and (min-width:900px) and (max-width:1180px){
+  body main.dj-quote-page .dj-area{
+    grid-template-columns:minmax(0,1fr) 300px!important;
+  }
+  body main.dj-quote-page .dj-right{
+    width:300px!important;
+    min-width:300px!important;
+    max-width:300px!important;
+  }
+}

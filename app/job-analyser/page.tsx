@@ -68,8 +68,7 @@ function unique<T>(arr:T[],key:(x:T)=>string){const m=new Map<string,T>();arr.fo
 async function extractFile(file:File):Promise<Doc>{
  const ext=file.name.split('.').pop()?.toLowerCase()||'';
  if(ext==='pdf'){
-  const pdfjs=await import('pdfjs-dist/legacy/build/pdf.mjs');
-  pdfjs.GlobalWorkerOptions.workerSrc=`https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
+  const pdfjs=await import('pdfjs-dist/webpack.mjs');
   const bytes=new Uint8Array(await file.arrayBuffer());
   const pdf=await pdfjs.getDocument({data:bytes}).promise;const pages:string[]=[];
   for(let p=1;p<=pdf.numPages;p++){const page=await pdf.getPage(p);const tc=await page.getTextContent();pages.push(`[Page ${p}] `+(tc.items as any[]).map(x=>x.str||'').join(' '))}

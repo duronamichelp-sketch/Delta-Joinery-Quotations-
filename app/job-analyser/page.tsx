@@ -64,7 +64,7 @@ function itemName(line:string){
  if(hit)return hit.replace(/\b\w/g,c=>c.toUpperCase());
  return line.slice(0,70)||'Joinery item';
 }
-function unique<T>(arr:T[],key:(x:T)=>string){const m=new Map<string,T>();arr.forEach(x=>{const k=key(x);if(!m.has(k))m.set(k,x)});return [...m.values()]}
+function unique<T>(arr:T[],key:(x:T)=>string){const m=new Map<string,T>();arr.forEach(x=>{const k=key(x);if(!m.has(k))m.set(k,x)});return Array.from(m.values())}
 async function extractFile(file:File):Promise<Doc>{
  const ext=file.name.split('.').pop()?.toLowerCase()||'';
  if(ext==='pdf'){

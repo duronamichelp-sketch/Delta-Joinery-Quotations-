@@ -101,10 +101,10 @@ const downloadSlatDrawing=()=>{
  const boxX=12,boxY=40,boxW=184,boxH=108;
  doc.setLineWidth(.25);doc.rect(boxX,boxY,boxW,boxH);
  doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.text('A · FRONT ELEVATION',boxX+3,boxY+6);
- doc.setFont('helvetica','normal');doc.setFontSize(5.7);doc.text('FIRST + LAST VERTICAL SLATS FULL HEIGHT',boxX+3,boxY+12);
- doc.line(boxX+3,boxY+15,boxX+boxW-3,boxY+15);
+ doc.setFont('helvetica','normal');doc.setFontSize(5.5);doc.text('FIRST + LAST VERTICAL SLATS FULL HEIGHT',boxX+boxW-3,boxY+6,{align:'right'});
+ doc.line(boxX+3,boxY+10,boxX+boxW-3,boxY+10);
 
- const drawX=28,drawY=66,drawWMax=150,drawHMax=62;
+ const drawX=28,drawY=62,drawWMax=150,drawHMax=66;
  const fs=Math.min(drawWMax/Math.max(W,1),drawHMax/Math.max(H,1));
  const fW=W*fs,fH=H*fs;
  const fL=drawX+(drawWMax-fW)/2;
@@ -136,18 +136,7 @@ const downloadSlatDrawing=()=>{
  doc.line(heightDimX-2,fT,heightDimX+2,fT);doc.line(heightDimX-2,fT+fH,heightDimX+2,fT+fH);
  doc.text(`WALL HEIGHT  ${H.toFixed(1)}`,heightDimX-2,fT+fH/2,{angle:90,align:'center'});
 
- // Slat + gap detail
- if(qty>=2){
-   const firstEnd=fL+pdfFace;
-   const secondStart=fL+(effectiveSlatFace+effectiveGap)*fs;
-   const dim1=fT-5,dim2=fT-10;
-   doc.line(fL,dim1,firstEnd,dim1);doc.line(fL,dim1-1.5,fL,dim1+1.5);doc.line(firstEnd,dim1-1.5,firstEnd,dim1+1.5);
-   doc.setFontSize(5.6);doc.text(`${effectiveSlatFace.toFixed(2)} SLAT`,(fL+firstEnd)/2,dim1-1.8,{align:'center'});
-   if(effectiveGap>0){
-     doc.line(firstEnd,dim2,secondStart,dim2);doc.line(firstEnd,dim2-1.5,firstEnd,dim2+1.5);doc.line(secondStart,dim2-1.5,secondStart,dim2+1.5);
-     doc.text(`${effectiveGap.toFixed(2)} GAP`,(firstEnd+secondStart)/2,dim2-1.8,{align:'center'});
-   }
- }
+ // Slat and gap dimensions are listed in the component details and setting-out schedule below.
  doc.setFontSize(6);doc.text(`${qty} VERTICAL SLATS · ${qty-1} EQUAL GAPS`,boxX+3,boxY+boxH-5);
 
  // DEPTH SECTION ZONE
@@ -173,11 +162,12 @@ const downloadSlatDrawing=()=>{
  doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.text('C · COMPONENT DETAILS',cx+3,cy+6);
  doc.setFont('helvetica','normal');doc.setFontSize(6.4);
  const line1=cy+14,lineStep=6;
- doc.text(`Slat face`,cx+4,line1);doc.text(`${effectiveSlatFace.toFixed(2)}`,cx+cw-4,line1,{align:'right'});
- doc.text(`Slat depth`,cx+4,line1+lineStep);doc.text(`${slatD.toFixed(2)}`,cx+cw-4,line1+lineStep,{align:'right'});
- doc.text(`Backing`,cx+4,line1+lineStep*2);doc.text(hasBacking?`${backingD.toFixed(0)}`:'NONE',cx+cw-4,line1+lineStep*2,{align:'right'});
- doc.text(`Overall depth`,cx+4,line1+lineStep*3);doc.text(`${overallDepth.toFixed(2)}`,cx+cw-4,line1+lineStep*3,{align:'right'});
- doc.text(`Inner vertical height`,cx+4,line1+lineStep*4);doc.text(`${innerVerticalLength.toFixed(2)}`,cx+cw-4,line1+lineStep*4,{align:'right'});
+ doc.text('Slat face',cx+4,line1);doc.text(`${effectiveSlatFace.toFixed(2)} mm`,cx+cw-4,line1,{align:'right'});
+ doc.text('Equal gap',cx+4,line1+lineStep);doc.text(`${effectiveGap.toFixed(2)} mm`,cx+cw-4,line1+lineStep,{align:'right'});
+ doc.text('Slat depth',cx+4,line1+lineStep*2);doc.text(`${slatD.toFixed(2)} mm`,cx+cw-4,line1+lineStep*2,{align:'right'});
+ doc.text('Backing',cx+4,line1+lineStep*3);doc.text(hasBacking?`${backingD.toFixed(0)} mm`:'NONE',cx+cw-4,line1+lineStep*3,{align:'right'});
+ doc.text('Overall depth',cx+4,line1+lineStep*4);doc.text(`${overallDepth.toFixed(2)} mm`,cx+cw-4,line1+lineStep*4,{align:'right'});
+ doc.text('Inner vertical height',cx+4,line1+lineStep*5);doc.text(`${innerVerticalLength.toFixed(2)} mm`,cx+cw-4,line1+lineStep*5,{align:'right'});
 
  // BOTTOM TECHNICAL TITLE BLOCK / SCHEDULE
  const tx=12,ty=154,tw=273,th=42;

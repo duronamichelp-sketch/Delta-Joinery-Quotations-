@@ -6,7 +6,7 @@ import Image from 'next/image';
 import {Unit,Hardware,Labour,ExtraCost,QuoteUnit,QuoteHardware,DEFAULT_HARDWARE,DEFAULT_FINISH_RATES,pricedDoor,doorSqm,currency,read} from '../../lib/data';
 type CostItem={id:string;name:string;price:number;unit:string};
 const DEFAULT_CNC:CostItem[]=[{"id":"cnc-0","name":"MDF 22 Strada Handle","price":10,"unit":"door"},{"id":"cnc-1","name":"Frame Door","price":10,"unit":"door"},{"id":"cnc-2","name":"Shaker Door","price":25,"unit":"door"},{"id":"cnc-3","name":"Grooving","price":50,"unit":"m²"},{"id":"cnc-4","name":"Decor Pieces - High Complexity","price":45,"unit":"each"},{"id":"cnc-5","name":"Decor Pieces - Medium Complexity","price":30,"unit":"each"},{"id":"cnc-6","name":"Decor Pieces - Low Complexity","price":15,"unit":"each"},{"id":"cnc-7","name":"Bent Panel","price":120,"unit":"each"},{"id":"cnc-8","name":"Bent Panel - Shaker Door","price":170,"unit":"each"},{"id":"cnc-9","name":"Bent Panel - Big Piece","price":190,"unit":"each"},{"id":"cnc-10","name":"Bent Panel - Big Piece Shaker Door","price":240,"unit":"each"},{"id":"cnc-11","name":"Built-in Handle","price":20,"unit":"door"},{"id":"cnc-12","name":"PVC Film Covering","price":20,"unit":"piece"}];
-type Q={includeVat?:boolean;name?:string;number?:string;date?:string;client?:string;project?:string;email?:string;phone?:string;address?:string;chosenUnits?:QuoteUnit[];chosenHardware?:QuoteHardware[];chosenLabour?:{id:string;qty:number}[];chosenElectrics?:{id:string;qty:number}[];chosenFinishes?:{id:string;qty:number}[];chosenFillers?:{id:string;qty:number}[];chosenTimber?:{id:string;qty:number}[];chosenCnc?:{id:string;qty:number}[];chosenProduction?:{id:string;qty:number}[];chosenWorktops?:{id:string;name:string;qty:number;rate:number;unit:string}[]};
+type Q={includeVat?:boolean;name?:string;number?:string;date?:string;client?:string;project?:string;email?:string;phone?:string;address?:string;chosenUnits?:QuoteUnit[];chosenHardware?:QuoteHardware[];chosenLabour?:{id:string;qty:number}[];chosenElectrics?:{id:string;qty:number}[];chosenFinishes?:{id:string;qty:number}[];chosenFillers?:{id:string;qty:number}[];chosenTimber?:{id:string;qty:number}[];chosenCnc?:{id:string;qty:number}[];chosenProduction?:{id:string;qty:number}[];chosenWorktops?:{id:string;name:string;qty:number;rate:number;unit:string}[];chosenCustomProducts?:{id:string;name:string;lines:{id:string;description:string;price:number}[]}[]};
 export default function Preview(){
  const [q,setQ]=useState<Q>({});
  const [timberRates,setTimberRates]=useState<Record<string,number>>({});
@@ -26,7 +26,8 @@ const [doorRates,setDoorRates]=useState<Record<string,number>>(DEFAULT_FINISH_RA
  const cncRows=(q.chosenCnc||[]).flatMap(x=>{const c=cnc.find(z=>z.id===x.id);return c?[{label:c.name,detail:`CNC Production / ${c.unit}`,qty:x.qty,price:c.price}]:[]});
  const productionRows=(q.chosenProduction||[]).flatMap(x=>{const c=production.find(z=>z.id===x.id);return c?[{label:c.name,detail:`Production Costs / ${c.unit}`,qty:x.qty,price:c.price}]:[]});
  const worktops=(q.chosenWorktops||[]).map(x=>({label:x.name,detail:`Worktops / ${x.unit}`,qty:x.qty,price:x.rate}));
- const all=[...rows,...hw,...work,...er,...fr,...pr,...timber,...worktops,...cncRows,...productionRows];
+ const customProducts=(q.chosenCustomProducts||[]).flatMap(product=>(product.lines||[]).map(line=>({label:product.name,detail:`Included: ${line.description}`,qty:1,price:Number(line.price)||0})));
+ const all=[...rows,...hw,...work,...er,...fr,...pr,...timber,...worktops,...cncRows,...productionRows,...customProducts];
  const subtotal=all.reduce((sum,x)=>sum+x.qty*x.price,0);
  const vatAmount=q.includeVat?Math.round(subtotal*0.135*100)/100:0;
  const total=subtotal+vatAmount;

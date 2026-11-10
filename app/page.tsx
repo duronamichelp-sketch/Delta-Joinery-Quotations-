@@ -34,8 +34,11 @@ export default function Home(){
  const [client,setClient]=useState(''),[project,setProject]=useState(''),[due,setDue]=useState(''),[notes,setNotes]=useState('');
  const [amount,setAmount]=useState('');
  const [editing,setEditing]=useState<string|null>(null);
- const [pendingPhotos,setPendingPhotos]=useState<File[]>([]);
+ const [draftId,setDraftId]=useState<string>('');
+ const [formPhotos,setFormPhotos]=useState<SiteImage[]>([]);
+ const [formPhotoUrls,setFormPhotoUrls]=useState<Record<string,string>>({});
  const [uploadingPhotos,setUploadingPhotos]=useState(false);
+ const [uploadError,setUploadError]=useState('');
  const [taskImageUrls,setTaskImageUrls]=useState<Record<string,string>>({});
  useEffect(()=>{try{const raw=localStorage.getItem(KEY);if(raw){const data=JSON.parse(raw);if(Array.isArray(data))setTasks(data)}const addr=JSON.parse(localStorage.getItem('dj_tool_addresses')||'[]');setAddressCount(Array.isArray(addr)?addr.length:0)}catch{}setSavedQuotes(read<SavedQuotation[]>('dj_saved_quotes',[]));setLoaded(true)},[]);
  useEffect(()=>{if(loaded)localStorage.setItem(KEY,JSON.stringify(tasks))},[tasks,loaded]);
@@ -80,35 +83,57 @@ export default function Home(){
  const upcoming=useMemo(()=>tasks.filter(t=>t.status==='upcoming').sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999')),[tasks]);
  const finished=useMemo(()=>tasks.filter(t=>t.status==='finished').sort((a,b)=>(b.finished||'').localeCompare(a.finished||'')),[tasks]);
  function addManual(e:React.FormEvent){e.preventDefault();const value=Number(manualAmount);if(!manualClient.trim()||!manualProject.trim()||!Number.isFinite(value)||value<0)return;setTasks(prev=>[{id:crypto.randomUUID(),client:manualClient.trim(),project:manualProject.trim(),due:'',notes:'Manually entered finished quotation',status:'finished',created:dateToday(),finished:dateToday(),amount:Math.round(value*100)/100},...prev]);setManualClient('');setManualProject('');setManualAmount('');setShowManual(false);setFilter('finished')}
- function reset(){setClient('');setProject('');setDue('');setNotes('');setAmount('');setEditing(null);setPendingPhotos([]);setShowForm(false)}
+ function reset(){setClient('');setProject('');setDue('');setNotes('');setAmount('');setEditing(null);setDraftId('');setFormPhotos([]);setFormPhotoUrls({});setUploadError('');setShowForm(false)}
+ async function handlePhotoSelect(files:FileList|null){
+  if(!files||!files.length)return;
+  if(!account){setUploadError('Cloud account is not ready');return}
+  const picked=Array.from(files).filter(f=>f.type.startsWith('image/')||/\.(jpe?g|png|webp|heic|heif|avif)$/i.test(f.name));
+  if(!picked.length){setUploadError('Choose an image file');return}
+  const id=draftId||editing||crypto.randomUUID();
+  if(!draftId)setDraftId(id);
+  setUploadingPhotos(true);setUploadError('');
+  try{
+   const added=await account.uploadQuotationImages(id,picked);
+   const checked=await Promise.all(added.map(async img=>{
+    const url=await account.getQuotationImageUrl(img.path);
+    return {img,url};
+   }));
+   setFormPhotos(prev=>[...prev,...checked.map(x=>x.img)]);
+   setFormPhotoUrls(prev=>({...prev,...Object.fromEntries(checked.map(x=>[x.img.path,x.url]))}));
+  }catch(err){
+   setUploadError(err instanceof Error?err.message:'Image upload failed');
+  }finally{setUploadingPhotos(false)}
+ }
+ async function removeFormPhoto(img:SiteImage){
+  if(!account)return;
+  try{
+   await account.removeQuotationImages([img.path]);
+   setFormPhotos(prev=>prev.filter(x=>x.path!==img.path));
+   setFormPhotoUrls(prev=>{const next={...prev};delete next[img.path];return next});
+  }catch(err){setUploadError(err instanceof Error?err.message:'Could not remove image')}
+ }
  async function save(e:React.FormEvent){e.preventDefault();if(!client.trim()||!project.trim()||uploadingPhotos)return;
   const now=dateToday();
-  const id=editing||crypto.randomUUID();
+  const id=draftId||editing||crypto.randomUUID();
   const existing=editing?tasks.find(t=>t.id===editing):undefined;
-  let siteImages=[...(existing?.siteImages||[])];
-  const uploadedThisSave:string[]=[];
+  const existingImages=existing?.siteImages||[];
+  const mergedImages=[...existingImages];
+  for(const img of formPhotos)if(!mergedImages.some(x=>x.path===img.path))mergedImages.push(img);
   try{
-   if(pendingPhotos.length){
-    if(!account)throw new Error('Cloud account is not ready');
-    setUploadingPhotos(true);
-    const added=await account.uploadQuotationImages(id,pendingPhotos);
-    uploadedThisSave.push(...added.map(x=>x.path));
-    siteImages=[...siteImages,...added];
-   }
-   const nextTasks=editing
-    ? tasks.map(t=>t.id===editing?{...t,client:client.trim(),project:project.trim(),due,notes,amount:Math.max(0,Number(amount)||0),siteImages}:t)
-    : [{id,client:client.trim(),project:project.trim(),due,notes,amount:Math.max(0,Number(amount)||0),status:'upcoming' as const,created:now,siteImages},...tasks];
    if(!account)throw new Error('Cloud account is not ready');
+   const nextTasks=editing
+    ? tasks.map(t=>t.id===editing?{...t,client:client.trim(),project:project.trim(),due,notes,amount:Math.max(0,Number(amount)||0),siteImages:mergedImages}:t)
+    : [{id,client:client.trim(),project:project.trim(),due,notes,amount:Math.max(0,Number(amount)||0),status:'upcoming' as const,created:now,siteImages:mergedImages},...tasks];
    await account.saveTool('dj_quotation_tasks',nextTasks);
+   const cloudCheck=localStorage.getItem(KEY);
+   const confirmed=cloudCheck?JSON.parse(cloudCheck) as Task[]:[];
+   const saved=confirmed.find(t=>t.id===id);
+   if(!saved)throw new Error('Quotation was not confirmed after save');
+   if(mergedImages.length && (saved.siteImages||[]).length<mergedImages.length)throw new Error('Image references were not confirmed after save');
    setTasks(nextTasks);
    reset();setFilter('upcoming');
   }catch(err){
-   if(uploadedThisSave.length&&account){
-    try{await account.removeQuotationImages(uploadedThisSave)}catch{}
-   }
    alert('Could not save quotation: '+(err instanceof Error?err.message:'Unknown error'));
-  }finally{
-   setUploadingPhotos(false);
   }
  }
  function edit(t:Task){
@@ -157,7 +182,7 @@ export default function Home(){
   <section id="upcoming-quotations" className="dj-glass-panel dj-upcoming-quotations">
    <div className="head">
     <div><h2>Upcoming Quotations</h2><small>{upcoming.length} open quotation{upcoming.length===1?'':'s'}</small></div>
-    <button className="dj-upcoming-add" type="button" onClick={()=>{setClient('');setProject('');setDue('');setNotes('');setAmount('');setEditing(null);setPendingPhotos([]);setShowForm(true)}}>＋ Add Quotation</button>
+    <button className="dj-upcoming-add" type="button" onClick={()=>{setClient('');setProject('');setDue('');setNotes('');setAmount('');setEditing(null);setDraftId(crypto.randomUUID());setFormPhotos([]);setFormPhotoUrls({});setUploadError('');setShowForm(true)}}>＋ Add Quotation</button>
    </div>
    {showForm&&<form className="dj-upcoming-form" onSubmit={save}>
     <label>Client<input required value={client} onChange={e=>setClient(e.target.value)} placeholder="Client name"/></label>
@@ -166,11 +191,12 @@ export default function Home(){
     <label>Amount (€)<input inputMode="decimal" type="number" min="0" step="0.01" value={amount} onChange={e=>setAmount(e.target.value)} placeholder="0.00"/></label>
     <label className="dj-upcoming-notes">Notes<textarea value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Optional notes"/></label>
     <label className="dj-upcoming-photos">Site photos
-     <input type="file" accept="image/*" multiple onChange={e=>setPendingPhotos(Array.from(e.target.files||[]).filter(f=>f.type.startsWith('image/')))}/>
-     <small>Add site photos now and they will stay attached to this upcoming quotation.</small>
+     <input type="file" accept="image/*,.heic,.heif,.avif" multiple disabled={uploadingPhotos} onChange={e=>{void handlePhotoSelect(e.target.files);e.currentTarget.value=''}}/>
+     <small>{uploadingPhotos?'Uploading and verifying photos…':'Photos upload immediately and are verified before the quotation can be saved.'}</small>
     </label>
-    {pendingPhotos.length>0&&<div className="dj-upcoming-photo-files">{pendingPhotos.map((file,index)=><span key={file.name+'-'+index}>{file.name}<button type="button" aria-label={'Remove '+file.name} onClick={()=>setPendingPhotos(prev=>prev.filter((_,i)=>i!==index))}>×</button></span>)}</div>}
-    <div className="dj-upcoming-form-actions"><button type="submit" className="dj-upcoming-save" disabled={uploadingPhotos}>{uploadingPhotos?'Uploading photos…':(editing?'Save Changes':'Add Quotation')}</button><button type="button" className="dj-upcoming-cancel" onClick={reset}>Cancel</button></div>
+    {uploadError&&<div className="dj-upcoming-upload-error">{uploadError}</div>}
+    {formPhotos.length>0&&<div className="dj-upcoming-thumbs dj-upcoming-form-thumbs">{formPhotos.map(img=>{const url=formPhotoUrls[img.path];return <div key={img.path} className="dj-upcoming-form-thumb">{url?<img src={url} alt={img.name}/>:<span>{img.name}</span>}<button type="button" aria-label={'Remove '+img.name} onClick={()=>void removeFormPhoto(img)}>×</button></div>})}</div>}
+    <div className="dj-upcoming-form-actions"><button type="submit" className="dj-upcoming-save" disabled={uploadingPhotos}>{uploadingPhotos?'Uploading & verifying…':(editing?'Save Changes':'Add Quotation')}</button><button type="button" className="dj-upcoming-cancel" onClick={reset}>Cancel</button></div>
    </form>}
    <div className="dj-upcoming-list">
     {upcoming.length===0?<div className="dj-upcoming-empty">No upcoming quotations yet.</div>:upcoming.map(t=><div className="dj-upcoming-row" key={t.id}>

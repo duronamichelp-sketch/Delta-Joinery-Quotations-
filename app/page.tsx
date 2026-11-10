@@ -89,6 +89,7 @@ export default function Home(){
   const id=editing||crypto.randomUUID();
   const existing=editing?tasks.find(t=>t.id===editing):undefined;
   let siteImages=[...(existing?.siteImages||[])];
+  const uploadedThisSave:string[]=[];
   try{
    if(pendingPhotos.length){
     if(!storageClient)throw new Error('Cloud photo storage is not configured');
@@ -102,18 +103,23 @@ export default function Home(){
      const path=`${user.id}/upcoming/${id}/${Date.now()}-${Math.random().toString(36).slice(2,8)}-${safe}`;
      const {error}=await storageClient.storage.from('quotation-site-images').upload(path,photo,{cacheControl:'3600',upsert:false,contentType:photo.type||undefined});
      if(error)throw error;
+     uploadedThisSave.push(path);
      added.push({path,name:photo.name});
     }
     siteImages=[...siteImages,...added];
    }
-   if(editing){
-    setTasks(prev=>prev.map(t=>t.id===editing?{...t,client:client.trim(),project:project.trim(),due,notes,amount:Math.max(0,Number(amount)||0),siteImages}:t));
-   }else{
-    setTasks(prev=>[{id,client:client.trim(),project:project.trim(),due,notes,amount:Math.max(0,Number(amount)||0),status:'upcoming',created:now,siteImages},...prev]);
-   }
+   const nextTasks=editing
+    ? tasks.map(t=>t.id===editing?{...t,client:client.trim(),project:project.trim(),due,notes,amount:Math.max(0,Number(amount)||0),siteImages}:t)
+    : [{id,client:client.trim(),project:project.trim(),due,notes,amount:Math.max(0,Number(amount)||0),status:'upcoming' as const,created:now,siteImages},...tasks];
+   if(!account)throw new Error('Cloud account is not ready');
+   await account.saveTool('dj_quotation_tasks',nextTasks);
+   setTasks(nextTasks);
    reset();setFilter('upcoming');
   }catch(err){
-   alert('Could not save quotation photos: '+(err instanceof Error?err.message:'Unknown error'));
+   if(uploadedThisSave.length&&storageClient){
+    try{await storageClient.storage.from('quotation-site-images').remove(uploadedThisSave)}catch{}
+   }
+   alert('Could not save quotation: '+(err instanceof Error?err.message:'Unknown error'));
   }finally{
    setUploadingPhotos(false);
   }

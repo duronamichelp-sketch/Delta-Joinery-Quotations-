@@ -2,8 +2,8 @@
 import {useEffect,useRef,useState} from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import {createClient,type SupabaseClient} from '@supabase/supabase-js';
 import DesktopSidebar from '../DesktopSidebar';
+import {useDeltaAccount} from '../CloudSync';
 import {Unit,Hardware,Labour,QuoteUnit,QuoteHardware,ExtraCost,DEFAULT_HARDWARE,DOOR_OPTIONS,DEFAULT_FINISH_RATES,doorSqm,pricedDoor,currency,read,UNIT_HEIGHTS,UNIT_WIDTHS,UNIT_DEPTHS,sizePrice,sizeKey,carcassArea} from '../../lib/data';
 import {savedQuoteDetails} from '../../lib/quotationTotals';
 type CostItem={id:string;name:string;price:number;unit:string};
@@ -14,6 +14,7 @@ type CustomProduct={id:string;name:string;price:number};
 type Q={includeVat?:boolean;number:string;date:string;client:string;project:string;email:string;phone:string;address:string;notes:string;siteImages:SiteImage[];chosenUnits:QuoteUnit[];chosenHardware:QuoteHardware[];chosenLabour:{id:string;qty:number}[];chosenCnc:{id:string;qty:number}[];chosenProduction:{id:string;qty:number}[];chosenElectrics:{id:string;qty:number}[];chosenFinishes:{id:string;qty:number}[];chosenFillers:{id:string;qty:number}[];chosenTimber:{id:string;qty:number}[];chosenWorktops:{id:string;name:string;qty:number;rate:number;unit:string}[];chosenCustomProducts:CustomProduct[]};
 const start=():Q=>({includeVat:false,number:'DJ-'+String(Date.now()).slice(-5),date:new Date().toISOString().slice(0,10),client:'',project:'',email:'',phone:'',address:'',notes:'',siteImages:[],chosenUnits:[],chosenHardware:[],chosenLabour:[],chosenCnc:[],chosenProduction:[],chosenElectrics:[],chosenFinishes:[],chosenFillers:[],chosenTimber:[],chosenWorktops:[],chosenCustomProducts:[]});
 export default function Quote(){
+const account=useDeltaAccount();
 const notesRef=useRef<HTMLElement|null>(null);
 const dragRef=useRef<{x:number;y:number;left:number;top:number}|null>(null);
 const [notesPosition,setNotesPosition]=useState<{left:number;top:number}|null>(null);
@@ -42,7 +43,6 @@ const [customName,setCustomName]=useState('');
 const [customPrice,setCustomPrice]=useState('');
 const toggleSection=(key:string)=>setExpanded(a=>a.includes(key)?a.filter(x=>x!==key):[...a,key]);
 const [ready,setReady]=useState(false),[q,setQ]=useState<Q>(start);
-const [storageClient]=useState<SupabaseClient|null>(()=>{const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;return url&&key?createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true}}):null});
 const [siteImageUrls,setSiteImageUrls]=useState<Record<string,string>>({});
 const [uploadingImages,setUploadingImages]=useState(false);
 const [cnc,setCnc]=useState<CostItem[]>(DEFAULT_CNC),[production,setProduction]=useState<CostItem[]>(DEFAULT_PRODUCTION);
@@ -53,29 +53,32 @@ const [electrics,setElectrics]=useState<ExtraCost[]>([]),[finishes,setFinishes]=
 const [uc,setUc]=useState(''),[hc,setHc]=useState(''),[lc,setLc]=useState(''),[query,setQuery]=useState(''),[status,setStatus]=useState(''),[libraryOpen,setLibraryOpen]=useState(true);
 useEffect(()=>{setUnitPriceOverrides(read<Record<string,number>>('dj_unit_size_rates',{}));setCnc(read<CostItem[]>('dj_cnc_production',DEFAULT_CNC));setProduction(read<CostItem[]>('dj_production_costs',DEFAULT_PRODUCTION));setDoorRates({...DEFAULT_FINISH_RATES,...read<Record<string,number>>('dj_door_rates',{})});setWorktopRates(read<Record<string,number>>('dj_worktop_rates',{}));setTimberRates(read<Record<string,number>>('dj_timber_rates',{}));setUnits(read('dj_units',[]));setHardware(read('dj_hardware',DEFAULT_HARDWARE));setLabour(read('dj_labour',[]));setElectrics(read('dj_electrics',[]));setFinishes(read('dj_finishes',[]));setFillers(read('dj_fillers',[]));const fresh=typeof window!=='undefined'&&new URLSearchParams(window.location.search).get('new')==='1';const old=fresh?{}:read<Partial<Q>>('dj_quote',{});const next={...start(),...old,siteImages:old.siteImages||[],chosenUnits:old.chosenUnits||[],chosenHardware:old.chosenHardware||[],chosenLabour:old.chosenLabour||[],chosenCnc:old.chosenCnc||[],chosenProduction:old.chosenProduction||[],chosenElectrics:old.chosenElectrics||[],chosenFinishes:old.chosenFinishes||[],chosenFillers:old.chosenFillers||[],chosenTimber:old.chosenTimber||[],chosenWorktops:old.chosenWorktops||[],chosenCustomProducts:(old.chosenCustomProducts||[]).map((p:any)=>({id:p.id||String(Date.now())+Math.random().toString(36).slice(2),name:p.name||'Custom Product',price:typeof p.price==='number'?p.price:(p.lines||[]).reduce((s:number,l:any)=>s+(Number(l.price)||0),0)}))};setQ(next);if(fresh){localStorage.setItem('dj_quote',JSON.stringify(next));window.history.replaceState(null,'','/quote')}setReady(true)},[]);
 useEffect(()=>{if(ready)localStorage.setItem('dj_quote',JSON.stringify(q))},[q,ready]);
-useEffect(()=>{if(!storageClient||!ready)return;let cancelled=false;(async()=>{const entries=await Promise.all((q.siteImages||[]).map(async img=>{const {data}=await storageClient.storage.from('quotation-site-images').createSignedUrl(img.path,60*60);return [img.path,data?.signedUrl||''] as const}));if(!cancelled)setSiteImageUrls(Object.fromEntries(entries))})();return()=>{cancelled=true}},[storageClient,ready,q.siteImages]);
+useEffect(()=>{if(!account||!ready)return;let cancelled=false;(async()=>{const entries=await Promise.all((q.siteImages||[]).map(async img=>{try{return [img.path,await account.getQuotationImageUrl(img.path)] as const}catch{return [img.path,''] as const}}));if(!cancelled)setSiteImageUrls(Object.fromEntries(entries))})();return()=>{cancelled=true}},[account,ready,q.siteImages]);
 async function uploadSiteImages(files:FileList|null){
- if(!files?.length||!storageClient)return;
+ if(!files?.length)return;
+ if(!account){setStatus('Image upload failed: Cloud account is not ready');return}
  setUploadingImages(true);
  try{
-  const {data:{user}}=await storageClient.auth.getUser();if(!user)throw new Error('Sign in to upload site images');
-  const added:SiteImage[]=[];
-  for(const file of Array.from(files)){
-   if(!file.type.startsWith('image/'))continue;
-   const safe=file.name.replace(/[^a-zA-Z0-9._-]+/g,'-');
-   const path=`${user.id}/${(q.number||'quotation').replace(/[^a-zA-Z0-9_-]+/g,'-')}/${Date.now()}-${Math.random().toString(36).slice(2,8)}-${safe}`;
-   const {error}=await storageClient.storage.from('quotation-site-images').upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type||undefined});
-   if(error)throw error;
-   added.push({path,name:file.name});
-  }
-  if(added.length)setQ(prev=>({...prev,siteImages:[...(prev.siteImages||[]),...added]}));
-  setStatus(added.length?`${added.length} site photo${added.length===1?'':'s'} added`:'No images selected');
+  const picked=Array.from(files).filter(file=>file.type.startsWith('image/')||/\.(jpe?g|png|webp|heic|heif|avif)$/i.test(file.name));
+  if(!picked.length)throw new Error('No supported image files selected');
+  const quotationId=(q.number||'quotation').replace(/[^a-zA-Z0-9_-]+/g,'-');
+  const added=await account.uploadQuotationImages(quotationId,picked);
+  if(!added.length)throw new Error('No images were uploaded');
+  const verified=await Promise.all(added.map(async img=>({img,url:await account.getQuotationImageUrl(img.path)})));
+  setSiteImageUrls(prev=>({...prev,...Object.fromEntries(verified.map(x=>[x.img.path,x.url]))}));
+  setQ(prev=>({...prev,siteImages:[...(prev.siteImages||[]),...verified.map(x=>x.img)]}));
+  setStatus(`${verified.length} site photo${verified.length===1?'':'s'} uploaded and verified`);
  }catch(e){setStatus('Image upload failed: '+(e instanceof Error?e.message:'Unknown error'))}
  finally{setUploadingImages(false)}
 }
 async function removeSiteImage(img:SiteImage){
- if(storageClient){try{await storageClient.storage.from('quotation-site-images').remove([img.path])}catch{}}
- setQ(prev=>({...prev,siteImages:(prev.siteImages||[]).filter(x=>x.path!==img.path)}));
+ if(!account){setStatus('Could not remove image: Cloud account is not ready');return}
+ try{
+  await account.removeQuotationImages([img.path]);
+  setQ(prev=>({...prev,siteImages:(prev.siteImages||[]).filter(x=>x.path!==img.path)}));
+  setSiteImageUrls(prev=>{const next={...prev};delete next[img.path];return next});
+  setStatus('Site photo removed');
+ }catch(e){setStatus('Could not remove image: '+(e instanceof Error?e.message:'Unknown error'))}
 }
 const set=(key:keyof Q,value:string)=>setQ(a=>({...a,[key]:value}));
 function qty(type:'chosenUnits'|'chosenHardware'|'chosenLabour'|'chosenElectrics'|'chosenFinishes'|'chosenFillers'|'chosenCnc'|'chosenProduction'|'chosenCnc'|'chosenProduction',id:string,n:number){setQ(a=>({...a,[type]:(a[type] as {id:string;qty:number}[]).map(x=>x.id===id?{...x,qty:n}:x).filter(x=>x.qty>0)}))}
@@ -121,13 +124,23 @@ const electricTotal=er.reduce((a,x)=>a+x.qty*x.item.price,0),finishTotal=fr.redu
 const base=ur.reduce((a,x)=>a+x.qty*x.item.price,0),doors=ur.reduce((a,x)=>a+(x.adc?x.qty*pricedDoor(x,doorRates,x.item):0),0),hinges=0,hw=hr.reduce((a,x)=>a+x.qty*x.item.price,0),lb=lr.reduce((a,x)=>a+x.qty*x.item.price,0),grand=base+doors+hinges+hw+lb+electricTotal+finishTotal+fillerTotal+timberTotal+worktopTotal+cncTotal+productionTotal+customProductsTotal;
 const vatAmount=q.includeVat?Math.round(grand*0.135*100)/100:0;
 const finalTotal=grand+vatAmount;
-function save(){
+async function save(){
+ if(!account){setStatus('Could not save: Cloud account is not ready');return}
  const all=read<any[]>('dj_saved_quotes',[]);
  const id=q.number||String(Date.now());
  const previous=all.find(x=>x.id===id);
  const snapshot=savedQuoteDetails({...q,id});
  const entry={...q,id,name:q.project,savedAt:new Date().toISOString(),costLines:snapshot.lines,costBreakdown:snapshot.breakdown,subtotalAmount:Math.round(grand*100)/100,vatAmount:Math.round(vatAmount*100)/100,totalAmount:Math.round(finalTotal*100)/100,finished:!!previous?.finished,finishedAt:previous?.finishedAt};
- try{localStorage.setItem('dj_saved_quotes',JSON.stringify([entry,...all.filter(x=>x.id!==entry.id)]));setStatus('Quotation saved — you can reopen it from Saved Quotations.')}catch{setStatus('Could not save. Browser storage may be full.')}
+ const next=[entry,...all.filter(x=>x.id!==entry.id)];
+ try{
+  await account.saveTool('dj_quote',q);
+  await account.saveTool('dj_saved_quotes',next);
+  const confirmed=read<any[]>('dj_saved_quotes',[]);
+  const saved=confirmed.find(x=>x.id===entry.id);
+  if(!saved)throw new Error('Saved quotation was not confirmed');
+  if((q.siteImages||[]).length && (saved.siteImages||[]).length!==(q.siteImages||[]).length)throw new Error('Saved quotation is missing site photos');
+  setStatus('Quotation saved to cloud — site photos confirmed.');
+ }catch(e){setStatus('Could not save quotation: '+(e instanceof Error?e.message:'Unknown error'))}
 }
 function newQuotation(){if(!window.confirm('Start a new quotation? Your saved quotations will be kept. Save the current quotation first if you want to keep it.'))return;setQ({...start(),number:'DJ-'+Date.now().toString()});setExpanded([]);setUc('');setHc('');setLc('');setCc('');setPcost('');setEc('');setFc('');setPc('');setTc('');setTimberFeet('');setWorktopChoice('');setWorktopQty('1');setCustomName('');setCustomPrice('');setQuery('');setStatus('');window.scrollTo({top:0,behavior:'smooth'});}
 const match=(name:string)=>name.toLowerCase().includes(query.toLowerCase());
@@ -136,7 +149,7 @@ return <main className="dj-desktop dj-quote-glass dj-unified-page dj-quote-page"
 <style>{styles}</style>
 <DesktopSidebar active="quote"/>
 <div className="dj-main">
-<header className="dj-top"><div className="dj-search"><span>⌕</span><input aria-label="Search price library" placeholder="Search units, hardware, labour..." value={query} onChange={e=>setQuery(e.target.value)}/></div><div className="dj-top-actions"><Link href="/quotes" className="dj-outline">Saved Quotations</Link><Link href="/preview" className="dj-outline">Preview</Link><button className="dj-dark" onClick={save}>Save quotation</button><button className="dj-more" onClick={()=>window.print()}>•••</button></div></header>
+<header className="dj-top"><div className="dj-search"><span>⌕</span><input aria-label="Search price library" placeholder="Search units, hardware, labour..." value={query} onChange={e=>setQuery(e.target.value)}/></div><div className="dj-top-actions"><Link href="/quotes" className="dj-outline">Saved Quotations</Link><Link href="/preview" className="dj-outline">Preview</Link><button className="dj-dark" onClick={()=>void save()}>Save quotation</button><button className="dj-more" onClick={()=>window.print()}>•••</button></div></header>
 <div className="dj-area"><div className="dj-work">
 <p className="dj-kicker">PROJECT DETAILS</p><div className="dj-quotation-heading"><h1>{q.client||q.project?'Working':'New'} <span>Quotation</span></h1></div><p className="dj-desc">Build a quotation — choose your items and calculate costs.</p>
 <section className="dj-card"><h2>Client &amp; project</h2><div className="dj-fields"><label>Quotation number<input value={q.number} onChange={e=>set('number',e.target.value)}/></label><label>Date<input type="date" value={q.date} onChange={e=>set('date',e.target.value)}/></label><label>Client name<input placeholder="Enter client name" value={q.client} onChange={e=>set('client',e.target.value)}/></label><label>Project title<input placeholder="Kitchen, wardrobes..." value={q.project} onChange={e=>set('project',e.target.value)}/></label></div></section>

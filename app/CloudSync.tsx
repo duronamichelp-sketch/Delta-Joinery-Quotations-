@@ -213,9 +213,9 @@ export default function CloudSync({children}:{children:React.ReactNode}){
   if(!sb||!user)throw new Error('Cloud account not ready');
   const {data,error}=await sb.from('joinery_data').upsert({user_id:user.id,data_key:key,payload},{onConflict:'user_id,data_key'}).select('data_key,payload').single();
   if(error||!data){const reason=error?.message||'Cloud did not confirm the save';setMessage('Cloud save failed: '+reason);throw new Error(reason)}
-  if(JSON.stringify(data.payload)!==JSON.stringify(payload))throw new Error('Cloud returned different data');
+  if(data.data_key!==key)throw new Error('Cloud confirmed the wrong data key');
   pause.current=true;
-  try{localStorage.setItem(key,JSON.stringify(payload))}finally{pause.current=false}
+  try{localStorage.setItem(key,JSON.stringify(data.payload ?? payload))}finally{pause.current=false}
   window.dispatchEvent(new CustomEvent('dj-cloud-received',{detail:key}));
   setMessage('Saved to cloud');
  }

@@ -1,5 +1,6 @@
 'use client';
 import {useEffect,useMemo,useState} from 'react';
+import {createClient,type SupabaseClient} from '@supabase/supabase-js';
 import Link from 'next/link';
 import DesktopSidebar from './DesktopSidebar';
 import {useDeltaAccount} from './CloudSync';
@@ -8,7 +9,8 @@ import {savedQuoteTotal,type SavedQuotation} from '../lib/quotationTotals';
 import {localDateKey,weekHours as calculateWeekHours,type TimeRecords} from '../lib/workingHours';
 import {useLiveNow} from './useLiveNow';
 import LiveHoursLabel from './LiveHoursLabel';
-type Task={id:string;client:string;project:string;due:string;notes:string;status:'upcoming'|'finished';created:string;finished?:string;amount?:number};
+type SiteImage={path:string;name:string};
+type Task={id:string;client:string;project:string;due:string;notes:string;status:'upcoming'|'finished';created:string;finished?:string;amount?:number;siteImages?:SiteImage[]};
 // Dashboard includes manual finished quotation entries.
 const KEY='dj_quotation_tasks';
 const dateToday=()=>new Date().toLocaleDateString('en-CA');
@@ -33,8 +35,25 @@ export default function Home(){
  const [client,setClient]=useState(''),[project,setProject]=useState(''),[due,setDue]=useState(''),[notes,setNotes]=useState('');
  const [amount,setAmount]=useState('');
  const [editing,setEditing]=useState<string|null>(null);
+ const [pendingPhotos,setPendingPhotos]=useState<File[]>([]);
+ const [uploadingPhotos,setUploadingPhotos]=useState(false);
+ const [taskImageUrls,setTaskImageUrls]=useState<Record<string,string>>({});
+ const [storageClient]=useState<SupabaseClient|null>(()=>{const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;return url&&key?createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true}}):null});
  useEffect(()=>{try{const raw=localStorage.getItem(KEY);if(raw){const data=JSON.parse(raw);if(Array.isArray(data))setTasks(data)}const addr=JSON.parse(localStorage.getItem('dj_tool_addresses')||'[]');setAddressCount(Array.isArray(addr)?addr.length:0)}catch{}setSavedQuotes(read<SavedQuotation[]>('dj_saved_quotes',[]));setLoaded(true)},[]);
  useEffect(()=>{if(loaded)localStorage.setItem(KEY,JSON.stringify(tasks))},[tasks,loaded]);
+ useEffect(()=>{
+  if(!storageClient||!loaded)return;
+  let cancelled=false;
+  (async()=>{
+   const images=tasks.flatMap(t=>(t.siteImages||[]));
+   const entries=await Promise.all(images.map(async img=>{
+    const {data}=await storageClient.storage.from('quotation-site-images').createSignedUrl(img.path,60*60);
+    return [img.path,data?.signedUrl||''] as const;
+   }));
+   if(!cancelled)setTaskImageUrls(Object.fromEntries(entries));
+  })();
+  return()=>{cancelled=true};
+ },[storageClient,loaded,tasks]);
  useEffect(()=>{
   let cancelled=false;
   const calculate=(all:TimeRecords)=>{if(!cancelled)setTimeRecords(all)};
@@ -64,14 +83,51 @@ export default function Home(){
  const upcoming=useMemo(()=>tasks.filter(t=>t.status==='upcoming').sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999')),[tasks]);
  const finished=useMemo(()=>tasks.filter(t=>t.status==='finished').sort((a,b)=>(b.finished||'').localeCompare(a.finished||'')),[tasks]);
  function addManual(e:React.FormEvent){e.preventDefault();const value=Number(manualAmount);if(!manualClient.trim()||!manualProject.trim()||!Number.isFinite(value)||value<0)return;setTasks(prev=>[{id:crypto.randomUUID(),client:manualClient.trim(),project:manualProject.trim(),due:'',notes:'Manually entered finished quotation',status:'finished',created:dateToday(),finished:dateToday(),amount:Math.round(value*100)/100},...prev]);setManualClient('');setManualProject('');setManualAmount('');setShowManual(false);setFilter('finished')}
- function reset(){setClient('');setProject('');setDue('');setNotes('');setAmount('');setEditing(null);setShowForm(false)}
- function save(e:React.FormEvent){e.preventDefault();if(!client.trim()||!project.trim())return;const now=dateToday();if(editing){setTasks(prev=>prev.map(t=>t.id===editing?{...t,client:client.trim(),project:project.trim(),due,notes,amount:Math.max(0,Number(amount)||0)}:t))}else{setTasks(prev=>[{id:crypto.randomUUID(),client:client.trim(),project:project.trim(),due,notes,amount:Math.max(0,Number(amount)||0),status:'upcoming',created:now},...prev])}reset();setFilter('upcoming')}
+ function reset(){setClient('');setProject('');setDue('');setNotes('');setAmount('');setEditing(null);setPendingPhotos([]);setShowForm(false)}
+ async function save(e:React.FormEvent){e.preventDefault();if(!client.trim()||!project.trim()||uploadingPhotos)return;
+  const now=dateToday();
+  const id=editing||crypto.randomUUID();
+  const existing=editing?tasks.find(t=>t.id===editing):undefined;
+  let siteImages=[...(existing?.siteImages||[])];
+  try{
+   if(pendingPhotos.length){
+    if(!storageClient)throw new Error('Cloud photo storage is not configured');
+    setUploadingPhotos(true);
+    const {data:{user},error:userError}=await storageClient.auth.getUser();
+    if(userError||!user)throw new Error('Sign in to upload quotation photos');
+    const added:SiteImage[]=[];
+    for(const photo of pendingPhotos){
+     if(!photo.type.startsWith('image/'))continue;
+     const safe=photo.name.replace(/[^a-zA-Z0-9._-]+/g,'-');
+     const path=`${user.id}/upcoming/${id}/${Date.now()}-${Math.random().toString(36).slice(2,8)}-${safe}`;
+     const {error}=await storageClient.storage.from('quotation-site-images').upload(path,photo,{cacheControl:'3600',upsert:false,contentType:photo.type||undefined});
+     if(error)throw error;
+     added.push({path,name:photo.name});
+    }
+    siteImages=[...siteImages,...added];
+   }
+   if(editing){
+    setTasks(prev=>prev.map(t=>t.id===editing?{...t,client:client.trim(),project:project.trim(),due,notes,amount:Math.max(0,Number(amount)||0),siteImages}:t));
+   }else{
+    setTasks(prev=>[{id,client:client.trim(),project:project.trim(),due,notes,amount:Math.max(0,Number(amount)||0),status:'upcoming',created:now,siteImages},...prev]);
+   }
+   reset();setFilter('upcoming');
+  }catch(err){
+   alert('Could not save quotation photos: '+(err instanceof Error?err.message:'Unknown error'));
+  }finally{
+   setUploadingPhotos(false);
+  }
+ }
  function edit(t:Task){
   const clean=(v?:string)=>String(v||'').trim().toLowerCase();
   const saved=savedQuotes.find(q=>clean(q.project)===clean(t.project)&&clean(q.client)===clean(t.client))
     ||savedQuotes.find(q=>clean(q.project)===clean(t.project));
-  if(saved)localStorage.setItem('dj_quote',JSON.stringify(saved));
-  else localStorage.setItem('dj_quote',JSON.stringify({client:t.client,project:t.project,date:dateToday(),number:'DJ-'+Date.now().toString()}));
+  const taskImages=t.siteImages||[];
+  if(saved){
+   const merged=[...(saved.siteImages||[])];
+   for(const img of taskImages)if(!merged.some((x:any)=>x.path===img.path))merged.push(img);
+   localStorage.setItem('dj_quote',JSON.stringify({...saved,siteImages:merged}));
+  }else localStorage.setItem('dj_quote',JSON.stringify({client:t.client,project:t.project,date:dateToday(),number:'DJ-'+Date.now().toString(),siteImages:taskImages}));
   window.location.href='/quote';
  }
  function status(id:string,done:boolean){
@@ -80,7 +136,13 @@ export default function Home(){
   if(done && !(quotationAmount>0)){const raw=window.prompt('Enter the finished quotation value in € (for example 1500.00):',quotationAmount?String(quotationAmount):'');if(raw===null)return;const entered=Number(raw.trim().replace(/[,€\s]/g,''));if(!Number.isFinite(entered)||entered<0){alert('Enter a valid quotation amount.');return}quotationAmount=entered}
   setTasks(prev=>prev.map(t=>t.id===id?{...t,amount:quotationAmount,status:done?'finished':'upcoming',finished:done?dateToday():undefined}:t));
  }
- function remove(id:string){if(window.confirm('Delete this quotation task?'))setTasks(prev=>prev.filter(t=>t.id!==id))}
+ async function remove(id:string){
+  if(!window.confirm('Delete this quotation task?'))return;
+  const item=tasks.find(t=>t.id===id);
+  setTasks(prev=>prev.filter(t=>t.id!==id));
+  const paths=(item?.siteImages||[]).map(x=>x.path);
+  if(paths.length&&storageClient){try{await storageClient.storage.from('quotation-site-images').remove(paths)}catch{}}
+ }
  const finishedSaved=savedQuotes.filter(q=>q.finished);
  const norm=(v?:string)=>String(v||'').trim().toLowerCase();
  const legacyFinished=finished.filter(t=>!finishedSaved.some(q=>norm(q.project)===norm(t.project)&&norm(q.client)===norm(t.client)));
@@ -102,7 +164,7 @@ export default function Home(){
   <section id="upcoming-quotations" className="dj-glass-panel dj-upcoming-quotations">
    <div className="head">
     <div><h2>Upcoming Quotations</h2><small>{upcoming.length} open quotation{upcoming.length===1?'':'s'}</small></div>
-    <button className="dj-upcoming-add" type="button" onClick={()=>{setClient('');setProject('');setDue('');setNotes('');setAmount('');setEditing(null);setShowForm(true)}}>＋ Add Quotation</button>
+    <button className="dj-upcoming-add" type="button" onClick={()=>{setClient('');setProject('');setDue('');setNotes('');setAmount('');setEditing(null);setPendingPhotos([]);setShowForm(true)}}>＋ Add Quotation</button>
    </div>
    {showForm&&<form className="dj-upcoming-form" onSubmit={save}>
     <label>Client<input required value={client} onChange={e=>setClient(e.target.value)} placeholder="Client name"/></label>
@@ -110,14 +172,21 @@ export default function Home(){
     <label>Due date<input type="date" value={due} onChange={e=>setDue(e.target.value)}/></label>
     <label>Amount (€)<input inputMode="decimal" type="number" min="0" step="0.01" value={amount} onChange={e=>setAmount(e.target.value)} placeholder="0.00"/></label>
     <label className="dj-upcoming-notes">Notes<textarea value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Optional notes"/></label>
-    <div className="dj-upcoming-form-actions"><button type="submit" className="dj-upcoming-save">{editing?'Save Changes':'Add Quotation'}</button><button type="button" className="dj-upcoming-cancel" onClick={reset}>Cancel</button></div>
+    <label className="dj-upcoming-photos">Site photos
+     <input type="file" accept="image/*" multiple onChange={e=>setPendingPhotos(Array.from(e.target.files||[]).filter(f=>f.type.startsWith('image/')))}/>
+     <small>Add site photos now and they will stay attached to this upcoming quotation.</small>
+    </label>
+    {pendingPhotos.length>0&&<div className="dj-upcoming-photo-files">{pendingPhotos.map((file,index)=><span key={file.name+'-'+index}>{file.name}<button type="button" aria-label={'Remove '+file.name} onClick={()=>setPendingPhotos(prev=>prev.filter((_,i)=>i!==index))}>×</button></span>)}</div>}
+    <div className="dj-upcoming-form-actions"><button type="submit" className="dj-upcoming-save" disabled={uploadingPhotos}>{uploadingPhotos?'Uploading photos…':(editing?'Save Changes':'Add Quotation')}</button><button type="button" className="dj-upcoming-cancel" onClick={reset}>Cancel</button></div>
    </form>}
    <div className="dj-upcoming-list">
     {upcoming.length===0?<div className="dj-upcoming-empty">No upcoming quotations yet.</div>:upcoming.map(t=><div className="dj-upcoming-row" key={t.id}>
      <span className="thumb">▤</span>
-     <div className="dj-upcoming-main"><b>{t.project}</b><small>{t.client}{t.notes?' · '+t.notes:''}</small></div>
+     <div className="dj-upcoming-main"><b>{t.project}</b><small>{t.client}{t.notes?' · '+t.notes:''}</small>
+      {(t.siteImages||[]).length>0&&<div className="dj-upcoming-thumbs">{(t.siteImages||[]).slice(0,4).map(img=>{const url=taskImageUrls[img.path];return url?<a key={img.path} href={url} target="_blank" rel="noreferrer" title={img.name}><img src={url} alt={img.name}/></a>:null})}{(t.siteImages||[]).length>4&&<span>+{(t.siteImages||[]).length-4}</span>}</div>}
+     </div>
      <div className="dj-upcoming-meta"><time>{formatDate(t.due)}</time>{(t.amount??0)>0&&<strong>€{Number(t.amount).toLocaleString('en-IE',{minimumFractionDigits:2,maximumFractionDigits:2})}</strong>}</div>
-     <div className="dj-upcoming-actions"><button type="button" onClick={()=>edit(t)}>Open Quotation</button><button type="button" className="danger" onClick={()=>remove(t.id)}>Delete</button></div>
+     <div className="dj-upcoming-actions"><button type="button" onClick={()=>edit(t)}>Open Quotation</button><button type="button" className="danger" onClick={()=>void remove(t.id)}>Delete</button></div>
     </div>)}
    </div>
   </section>

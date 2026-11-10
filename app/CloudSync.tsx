@@ -4,7 +4,7 @@ import {createClient, type SupabaseClient} from '@supabase/supabase-js';
 import DesktopWelcome from './DesktopWelcome';
 const KEYS=['dj_units','dj_hardware','dj_labour','dj_electrics','dj_finishes','dj_door_rates','dj_quote','dj_saved_quotes','dj_quotation_tasks','dj_timesheets','dj_tool_addresses','dj_cutting_projects','dj_worktop_rates','dj_timber_rates','dj_fillers','dj_skoda_installations'];
 type Profile={id:string;email?:string};
-export const DeltaAccountContext=createContext<{email:string;message:string;signOut:()=>void;loadHours:()=>Promise<Record<string,unknown>|null>;saveHours:(hours:Record<string,unknown>)=>Promise<void>;saveTool:(key:'dj_tool_addresses'|'dj_cutting_projects'|'dj_skoda_installations'|'dj_quotation_tasks',payload:unknown)=>Promise<void>}|null>(null);
+export const DeltaAccountContext=createContext<{email:string;message:string;signOut:()=>void;loadHours:()=>Promise<Record<string,unknown>|null>;saveHours:(hours:Record<string,unknown>)=>Promise<void>;saveTool:(key:'dj_tool_addresses'|'dj_cutting_projects'|'dj_skoda_installations'|'dj_quotation_tasks',payload:unknown)=>Promise<void>;uploadQuotationImages:(quotationId:string,files:File[])=>Promise<{path:string;name:string}[]>;removeQuotationImages:(paths:string[])=>Promise<void>;getQuotationImageUrl:(path:string)=>Promise<string>}|null>(null);
 export const useDeltaAccount=()=>useContext(DeltaAccountContext);
 export default function CloudSync({children}:{children:React.ReactNode}){
  const [checking,setChecking]=useState(true);const [client,setClient]=useState<SupabaseClient|null>(null),[person,setPerson]=useState<Profile|null>(null),[open,setOpen]=useState(false),[email,setEmail]=useState(''),[password,setPassword]=useState(''),[message,setMessage]=useState('');
@@ -219,6 +219,40 @@ export default function CloudSync({children}:{children:React.ReactNode}){
   window.dispatchEvent(new CustomEvent('dj-cloud-received',{detail:key}));
   setMessage('Saved to cloud');
  }
+ async function uploadQuotationImages(quotationId:string,files:File[]){
+  const sb=clientRef.current,user=personRef.current;
+  if(!sb||!user)throw new Error('Cloud account not ready');
+  const added:{path:string;name:string}[]=[];
+  const uploaded:string[]=[];
+  try{
+   for(const file of files){
+    if(!file.type.startsWith('image/'))continue;
+    const safe=file.name.replace(/[^a-zA-Z0-9._-]+/g,'-');
+    const path=`${user.id}/upcoming/${quotationId}/${Date.now()}-${Math.random().toString(36).slice(2,8)}-${safe}`;
+    const {error}=await sb.storage.from('quotation-site-images').upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type||undefined});
+    if(error)throw error;
+    uploaded.push(path);
+    added.push({path,name:file.name});
+   }
+   return added;
+  }catch(e){
+   if(uploaded.length)await sb.storage.from('quotation-site-images').remove(uploaded);
+   throw e;
+  }
+ }
+ async function removeQuotationImages(paths:string[]){
+  const sb=clientRef.current,user=personRef.current;
+  if(!sb||!user||!paths.length)return;
+  const {error}=await sb.storage.from('quotation-site-images').remove(paths);
+  if(error)throw error;
+ }
+ async function getQuotationImageUrl(path:string){
+  const sb=clientRef.current,user=personRef.current;
+  if(!sb||!user)throw new Error('Cloud account not ready');
+  const {data,error}=await sb.storage.from('quotation-site-images').createSignedUrl(path,60*60);
+  if(error||!data?.signedUrl)throw error||new Error('Could not load image');
+  return data.signedUrl;
+ }
  async function login(create:boolean){
   if(!client)return;
   if(!email.trim()||password.length<6){setMessage('Enter an email and a password of at least 6 characters');return}
@@ -228,5 +262,5 @@ export default function CloudSync({children}:{children:React.ReactNode}){
   setMessage(create&&!res.data.session?'Check your email to confirm your account.':'Signed in successfully');
   if(res.data.session)setOpen(false);
  }
- return <>{person? <DeltaAccountContext.Provider value={{email:person.email||'Signed in',message,signOut:()=>{void client?.auth.signOut()},loadHours,saveHours,saveTool}}><DesktopWelcome/>{children}</DeltaAccountContext.Provider>:<main className="dj-auth-screen"><div className="dj-auth-card"><div className="dj-auth-symbol">DJ</div><p className="dj-auth-eyebrow">DELTA JOINERY</p><h1>Quotation Workspace</h1><p>Sign in with your business email to access your quotations, prices and saved jobs on any device.</p>{checking?<p>Checking your account...</p>:<><form onSubmit={e=>{e.preventDefault();void login(false)}}><label>Business email<input type="email" required autoComplete="email" placeholder="you@yourbusiness.com" value={email} onChange={e=>setEmail(e.target.value)}/></label><label>Password<input type="password" required minLength={6} autoComplete="current-password" placeholder="Enter password" value={password} onChange={e=>setPassword(e.target.value)}/></label><button type="submit">Sign in</button></form><button type="button" className="dj-auth-register" onClick={()=>void login(true)}>First time here? Create account</button><p role="status" className="dj-auth-message">{message}</p></>}</div></main>}</>;
+ return <>{person? <DeltaAccountContext.Provider value={{email:person.email||'Signed in',message,signOut:()=>{void client?.auth.signOut()},loadHours,saveHours,saveTool,uploadQuotationImages,removeQuotationImages,getQuotationImageUrl}}><DesktopWelcome/>{children}</DeltaAccountContext.Provider>:<main className="dj-auth-screen"><div className="dj-auth-card"><div className="dj-auth-symbol">DJ</div><p className="dj-auth-eyebrow">DELTA JOINERY</p><h1>Quotation Workspace</h1><p>Sign in with your business email to access your quotations, prices and saved jobs on any device.</p>{checking?<p>Checking your account...</p>:<><form onSubmit={e=>{e.preventDefault();void login(false)}}><label>Business email<input type="email" required autoComplete="email" placeholder="you@yourbusiness.com" value={email} onChange={e=>setEmail(e.target.value)}/></label><label>Password<input type="password" required minLength={6} autoComplete="current-password" placeholder="Enter password" value={password} onChange={e=>setPassword(e.target.value)}/></label><button type="submit">Sign in</button></form><button type="button" className="dj-auth-register" onClick={()=>void login(true)}>First time here? Create account</button><p role="status" className="dj-auth-message">{message}</p></>}</div></main>}</>;
 }

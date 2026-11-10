@@ -1,6 +1,5 @@
 'use client';
 import {useEffect,useMemo,useState} from 'react';
-import {createClient,type SupabaseClient} from '@supabase/supabase-js';
 import Link from 'next/link';
 import DesktopSidebar from './DesktopSidebar';
 import {useDeltaAccount} from './CloudSync';
@@ -38,22 +37,20 @@ export default function Home(){
  const [pendingPhotos,setPendingPhotos]=useState<File[]>([]);
  const [uploadingPhotos,setUploadingPhotos]=useState(false);
  const [taskImageUrls,setTaskImageUrls]=useState<Record<string,string>>({});
- const [storageClient]=useState<SupabaseClient|null>(()=>{const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;return url&&key?createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true}}):null});
  useEffect(()=>{try{const raw=localStorage.getItem(KEY);if(raw){const data=JSON.parse(raw);if(Array.isArray(data))setTasks(data)}const addr=JSON.parse(localStorage.getItem('dj_tool_addresses')||'[]');setAddressCount(Array.isArray(addr)?addr.length:0)}catch{}setSavedQuotes(read<SavedQuotation[]>('dj_saved_quotes',[]));setLoaded(true)},[]);
  useEffect(()=>{if(loaded)localStorage.setItem(KEY,JSON.stringify(tasks))},[tasks,loaded]);
  useEffect(()=>{
-  if(!storageClient||!loaded)return;
+  if(!account||!loaded)return;
   let cancelled=false;
   (async()=>{
    const images=tasks.flatMap(t=>(t.siteImages||[]));
    const entries=await Promise.all(images.map(async img=>{
-    const {data}=await storageClient.storage.from('quotation-site-images').createSignedUrl(img.path,60*60);
-    return [img.path,data?.signedUrl||''] as const;
+    try{return [img.path,await account.getQuotationImageUrl(img.path)] as const}catch{return [img.path,''] as const}
    }));
    if(!cancelled)setTaskImageUrls(Object.fromEntries(entries));
   })();
   return()=>{cancelled=true};
- },[storageClient,loaded,tasks]);
+ },[account,loaded,tasks]);
  useEffect(()=>{
   let cancelled=false;
   const calculate=(all:TimeRecords)=>{if(!cancelled)setTimeRecords(all)};
@@ -92,20 +89,10 @@ export default function Home(){
   const uploadedThisSave:string[]=[];
   try{
    if(pendingPhotos.length){
-    if(!storageClient)throw new Error('Cloud photo storage is not configured');
+    if(!account)throw new Error('Cloud account is not ready');
     setUploadingPhotos(true);
-    const {data:{user},error:userError}=await storageClient.auth.getUser();
-    if(userError||!user)throw new Error('Sign in to upload quotation photos');
-    const added:SiteImage[]=[];
-    for(const photo of pendingPhotos){
-     if(!photo.type.startsWith('image/'))continue;
-     const safe=photo.name.replace(/[^a-zA-Z0-9._-]+/g,'-');
-     const path=`${user.id}/upcoming/${id}/${Date.now()}-${Math.random().toString(36).slice(2,8)}-${safe}`;
-     const {error}=await storageClient.storage.from('quotation-site-images').upload(path,photo,{cacheControl:'3600',upsert:false,contentType:photo.type||undefined});
-     if(error)throw error;
-     uploadedThisSave.push(path);
-     added.push({path,name:photo.name});
-    }
+    const added=await account.uploadQuotationImages(id,pendingPhotos);
+    uploadedThisSave.push(...added.map(x=>x.path));
     siteImages=[...siteImages,...added];
    }
    const nextTasks=editing
@@ -116,8 +103,8 @@ export default function Home(){
    setTasks(nextTasks);
    reset();setFilter('upcoming');
   }catch(err){
-   if(uploadedThisSave.length&&storageClient){
-    try{await storageClient.storage.from('quotation-site-images').remove(uploadedThisSave)}catch{}
+   if(uploadedThisSave.length&&account){
+    try{await account.removeQuotationImages(uploadedThisSave)}catch{}
    }
    alert('Could not save quotation: '+(err instanceof Error?err.message:'Unknown error'));
   }finally{
@@ -147,7 +134,7 @@ export default function Home(){
   const item=tasks.find(t=>t.id===id);
   setTasks(prev=>prev.filter(t=>t.id!==id));
   const paths=(item?.siteImages||[]).map(x=>x.path);
-  if(paths.length&&storageClient){try{await storageClient.storage.from('quotation-site-images').remove(paths)}catch{}}
+  if(paths.length&&account){try{await account.removeQuotationImages(paths)}catch{}}
  }
  const finishedSaved=savedQuotes.filter(q=>q.finished);
  const norm=(v?:string)=>String(v||'').trim().toLowerCase();

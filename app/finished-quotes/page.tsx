@@ -3,6 +3,7 @@ import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
 import {createClient,type SupabaseClient} from '@supabase/supabase-js';
 import DesktopSidebar from '../DesktopSidebar';
+import {useDeltaAccount} from '../CloudSync';
 import {currency,read} from '../../lib/data';
 import {savedQuoteDetails,type SavedQuotation} from '../../lib/quotationTotals';
 
@@ -13,6 +14,7 @@ type Selected={kind:'saved';quote:Q}|{kind:'manual';task:Task};
 const clean=(v?:string)=>String(v||'').trim().toLowerCase();
 
 export default function FinishedQuotes(){
+ const account=useDeltaAccount();
  const [quotes,setQuotes]=useState<Q[]>([]),[tasks,setTasks]=useState<Task[]>([]),[search,setSearch]=useState('');
  const [selected,setSelected]=useState<Selected|null>(null);
  const [manualEdit,setManualEdit]=useState<Task|null>(null);
@@ -55,7 +57,15 @@ export default function FinishedQuotes(){
   const updated=tasks.map(t=>clean(t.project)===clean(q.project)&&clean(t.client)===clean(q.client)?{...t,status:'upcoming' as const,finished:undefined}:t);
   setTasks(updated);localStorage.setItem('dj_quotation_tasks',JSON.stringify(updated));setSelected(null);
  }
- function editFull(q:Q){localStorage.setItem('dj_quote',JSON.stringify(q));window.location.href='/quote'}
+ async function editFull(q:Q){
+  try{
+   if(account)await account.saveTool('dj_quote',q);
+   else localStorage.setItem('dj_quote',JSON.stringify(q));
+   window.location.href='/quote';
+  }catch(e){
+   alert('Could not open quotation for editing: '+(e instanceof Error?e.message:'Unknown error'));
+  }
+ }
  function saveManualEdit(){
   if(!manualEdit)return;
   const next=tasks.map(t=>t.id===manualEdit.id?manualEdit:t);

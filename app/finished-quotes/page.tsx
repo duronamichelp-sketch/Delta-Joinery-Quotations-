@@ -59,11 +59,25 @@ export default function FinishedQuotes(){
  }
  async function editFull(q:Q){
   try{
-   if(account)await account.saveTool('dj_quote',q);
-   else localStorage.setItem('dj_quote',JSON.stringify(q));
+   const reopened={...q,finished:false,finishedAt:undefined};
+   const nextQuotes=quotes.map(x=>x.id===q.id?reopened:x);
+   const nextTasks=tasks.map(t=>{
+    const same=q.sourceTaskId?t.id===q.sourceTaskId:(clean(t.project)===clean(q.project)&&clean(t.client)===clean(q.client));
+    return same?{...t,status:'upcoming' as const,finished:undefined}:t;
+   });
+   if(account){
+    await account.saveTool('dj_saved_quotes',nextQuotes);
+    await account.saveTool('dj_quotation_tasks',nextTasks);
+    await account.saveTool('dj_quote',reopened);
+   }else{
+    localStorage.setItem('dj_saved_quotes',JSON.stringify(nextQuotes));
+    localStorage.setItem('dj_quotation_tasks',JSON.stringify(nextTasks));
+    localStorage.setItem('dj_quote',JSON.stringify(reopened));
+   }
+   setQuotes(nextQuotes);setTasks(nextTasks);setSelected(null);
    window.location.href='/quote';
   }catch(e){
-   alert('Could not open quotation for editing: '+(e instanceof Error?e.message:'Unknown error'));
+   alert('Could not reopen quotation for editing: '+(e instanceof Error?e.message:'Unknown error'));
   }
  }
  function saveManualEdit(){

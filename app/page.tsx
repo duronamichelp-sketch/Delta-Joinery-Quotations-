@@ -144,8 +144,8 @@ export default function Home(){
   if(saved){
    const merged=[...(saved.siteImages||[])];
    for(const img of taskImages)if(!merged.some((x:any)=>x.path===img.path))merged.push(img);
-   localStorage.setItem('dj_quote',JSON.stringify({...saved,siteImages:merged}));
-  }else localStorage.setItem('dj_quote',JSON.stringify({client:t.client,project:t.project,date:dateToday(),number:'DJ-'+Date.now().toString(),siteImages:taskImages}));
+   localStorage.setItem('dj_quote',JSON.stringify({...saved,sourceTaskId:t.id,notes:saved.notes||t.notes||'',siteImages:merged}));
+  }else localStorage.setItem('dj_quote',JSON.stringify({client:t.client,project:t.project,date:dateToday(),number:'DJ-'+Date.now().toString(),notes:t.notes||'',sourceTaskId:t.id,siteImages:taskImages}));
   window.location.href='/quote';
  }
  function status(id:string,done:boolean){

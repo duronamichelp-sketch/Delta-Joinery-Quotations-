@@ -4,7 +4,7 @@ export type SavedQuoteLine={category:string;description:string;qty:number;rate:n
 export type SavedQuoteBreakdown={key:string;label:string;amount:number};
 
 export type SavedQuotation={
- id:string;number?:string;date?:string;client?:string;project?:string;name?:string;savedAt?:string;
+ id:string;number?:string;date?:string;client?:string;project?:string;name?:string;savedAt?:string;sourceTaskId?:string;
  email?:string;phone?:string;address?:string;notes?:string;
  includeVat?:boolean;totalAmount?:number;subtotalAmount?:number;vatAmount?:number;
  finished?:boolean;finishedAt?:string;siteImages?:{path:string;name:string}[];

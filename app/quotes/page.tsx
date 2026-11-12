@@ -22,7 +22,7 @@ export default function SavedQuotes(){
   const tasks=read<Task[]>('dj_quotation_tasks',[]);
   let matched=false;
   const updated=tasks.map(t=>{
-   const same=clean(t.project)===clean(q.project)&&clean(t.client)===clean(q.client);
+   const same=q.sourceTaskId?t.id===q.sourceTaskId:(clean(t.project)===clean(q.project)&&clean(t.client)===clean(q.client));
    if(!matched&&same&&t.status==='upcoming'){matched=true;return {...t,status:'finished' as const,finished:new Date().toLocaleDateString('en-CA'),amount:total}}
    return t;
   });

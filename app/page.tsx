@@ -163,7 +163,7 @@ export default function Home(){
  }
  const finishedSaved=savedQuotes.filter(q=>q.finished);
  const norm=(v?:string)=>String(v||'').trim().toLowerCase();
- const legacyFinished=finished.filter(t=>!finishedSaved.some(q=>norm(q.project)===norm(t.project)&&norm(q.client)===norm(t.client)));
+ const legacyFinished=finished.filter(t=>!savedQuotes.some(q=>t.quotationId===q.id||(!t.quotationId&&norm(q.project)===norm(t.project)&&norm(q.client)===norm(t.client))));
  const finishedTotal=legacyFinished.reduce((sum,t)=>sum+(Number(t.amount)||0),0)+finishedSaved.reduce((sum,q)=>sum+savedQuoteTotal(q),0);
  const finishedCount=legacyFinished.length+finishedSaved.length;
  const sentCount=savedQuotes.length+legacyFinished.length;

@@ -44,141 +44,133 @@ export default function VanInspector(){
  async function upload(section:string,files:FileList|null){if(!files?.length||!draft||!account)return;setBusy(true);setStatus('Uploading images...');try{const picked=Array.from(files).filter(f=>f.type.startsWith('image/'));if(!picked.length)throw new Error('Select JPG, PNG, WEBP or another image format');const added=await account.uploadQuotationImages('van-inspection-'+draft.id,picked);const next={...draft,photos:{...draft.photos,[section]:[...(draft.photos[section]||[]),...added]}};setDraft(next);setStatus('Images uploaded. Save inspection to keep them in its record.');const urls=await Promise.all(added.map(async p=>[p.path,await account.getQuotationImageUrl(p.path)] as const));setPhotoURLs(x=>({...x,...Object.fromEntries(urls)}))}catch(e){setStatus('Upload failed: '+String(e))}finally{setBusy(false)}}
  async function removePhoto(section:string,p:Photo){if(!draft||!account)return;setBusy(true);try{await account.removeQuotationImages([p.path]);edit({photos:{...draft.photos,[section]:(draft.photos[section]||[]).filter(x=>x.path!==p.path)}});setStatus('Photo removed; save the inspection to confirm')}catch(e){setStatus('Could not remove photo: '+String(e))}finally{setBusy(false)}}
  async function pdf(i:Inspection){
-  setBusy(true);setStatus('Preparing technical inspection PDF...');
+  setBusy(true);setStatus('Preparing landscape technical PDF...');
   try{
    const {jsPDF}=await import('jspdf');
-   const doc=new jsPDF({format:'a4',unit:'mm',compress:true});
+   const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4',compress:true});
    const van=store.vehicles.find(v=>v.id===i.vehicleId);
-   const vehicle=van?[van.registration,van.make,van.model].filter(Boolean).join(' / '):i.vehicleId;
-   const reportId=i.id.slice(0,8).toUpperCase();
-   const issues=fault(i);
-   const left=16,right=194,width=178;
-   const navy:[number,number,number]=[12,32,49],blue:[number,number,number]=[36,105,143];
-   const grey:[number,number,number]=[92,108,119],ink:[number,number,number]=[25,42,53];
-   const pale:[number,number,number]=[239,245,248];
-   let y=43;
-   const header=()=>{
-    doc.setFillColor(...navy);doc.rect(0,0,210,30,'F');
-    doc.setDrawColor(57,138,173);doc.setLineWidth(.8);doc.line(16,30,194,30);
-    doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(17);doc.text('DELTA JOINERY',16,14);
-    doc.setFontSize(8);doc.setFont('helvetica','normal');doc.text('BESPOKE INTERIORS  /  FLEET MANAGEMENT',16,22);
-    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text('VEHICLE INSPECTION REPORT',194,14,{align:'right'});
-    doc.setFont('helvetica','normal');doc.text('REF: '+reportId,194,21,{align:'right'});
+   const registration=van?.registration||'NOT RECORDED';
+   const recordId=i.id.slice(0,8).toUpperCase();
+   const navy:[number,number,number]=[18,43,61];
+   const blue:[number,number,number]=[34,94,127];
+   const grey:[number,number,number]=[101,113,122];
+   const line:[number,number,number]=[193,205,213];
+   const black:[number,number,number]=[30,40,48];
+   const left=14,right=283,pageBottom=193;
+   let y=35;
+   const paintHeader=()=>{
+    doc.setTextColor(...navy);doc.setFont('helvetica','bold');doc.setFontSize(17);
+    doc.text('DELTA JOINERY',left,15);
+    doc.setFontSize(8);doc.setFont('helvetica','normal');
+    doc.text('BESPOKE INTERIORS   |   FLEET & VEHICLE CONDITION',left,21);
+    doc.setFont('helvetica','bold');doc.setFontSize(12);
+    doc.text('VEHICLE INSPECTION',right,14,{align:'right'});
+    doc.setFont('helvetica','normal');doc.setFontSize(8);
+    doc.text('REPORT ID  '+recordId+'   |   DATE  '+i.date,right,21,{align:'right'});
+    doc.setDrawColor(...blue);doc.setLineWidth(.5);doc.line(left,25,right,25);
    };
-   const page=()=>{doc.addPage();header();y=40};
-   const space=(height:number)=>{if(y+height>270)page()};
-   const title=(num:string,text:string)=>{
-    space(19);
-    doc.setFillColor(...navy);doc.roundedRect(left,y,width,10,1.5,1.5,'F');
-    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(255,255,255);
-    doc.text(num+'  '+text.toUpperCase(),left+4,y+6.6);y+=15;
+   const page=()=>{doc.addPage('a4','landscape');paintHeader();y=35};
+   const space=(h:number)=>{if(y+h>pageBottom)page()};
+   const section=(n:string,title:string)=>{
+    space(17);
+    doc.setTextColor(...blue);doc.setFont('helvetica','bold');doc.setFontSize(9);
+    doc.text(n+'  '+title.toUpperCase(),left,y+4);
+    doc.setDrawColor(...line);doc.setLineWidth(.25);doc.line(left,y+7,right,y+7);
+    y+=11;
    };
-   const row=(label:string,value:string,status=false)=>{
-    const data=doc.splitTextToSize(String(value||'Not recorded'),106) as string[];
-    const h=Math.max(10,data.length*4.4+5);space(h);
-    doc.setFillColor(...pale);doc.rect(left,y,58,h,'F');
-    doc.setDrawColor(218,229,235);doc.setLineWidth(.15);doc.line(left,y+h,right,y+h);
-    doc.setTextColor(...grey);doc.setFont('helvetica','bold');doc.setFontSize(8);
-    doc.text(label,left+3,y+6.1);
-    doc.setTextColor(...(status&&(value==='Good'||value==='Excellent')?([27,112,81] as [number,number,number]):ink));
-    doc.setFont('helvetica','normal');doc.text(data,left+62,y+6.1);
-    y+=h;
+   const cell=(x:number,w:number,label:string,value:string,h:number)=>{
+    doc.setFont('helvetica','bold');doc.setFontSize(7.3);doc.setTextColor(...grey);
+    doc.text(label.toUpperCase(),x+2,y+4.5,{maxWidth:w-4});
+    doc.setFont('helvetica','normal');doc.setFontSize(8.4);doc.setTextColor(...black);
+    const lines=doc.splitTextToSize(value||'Not recorded',w-4) as string[];
+    doc.text(lines.slice(0,2),x+2,y+10);
+    doc.setDrawColor(...line);doc.setLineWidth(.16);doc.line(x,y+h,x+w,y+h);
    };
-   const textNote=(label:string,value:string)=>{
-    if(!value.trim())return;
-    const lines=doc.splitTextToSize(value,169) as string[];
-    const h=lines.length*4.5+11;space(h);
-    doc.setFillColor(248,250,251);doc.roundedRect(left,y,width,h,1.4,1.4,'F');
-    doc.setFont('helvetica','bold');doc.setTextColor(...blue);doc.setFontSize(7.5);doc.text(label.toUpperCase(),left+4,y+5);
-    doc.setFont('helvetica','normal');doc.setTextColor(...ink);doc.setFontSize(8);doc.text(lines,left+4,y+11);
-    y+=h+4;
+   const pair=(aLabel:string,aVal:string,bLabel:string,bVal:string)=>{
+    const h=17;space(h);
+    cell(left,130,aLabel,aVal,h);cell(left+139,130,bLabel,bVal,h);y+=h;
    };
-   header();
-   doc.setTextColor(...grey);doc.setFont('helvetica','bold');doc.setFontSize(8);
-   doc.text('INSPECTION DATE',left,y);doc.text('VEHICLE REGISTRATION',82,y);doc.text('REPORT STATUS',146,y);
-   y+=6;doc.setFontSize(11);doc.setTextColor(...ink);
-   doc.text(i.date,left,y);doc.text(van?.registration||'N/A',82,y);
-   doc.setTextColor(...(issues?([161,81,31] as [number,number,number]):([30,115,82] as [number,number,number])));
-   doc.text(issues?'ATTENTION REQUIRED':'NO DEFECTS REPORTED',146,y,{maxWidth:48});y+=13;
-   title('01','Vehicle and inspection details');
-   row('Vehicle',vehicle);row('Inspected by',i.inspector);row('Last driver',i.lastDriver);row('Odometer',i.km+' km');row('Inspection date',i.date);
-   title('02','Oil and mechanical checks');
-   row('Engine oil',i.oil,true);textNote('Oil observations',i.oilNotes);
-   title('03','Tyre condition');
-   for(const wheel of wheels)row(wheel,i.tyres[wheel]||'Not checked',true);
-   textNote('Tyre observations',i.tyreNotes);
-   title('04','Dashboard warning indicators');
-   if(!i.warningLights.length)row('Warning lights','None reported');
-   else for(const light of i.warningLights)row('Warning recorded',light);
-   textNote('Warning light observations',i.warningNotes);
-   title('05','Bodywork and cabin condition');
-   row('Interior grade',i.insideGrade,true);textNote('Interior observations',i.insideNotes);
-   row('Exterior grade',i.outsideGrade,true);textNote('Exterior observations',i.outsideNotes);
-   title('06','Safety and equipment checklist');
-   for(const check of standardChecks)row(check,i.checks[check]||'Not checked',true);
-   title('07','Inspector notes and report conclusion');
-   textNote('Additional observations',i.notes);
-   row('Overall result',issues?'Issues identified - review defects and arrange corrective action':'No defects reported in completed fields');
-   row('Inspection reference',reportId);
-   const photoGroups:[string,string][]=[['vehicle','Vehicle overview'],['dashboard','Dashboard and odometer'],['tyres','Tyre condition'],['inside','Interior condition'],['outside','Exterior and bodywork']];
+   const note=(label:string,value:string)=>{
+    if(!value||!value.trim())return;
+    const lines=doc.splitTextToSize(value,258) as string[];
+    const h=11+lines.length*4;space(h);
+    doc.setFontSize(7.5);doc.setTextColor(...grey);doc.setFont('helvetica','bold');
+    doc.text(label.toUpperCase(),left+2,y+4.5);
+    doc.setFont('helvetica','normal');doc.setTextColor(...black);doc.setFontSize(8);
+    doc.text(lines,left+2,y+10);
+    doc.setDrawColor(...line);doc.line(left,y+h,right,y+h);y+=h;
+   };
+   paintHeader();
+   section('01','Vehicle identification and inspection record');
+   pair('Vehicle registration',registration,'Inspection date',i.date);
+   pair('Make / model',van?[van.make,van.model].filter(Boolean).join(' / '):'Not recorded','Odometer reading',i.km?i.km+' km':'Not recorded');
+   pair('Inspected by',i.inspector,'Last driver',i.lastDriver);
+   pair('Record state',isComplete(i)?'Completed':'Saved draft / incomplete','Inspection reference',recordId);
+   section('02','Technical condition and defect inspection');
+   pair('Engine oil condition',i.oil,'Dashboard indicators',i.warningLights.length?i.warningLights.join(', '):'None reported');
+   note('Oil inspection comments',i.oilNotes);note('Dashboard warning comments',i.warningNotes);
+   for(let index=0;index<wheels.length;index+=2){
+    const l=wheels[index],r=wheels[index+1];
+    pair('Tyre: '+l,i.tyres[l]||'Not checked',r?'Tyre: '+r:'',r?i.tyres[r]||'Not checked':'');
+   }
+   note('Tyre observations',i.tyreNotes);
+   section('03','Interior / exterior condition');
+   pair('Interior condition grade',i.insideGrade,'Exterior condition grade',i.outsideGrade);
+   note('Interior condition observations',i.insideNotes);
+   note('Exterior condition observations',i.outsideNotes);
+   section('04','Vehicle safety checklist');
+   for(let index=0;index<standardChecks.length;index+=2){
+    const l=standardChecks[index],r=standardChecks[index+1];
+    pair(l,i.checks[l]||'Not checked',r||'',r?i.checks[r]||'Not checked':'');
+   }
+   section('05','Summary and recommended action');
+   note('Additional inspector notes',i.notes);
+   const result=!isComplete(i)?'INCOMPLETE - FINISH INSPECTION':fault(i)?'ATTENTION REQUIRED - DEFECTS RECORDED':'NO DEFECTS REPORTED IN CHECKED ITEMS';
+   pair('Recorded finding',result,'Inspection classification','Visual condition record (not a roadworthiness certificate)');
+   const photoGroups:[string,string][]=[['vehicle','Vehicle overview'],['dashboard','Dashboard / odometer'],['tyres','Tyre condition'],['inside','Interior'],['outside','Exterior / bodywork']];
    const photos=photoGroups.flatMap(([key,label])=>(i.photos?.[key]||[]).map(p=>({p,label})));
    if(photos.length){
-    page();title('08','Photographic evidence');
-    let imageIndex=0;
-    for(const item of photos){
-     imageIndex++;
-     let jpeg:string|undefined;
-     let ratio=1;
+    page();section('06','Photographic inspection evidence');
+    let count=0;
+    const blockW=84,blockH=60,gap=8;
+    for(const entry of photos){
+     const col=count%3;if(col===0)space(blockH+12);
+     const x=left+col*(blockW+gap),top=y;
+     doc.setDrawColor(...line);doc.setLineWidth(.2);doc.rect(x,top,blockW,blockH);
+     doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(...blue);
+     doc.text(String(count+1).padStart(2,'0')+'  '+entry.label.toUpperCase(),x+3,top+6,{maxWidth:blockW-6});
      try{
-      const url=await account?.getQuotationImageUrl(item.p.path);
-      if(!url)throw new Error('Missing image URL');
-      const response=await fetch(url);
-      if(!response.ok)throw new Error('Image unavailable');
-      const blob=await response.blob();
-      const objectUrl=URL.createObjectURL(blob);
+      const url=await account?.getQuotationImageUrl(entry.p.path);
+      if(!url)throw Error('No photo URL');
+      const res=await fetch(url);if(!res.ok)throw Error('Photo not available');
+      const blob=await res.blob();const blobUrl=URL.createObjectURL(blob);
       try{
-       const img=new Image();img.src=objectUrl;await img.decode();
-       ratio=img.naturalWidth/img.naturalHeight;
+       const img=new Image();img.src=blobUrl;await img.decode();
        const canvas=document.createElement('canvas');
-       const scale=Math.min(1,1500/Math.max(img.naturalWidth,img.naturalHeight));
+       const scale=Math.min(1,1200/Math.max(img.naturalWidth,img.naturalHeight));
        canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
        canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
-       const ctx=canvas.getContext('2d');
-       if(!ctx)throw new Error('Canvas unavailable');
-       ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+       const ctx=canvas.getContext('2d');if(!ctx)throw Error('No canvas');
+       ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);
        ctx.drawImage(img,0,0,canvas.width,canvas.height);
-       jpeg=canvas.toDataURL('image/jpeg',.79);
-      }finally{URL.revokeObjectURL(objectUrl)}
-     }catch{jpeg=undefined}
-     const panelW=85, panelH=72;
-     const slot=(imageIndex-1)%2;
-     if(slot===0){space(panelH+9)}
-     const x=left+slot*93,top=y;
-     doc.setDrawColor(215,229,235);doc.setFillColor(248,250,251);
-     doc.roundedRect(x,top,panelW,panelH,2,2,'FD');
-     doc.setTextColor(...blue);doc.setFont('helvetica','bold');doc.setFontSize(8);
-     doc.text(String(imageIndex).padStart(2,'0')+'  '+item.label.toUpperCase(),x+3,top+6,{maxWidth:panelW-6});
-     if(jpeg){
-      const maxW=panelW-6,maxH=panelH-20;
-      const fitW=Math.min(maxW,maxH*ratio),fitH=fitW/ratio;
-      doc.addImage(jpeg,'JPEG',x+(panelW-fitW)/2,top+9+(maxH-fitH)/2,fitW,fitH);
-     }else{
-      doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...grey);
-      doc.text('Image unavailable',x+4,top+31);
-     }
-     if(slot===1||imageIndex===photos.length)y+=panelH+9;
+       const maxW=blockW-6,maxH=blockH-13,aspect=img.naturalWidth/img.naturalHeight;
+       const w=Math.min(maxW,maxH*aspect),h=w/aspect;
+       doc.addImage(canvas.toDataURL('image/jpeg',.74),'JPEG',x+(blockW-w)/2,top+9+(maxH-h)/2,w,h);
+      }finally{URL.revokeObjectURL(blobUrl)}
+     }catch{doc.setFont('helvetica','normal');doc.setTextColor(...grey);doc.text('Photograph unavailable',x+5,top+30)}
+     count++;if(col===2||count===photos.length)y+=blockH+12;
     }
    }
-   const pages=doc.getNumberOfPages();
-   for(let p=1;p<=pages;p++){
-    doc.setPage(p);doc.setDrawColor(207,219,227);doc.line(left,282,right,282);
-    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...grey);
-    doc.text('DELTA JOINERY  |  VEHICLE INSPECTION RECORD  |  '+(van?.registration||'UNKNOWN'),left,288);
-    doc.text('PAGE '+p+' / '+pages,right,288,{align:'right'});
+   const total=doc.getNumberOfPages();
+   for(let n=1;n<=total;n++){
+    doc.setPage(n);doc.setDrawColor(...line);doc.setLineWidth(.2);doc.line(left,200,right,200);
+    doc.setTextColor(...grey);doc.setFont('helvetica','normal');doc.setFontSize(7);
+    doc.text('DELTA JOINERY  /  VAN INSPECTION  /  '+registration+'  /  '+recordId,left,205);
+    doc.text('PAGE '+n+' OF '+total,right,205,{align:'right'});
    }
-   doc.save('Delta-Joinery-Technical-Van-Inspection-'+(van?.registration||'vehicle')+'-'+i.date+'.pdf');
-   setStatus('Technical PDF downloaded');
-  }catch(error){setStatus('PDF export failed: '+String(error))}
+   doc.save('Delta-Joinery-Van-Inspection-'+registration+'-'+i.date+'-Landscape.pdf');
+   setStatus('Landscape technical PDF downloaded');
+  }catch(error){setStatus('PDF export failed: '+(error instanceof Error?error.message:String(error)))}
   finally{setBusy(false)}
  }
  const selectVan=store.vehicles.find(v=>v.id===draft?.vehicleId);

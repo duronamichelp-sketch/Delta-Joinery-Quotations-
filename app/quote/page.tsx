@@ -14,7 +14,8 @@ type CustomProduct={id:string;name:string;price:number};
 type ExtraLine={id:string;qty:number;customName?:string;customPrice?:number};
 type SectionKey='chosenUnits'|'chosenHardware'|'chosenLabour'|'chosenElectrics'|'chosenFinishes'|'chosenFillers'|'chosenTimber'|'chosenWorktops'|'chosenCnc'|'chosenProduction';
 type Q={includeVat?:boolean;number:string;date:string;client:string;project:string;email:string;phone:string;address:string;notes:string;siteImages:SiteImage[];chosenUnits:QuoteUnit[];chosenHardware:QuoteHardware[];chosenLabour:{id:string;qty:number}[];chosenCnc:{id:string;qty:number}[];chosenProduction:{id:string;qty:number}[];chosenElectrics:{id:string;qty:number}[];chosenFinishes:{id:string;qty:number}[];chosenFillers:{id:string;qty:number}[];chosenTimber:{id:string;qty:number}[];chosenWorktops:{id:string;name:string;qty:number;rate:number;unit:string}[];chosenCustomProducts:CustomProduct[]};
-const start=():Q=>({includeVat:false,number:'DJ-'+String(Date.now()).slice(-5),date:new Date().toISOString().slice(0,10),client:'',project:'',email:'',phone:'',address:'',notes:'',siteImages:[],chosenUnits:[],chosenHardware:[],chosenLabour:[],chosenCnc:[],chosenProduction:[],chosenElectrics:[],chosenFinishes:[],chosenFillers:[],chosenTimber:[],chosenWorktops:[],chosenCustomProducts:[]});
+const newQuotationNumber=()=>`DJ-${Date.now()}-${crypto.randomUUID().slice(0,8).toUpperCase()}`;
+const start=():Q=>({includeVat:false,number:newQuotationNumber(),date:new Date().toISOString().slice(0,10),client:'',project:'',email:'',phone:'',address:'',notes:'',siteImages:[],chosenUnits:[],chosenHardware:[],chosenLabour:[],chosenCnc:[],chosenProduction:[],chosenElectrics:[],chosenFinishes:[],chosenFillers:[],chosenTimber:[],chosenWorktops:[],chosenCustomProducts:[]});
 export default function Quote(){
 const account=useDeltaAccount();
 const notesRef=useRef<HTMLElement|null>(null);
@@ -142,8 +143,8 @@ const electricTotal=er.reduce((a,x)=>a+x.qty*x.item.price,0),finishTotal=fr.redu
 const base=ur.reduce((a,x)=>a+x.qty*x.item.price,0),doors=ur.reduce((a,x)=>a+(x.adc?x.qty*pricedDoor(x,doorRates,x.item):0),0),hinges=0,hw=hr.reduce((a,x)=>a+x.qty*x.item.price,0),lb=lr.reduce((a,x)=>a+x.qty*x.item.price,0),grand=base+doors+hinges+hw+lb+electricTotal+finishTotal+fillerTotal+timberTotal+worktopTotal+cncTotal+productionTotal+customProductsTotal;
 const vatAmount=q.includeVat?Math.round(grand*0.135*100)/100:0;
 const finalTotal=grand+vatAmount;
-async function save(){
- if(!account){setStatus('Could not save: Cloud account is not ready');return}
+async function save():Promise<boolean>{
+ if(!account){setStatus('Could not save: Cloud account is not ready');return false}
  const all=read<any[]>('dj_saved_quotes',[]);
  const id=q.number||String(Date.now());
  const previous=all.find(x=>x.id===id);
@@ -158,9 +159,10 @@ async function save(){
   if(!saved)throw new Error('Saved quotation was not confirmed');
   if((q.siteImages||[]).length && (saved.siteImages||[]).length!==(q.siteImages||[]).length)throw new Error('Saved quotation is missing site photos');
   setStatus('Quotation saved to cloud — site photos confirmed.');
- }catch(e){setStatus('Could not save quotation: '+(e instanceof Error?e.message:'Unknown error'))}
+  return true;
+ }catch(e){setStatus('Could not save quotation: '+(e instanceof Error?e.message:'Unknown error'));return false}
 }
-function newQuotation(){if(!window.confirm('Start a new quotation? Your saved quotations will be kept. Save the current quotation first if you want to keep it.'))return;setQ({...start(),number:'DJ-'+Date.now().toString()});setExpanded([]);setUc('');setHc('');setLc('');setCc('');setPcost('');setEc('');setFc('');setPc('');setTc('');setTimberFeet('');setWorktopChoice('');setWorktopQty('1');setCustomName('');setCustomPrice('');setQuery('');setStatus('');window.scrollTo({top:0,behavior:'smooth'});}
+async function newQuotation(){if(!window.confirm('Start a separate quotation? The current quotation will be saved before opening a new one.'))return;const hasContent=Boolean(q.client.trim()||q.project.trim()||q.notes.trim()||q.siteImages.length||q.chosenUnits.length||q.chosenHardware.length||q.chosenLabour.length||q.chosenCnc.length||q.chosenProduction.length||q.chosenElectrics.length||q.chosenFinishes.length||q.chosenFillers.length||q.chosenTimber.length||q.chosenWorktops.length||q.chosenCustomProducts.length);if(hasContent&&!(await save()))return;setQ(start());setExpanded([]);setUc('');setHc('');setLc('');setCc('');setPcost('');setEc('');setFc('');setPc('');setTc('');setTimberFeet('');setWorktopChoice('');setWorktopQty('1');setCustomName('');setCustomPrice('');setQuery('');setStatus('');window.scrollTo({top:0,behavior:'smooth'});}
 const match=(name:string)=>name.toLowerCase().includes(query.toLowerCase());
 const counter=(type:'chosenUnits'|'chosenHardware'|'chosenLabour'|'chosenElectrics'|'chosenFinishes'|'chosenFillers'|'chosenCnc'|'chosenProduction',id:string,value:number)=><div className="dj-count"><button aria-label="Decrease" onClick={()=>qty(type,id,value-1)}>−</button><span>{value}</span><button aria-label="Increase" onClick={()=>qty(type,id,value+1)}>+</button></div>;
 return <main className="dj-desktop dj-quote-glass dj-unified-page dj-quote-page">

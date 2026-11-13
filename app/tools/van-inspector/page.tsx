@@ -162,8 +162,6 @@ export default function VanInspector(){
       doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...grey);
       doc.text('Image unavailable',x+4,top+31);
      }
-     doc.setTextColor(...grey);doc.setFont('helvetica','normal');doc.setFontSize(7);
-     doc.text(item.p.name.length>32?item.p.name.slice(0,29)+'...':item.p.name,x+3,top+panelH-4);
      if(slot===1||imageIndex===photos.length)y+=panelH+9;
     }
    }

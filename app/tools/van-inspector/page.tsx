@@ -44,132 +44,195 @@ export default function VanInspector(){
  async function upload(section:string,files:FileList|null){if(!files?.length||!draft||!account)return;setBusy(true);setStatus('Uploading images...');try{const picked=Array.from(files).filter(f=>f.type.startsWith('image/'));if(!picked.length)throw new Error('Select JPG, PNG, WEBP or another image format');const added=await account.uploadQuotationImages('van-inspection-'+draft.id,picked);const next={...draft,photos:{...draft.photos,[section]:[...(draft.photos[section]||[]),...added]}};setDraft(next);setStatus('Images uploaded. Save inspection to keep them in its record.');const urls=await Promise.all(added.map(async p=>[p.path,await account.getQuotationImageUrl(p.path)] as const));setPhotoURLs(x=>({...x,...Object.fromEntries(urls)}))}catch(e){setStatus('Upload failed: '+String(e))}finally{setBusy(false)}}
  async function removePhoto(section:string,p:Photo){if(!draft||!account)return;setBusy(true);try{await account.removeQuotationImages([p.path]);edit({photos:{...draft.photos,[section]:(draft.photos[section]||[]).filter(x=>x.path!==p.path)}});setStatus('Photo removed; save the inspection to confirm')}catch(e){setStatus('Could not remove photo: '+String(e))}finally{setBusy(false)}}
  async function pdf(i:Inspection){
-  setBusy(true);setStatus('Preparing landscape technical PDF...');
+  setBusy(true);setStatus('Preparing technical inspection report...');
   try{
    const {jsPDF}=await import('jspdf');
    const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4',compress:true});
    const van=store.vehicles.find(v=>v.id===i.vehicleId);
    const registration=van?.registration||'NOT RECORDED';
-   const recordId=i.id.slice(0,8).toUpperCase();
-   const navy:[number,number,number]=[18,43,61];
-   const blue:[number,number,number]=[34,94,127];
-   const grey:[number,number,number]=[101,113,122];
-   const line:[number,number,number]=[193,205,213];
-   const black:[number,number,number]=[30,40,48];
-   const left=14,right=283,pageBottom=193;
-   let y=35;
-   const paintHeader=()=>{
-    doc.setTextColor(...navy);doc.setFont('helvetica','bold');doc.setFontSize(17);
-    doc.text('DELTA JOINERY',left,15);
-    doc.setFontSize(8);doc.setFont('helvetica','normal');
-    doc.text('BESPOKE INTERIORS   |   FLEET & VEHICLE CONDITION',left,21);
-    doc.setFont('helvetica','bold');doc.setFontSize(12);
-    doc.text('VEHICLE INSPECTION',right,14,{align:'right'});
-    doc.setFont('helvetica','normal');doc.setFontSize(8);
-    doc.text('REPORT ID  '+recordId+'   |   DATE  '+i.date,right,21,{align:'right'});
-    doc.setDrawColor(...blue);doc.setLineWidth(.5);doc.line(left,25,right,25);
+   const reportRef=i.id.slice(0,8).toUpperCase();
+   const dark:[number,number,number]=[23,44,59];
+   const accent:[number,number,number]=[33,99,133];
+   const secondary:[number,number,number]=[95,108,117];
+   const rule:[number,number,number]=[199,211,219];
+   const paperText:[number,number,number]=[36,49,57];
+   const margin=16,pageRight=281,contentBottom=192;
+   const colWidth=128,colX=[16,153];
+   const state=[{page:1,y:79},{page:1,y:79}];
+   const status=!isComplete(i)?'INCOMPLETE - FURTHER CHECKS REQUIRED':fault(i)?'DEFECTS RECORDED - ACTION REQUIRED':'NO DEFECTS REPORTED IN CHECKED ITEMS';
+   const drawHeader=()=>{
+    doc.setTextColor(...dark);doc.setFont('helvetica','bold');doc.setFontSize(16);
+    doc.text('DELTA JOINERY',margin,15);
+    doc.setTextColor(...secondary);doc.setFont('helvetica','normal');doc.setFontSize(8);
+    doc.text('BESPOKE INTERIORS  /  VEHICLE CONDITION RECORD',margin,21);
+    doc.setTextColor(...dark);doc.setFont('helvetica','bold');doc.setFontSize(11);
+    doc.text('VAN INSPECTION',pageRight,15,{align:'right'});
+    doc.setTextColor(...secondary);doc.setFont('helvetica','normal');doc.setFontSize(8);
+    doc.text('REPORT REF  '+reportRef,pageRight,21,{align:'right'});
+    doc.setDrawColor(...accent);doc.setLineWidth(.42);doc.line(margin,26,pageRight,26);
    };
-   const page=()=>{doc.addPage('a4','landscape');paintHeader();y=35};
-   const space=(h:number)=>{if(y+h>pageBottom)page()};
-   const section=(n:string,title:string)=>{
-    space(17);
-    doc.setTextColor(...blue);doc.setFont('helvetica','bold');doc.setFontSize(9);
-    doc.text(n+'  '+title.toUpperCase(),left,y+4);
-    doc.setDrawColor(...line);doc.setLineWidth(.25);doc.line(left,y+7,right,y+7);
-    y+=11;
+   drawHeader();
+   const meta=(x:number,y:number,w:number,label:string,value:string)=>{
+    doc.setFont('helvetica','bold');doc.setFontSize(7.4);doc.setTextColor(...secondary);
+    doc.text(label.toUpperCase(),x,y+3.6);
+    doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(...dark);
+    const display=doc.splitTextToSize(value||'-',w-4) as string[];
+    doc.text(display.slice(0,1),x,y+11);
+    doc.setDrawColor(...rule);doc.setLineWidth(.14);doc.line(x,y+14,x+w-4,y+14);
    };
-   const cell=(x:number,w:number,label:string,value:string,h:number)=>{
-    doc.setFont('helvetica','bold');doc.setFontSize(7.3);doc.setTextColor(...grey);
-    doc.text(label.toUpperCase(),x+2,y+4.5,{maxWidth:w-4});
-    doc.setFont('helvetica','normal');doc.setFontSize(8.4);doc.setTextColor(...black);
-    const lines=doc.splitTextToSize(value||'Not recorded',w-4) as string[];
-    doc.text(lines.slice(0,2),x+2,y+10);
-    doc.setDrawColor(...line);doc.setLineWidth(.16);doc.line(x,y+h,x+w,y+h);
+   meta(16,31,75,'Registration',registration);
+   meta(95,31,110,'Vehicle',[van?.make,van?.model].filter(Boolean).join(' / ')||'Not recorded');
+   meta(209,31,72,'Odometer',i.km?i.km+' km':'Not recorded');
+   meta(16,48,75,'Inspection date',i.date);
+   meta(95,48,110,'Inspected by',i.inspector||'Not recorded');
+   meta(209,48,72,'Last driver',i.lastDriver||'Not recorded');
+   doc.setFont('helvetica','bold');doc.setFontSize(7.7);doc.setTextColor(...secondary);
+   doc.text('RECORDED ASSESSMENT',margin,73);
+   doc.setFontSize(9);doc.setTextColor(...(fault(i)?([150,73,45] as [number,number,number]):dark));
+   doc.text(status,71,73,{maxWidth:210});
+   const makePage=(n:number)=>{
+    while(doc.getNumberOfPages()<n){doc.addPage('a4','landscape');drawHeader()}
+    doc.setPage(n);
    };
-   const pair=(aLabel:string,aVal:string,bLabel:string,bVal:string)=>{
-    const h=17;space(h);
-    cell(left,130,aLabel,aVal,h);cell(left+139,130,bLabel,bVal,h);y+=h;
+   const nextPage=(col:number,heading:string)=>{
+    state[col].page+=1;state[col].y=38;
+    makePage(state[col].page);
+    if(heading){
+     const x=colX[col];
+     doc.setFont('helvetica','bold');doc.setFontSize(8.3);doc.setTextColor(...accent);
+     doc.text(heading.toUpperCase()+'  /  CONTINUED',x,state[col].y+4);
+     doc.setDrawColor(...rule);doc.setLineWidth(.18);doc.line(x,state[col].y+7,x+colWidth,state[col].y+7);
+     state[col].y+=11;
+    }
    };
-   const note=(label:string,value:string)=>{
+   const ensure=(col:number,height:number,heading:string)=>{
+    if(state[col].y+height>contentBottom)nextPage(col,heading);
+    makePage(state[col].page);
+   };
+   const heading=(col:number,number:string,text:string)=>{
+    ensure(col,19,'');
+    const x=colX[col],y=state[col].y;
+    doc.setTextColor(...accent);doc.setFont('helvetica','bold');doc.setFontSize(9.5);
+    doc.text(number+'  '+text.toUpperCase(),x,y+5);
+    doc.setDrawColor(...rule);doc.setLineWidth(.25);doc.line(x,y+8,x+colWidth,y+8);
+    state[col].y+=12.5;
+   };
+   const entry=(col:number,label:string,value:string,continued:string)=>{
+    doc.setFont('helvetica','normal');doc.setFontSize(8.3);
+    const labels=doc.splitTextToSize(label,73) as string[];
+    doc.setFont('helvetica','bold');doc.setFontSize(8.3);
+    const values=doc.splitTextToSize(value||'Not checked',48) as string[];
+    const rowHeight=Math.max(7.7,4.0+Math.max(labels.length,values.length)*4.1);
+    ensure(col,rowHeight,continued);
+    const x=colX[col],y=state[col].y;
+    doc.setTextColor(...secondary);doc.setFont('helvetica','normal');doc.setFontSize(8.3);
+    doc.text(labels,x+1.4,y+5,{lineHeightFactor:1.35});
+    doc.setTextColor(...paperText);doc.setFont('helvetica','bold');doc.setFontSize(8.3);
+    doc.text(values,x+79,y+5,{lineHeightFactor:1.35});
+    doc.setDrawColor(...rule);doc.setLineWidth(.12);
+    doc.line(x,y+rowHeight,x+colWidth,y+rowHeight);
+    state[col].y+=rowHeight;
+   };
+   const observation=(col:number,label:string,value:string,continued:string)=>{
     if(!value||!value.trim())return;
-    const lines=doc.splitTextToSize(value,258) as string[];
-    const h=11+lines.length*4;space(h);
-    doc.setFontSize(7.5);doc.setTextColor(...grey);doc.setFont('helvetica','bold');
-    doc.text(label.toUpperCase(),left+2,y+4.5);
-    doc.setFont('helvetica','normal');doc.setTextColor(...black);doc.setFontSize(8);
-    doc.text(lines,left+2,y+10);
-    doc.setDrawColor(...line);doc.line(left,y+h,right,y+h);y+=h;
+    doc.setFont('helvetica','normal');doc.setFontSize(8.2);
+    const lines=doc.splitTextToSize(value,121) as string[];
+    let at=0;
+    while(at<lines.length){
+     if(state[col].y+13>contentBottom)nextPage(col,continued);
+     makePage(state[col].page);
+     const remaining=contentBottom-state[col].y;
+     const take=Math.min(lines.length-at,Math.max(1,Math.floor((remaining-10)/4.25)));
+     const x=colX[col],y=state[col].y;
+     doc.setFont('helvetica','bold');doc.setFontSize(7.4);doc.setTextColor(...accent);
+     doc.text((at?'CONTINUED / ':'')+label.toUpperCase(),x+1.4,y+5);
+     doc.setFont('helvetica','normal');doc.setFontSize(8.2);doc.setTextColor(...paperText);
+     doc.text(lines.slice(at,at+take),x+1.4,y+11,{lineHeightFactor:1.48});
+     const h=10+take*4.25;
+     doc.setDrawColor(...rule);doc.setLineWidth(.12);doc.line(x,y+h,x+colWidth,y+h);
+     state[col].y+=h+2.2;at+=take;
+    }
    };
-   paintHeader();
-   section('01','Vehicle identification and inspection record');
-   pair('Vehicle registration',registration,'Inspection date',i.date);
-   pair('Make / model',van?[van.make,van.model].filter(Boolean).join(' / '):'Not recorded','Odometer reading',i.km?i.km+' km':'Not recorded');
-   pair('Inspected by',i.inspector,'Last driver',i.lastDriver);
-   pair('Record state',isComplete(i)?'Completed':'Saved draft / incomplete','Inspection reference',recordId);
-   section('02','Technical condition and defect inspection');
-   pair('Engine oil condition',i.oil,'Dashboard indicators',i.warningLights.length?i.warningLights.join(', '):'None reported');
-   note('Oil inspection comments',i.oilNotes);note('Dashboard warning comments',i.warningNotes);
-   for(let index=0;index<wheels.length;index+=2){
-    const l=wheels[index],r=wheels[index+1];
-    pair('Tyre: '+l,i.tyres[l]||'Not checked',r?'Tyre: '+r:'',r?i.tyres[r]||'Not checked':'');
-   }
-   note('Tyre observations',i.tyreNotes);
-   section('03','Interior / exterior condition');
-   pair('Interior condition grade',i.insideGrade,'Exterior condition grade',i.outsideGrade);
-   note('Interior condition observations',i.insideNotes);
-   note('Exterior condition observations',i.outsideNotes);
-   section('04','Vehicle safety checklist');
-   for(let index=0;index<standardChecks.length;index+=2){
-    const l=standardChecks[index],r=standardChecks[index+1];
-    pair(l,i.checks[l]||'Not checked',r||'',r?i.checks[r]||'Not checked':'');
-   }
-   section('05','Summary and recommended action');
-   note('Additional inspector notes',i.notes);
-   const result=!isComplete(i)?'INCOMPLETE - FINISH INSPECTION':fault(i)?'ATTENTION REQUIRED - DEFECTS RECORDED':'NO DEFECTS REPORTED IN CHECKED ITEMS';
-   pair('Recorded finding',result,'Inspection classification','Visual condition record (not a roadworthiness certificate)');
-   const photoGroups:[string,string][]=[['vehicle','Vehicle overview'],['dashboard','Dashboard / odometer'],['tyres','Tyre condition'],['inside','Interior'],['outside','Exterior / bodywork']];
+   // Left column: mechanical checks, tyre observations and the inspector's decision.
+   heading(0,'01','Oil and dashboard');
+   entry(0,'Engine oil condition',i.oil||'Not checked','01 / OIL AND DASHBOARD');
+   entry(0,'Warning indicators',i.warningLights?.length?i.warningLights.join(', '):'None reported','01 / OIL AND DASHBOARD');
+   observation(0,'Oil observations',i.oilNotes||'','01 / OIL AND DASHBOARD');
+   observation(0,'Warning light notes',i.warningNotes||'','01 / OIL AND DASHBOARD');
+   heading(0,'02','Tyre condition');
+   for(const wheel of wheels)entry(0,wheel,i.tyres?.[wheel]||'Not checked','02 / TYRE CONDITION');
+   observation(0,'Tyre observations',i.tyreNotes||'','02 / TYRE CONDITION');
+   heading(0,'05','Inspector summary');
+   entry(0,'Inspection record',isComplete(i)?'Completed':'Saved draft','05 / INSPECTOR SUMMARY');
+   observation(0,'Additional observations',i.notes||'','05 / INSPECTOR SUMMARY');
+   // Right column: cabin/exterior grading and the complete safety checklist.
+   heading(1,'03','Interior and exterior');
+   entry(1,'Interior grade',i.insideGrade||'Not graded','03 / INTERIOR AND EXTERIOR');
+   entry(1,'Exterior grade',i.outsideGrade||'Not graded','03 / INTERIOR AND EXTERIOR');
+   observation(1,'Interior observations',i.insideNotes||'','03 / INTERIOR AND EXTERIOR');
+   observation(1,'Exterior observations',i.outsideNotes||'','03 / INTERIOR AND EXTERIOR');
+   heading(1,'04','Safety and equipment');
+   for(const item of standardChecks)entry(1,item,i.checks?.[item]||'Not checked','04 / SAFETY AND EQUIPMENT');
+   // Photographs, if present, follow on a clean image-evidence page.
+   const photoGroups:[string,string][]=[['dashboard','Dashboard / odometer'],['tyres','Tyre condition'],['inside','Interior'],['outside','Exterior / bodywork'],['vehicle','Vehicle overview']];
    const photos=photoGroups.flatMap(([key,label])=>(i.photos?.[key]||[]).map(p=>({p,label})));
    if(photos.length){
-    page();section('06','Photographic inspection evidence');
-    let count=0;
-    const blockW=84,blockH=60,gap=8;
-    for(const entry of photos){
-     const col=count%3;if(col===0)space(blockH+12);
-     const x=left+col*(blockW+gap),top=y;
-     doc.setDrawColor(...line);doc.setLineWidth(.2);doc.rect(x,top,blockW,blockH);
-     doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(...blue);
-     doc.text(String(count+1).padStart(2,'0')+'  '+entry.label.toUpperCase(),x+3,top+6,{maxWidth:blockW-6});
+    doc.addPage('a4','landscape');drawHeader();
+    let photoIndex=0;
+    const newPhotosPage=()=>{
+     if(photoIndex>0){doc.addPage('a4','landscape');drawHeader()}
+     doc.setTextColor(...accent);doc.setFont('helvetica','bold');doc.setFontSize(9.5);
+     doc.text('06  PHOTOGRAPHIC EVIDENCE',margin,40);
+     doc.setDrawColor(...rule);doc.setLineWidth(.25);doc.line(margin,43,pageRight,43);
+    };
+    newPhotosPage();
+    for(const item of photos){
+     const slot=photoIndex%6;
+     if(photoIndex>0&&slot===0)newPhotosPage();
+     const x=16+(slot%3)*91.5,y=50+Math.floor(slot/3)*69;
+     const tileW=82,tileH=62;
+     doc.setDrawColor(...rule);doc.setLineWidth(.18);doc.rect(x,y,tileW,tileH);
+     doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...accent);
+     doc.text('PHOTO '+String(photoIndex+1).padStart(2,'0')+'  /  '+item.label.toUpperCase(),x+3,y+7,{maxWidth:tileW-6});
      try{
-      const url=await account?.getQuotationImageUrl(entry.p.path);
-      if(!url)throw Error('No photo URL');
-      const res=await fetch(url);if(!res.ok)throw Error('Photo not available');
-      const blob=await res.blob();const blobUrl=URL.createObjectURL(blob);
+      const url=await account?.getQuotationImageUrl(item.p.path);
+      if(!url)throw new Error('Image URL unavailable');
+      const response=await fetch(url);
+      if(!response.ok)throw new Error('Image unavailable');
+      const blob=await response.blob();
+      const blobUrl=URL.createObjectURL(blob);
       try{
-       const img=new Image();img.src=blobUrl;await img.decode();
+       const image=new Image();image.src=blobUrl;await image.decode();
        const canvas=document.createElement('canvas');
-       const scale=Math.min(1,1200/Math.max(img.naturalWidth,img.naturalHeight));
-       canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
-       canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
-       const ctx=canvas.getContext('2d');if(!ctx)throw Error('No canvas');
-       ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);
-       ctx.drawImage(img,0,0,canvas.width,canvas.height);
-       const maxW=blockW-6,maxH=blockH-13,aspect=img.naturalWidth/img.naturalHeight;
-       const w=Math.min(maxW,maxH*aspect),h=w/aspect;
-       doc.addImage(canvas.toDataURL('image/jpeg',.74),'JPEG',x+(blockW-w)/2,top+9+(maxH-h)/2,w,h);
+       const scale=Math.min(1,1300/Math.max(image.naturalWidth,image.naturalHeight));
+       canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));
+       canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+       const context=canvas.getContext('2d');
+       if(!context)throw new Error('Canvas unavailable');
+       context.fillStyle='#fff';context.fillRect(0,0,canvas.width,canvas.height);
+       context.drawImage(image,0,0,canvas.width,canvas.height);
+       const maxW=75,maxH=48,ratio=image.naturalWidth/image.naturalHeight;
+       const imageW=Math.min(maxW,maxH*ratio),imageH=imageW/ratio;
+       doc.addImage(canvas.toDataURL('image/jpeg',.76),'JPEG',x+(tileW-imageW)/2,y+11+(maxH-imageH)/2,imageW,imageH);
       }finally{URL.revokeObjectURL(blobUrl)}
-     }catch{doc.setFont('helvetica','normal');doc.setTextColor(...grey);doc.text('Photograph unavailable',x+5,top+30)}
-     count++;if(col===2||count===photos.length)y+=blockH+12;
+     }catch{
+      doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...secondary);
+      doc.text('Image unavailable',x+5,y+35);
+     }
+     photoIndex++;
     }
    }
-   const total=doc.getNumberOfPages();
-   for(let n=1;n<=total;n++){
-    doc.setPage(n);doc.setDrawColor(...line);doc.setLineWidth(.2);doc.line(left,200,right,200);
-    doc.setTextColor(...grey);doc.setFont('helvetica','normal');doc.setFontSize(7);
-    doc.text('DELTA JOINERY  /  VAN INSPECTION  /  '+registration+'  /  '+recordId,left,205);
-    doc.text('PAGE '+n+' OF '+total,right,205,{align:'right'});
+   const pageCount=doc.getNumberOfPages();
+   for(let n=1;n<=pageCount;n++){
+    doc.setPage(n);
+    doc.setDrawColor(...rule);doc.setLineWidth(.18);doc.line(margin,198,pageRight,198);
+    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...secondary);
+    doc.text('DELTA JOINERY   /   '+registration+'   /   REPORT '+reportRef,margin,204);
+    doc.text('VISUAL CONDITION RECORD - NOT A ROADWORTHINESS CERTIFICATE',148,204,{align:'center'});
+    doc.text('PAGE '+n+' / '+pageCount,pageRight,204,{align:'right'});
    }
    doc.save('Delta-Joinery-Van-Inspection-'+registration+'-'+i.date+'-Landscape.pdf');
-   setStatus('Landscape technical PDF downloaded');
+   setStatus('Clean technical inspection PDF downloaded');
   }catch(error){setStatus('PDF export failed: '+(error instanceof Error?error.message:String(error)))}
   finally{setBusy(false)}
  }

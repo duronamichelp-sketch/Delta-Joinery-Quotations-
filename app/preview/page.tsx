@@ -6,7 +6,8 @@ import Image from 'next/image';
 import {Unit,Hardware,Labour,ExtraCost,QuoteUnit,QuoteHardware,DEFAULT_HARDWARE,DEFAULT_FINISH_RATES,pricedDoor,doorSqm,currency,read} from '../../lib/data';
 type CostItem={id:string;name:string;price:number;unit:string};
 const DEFAULT_CNC:CostItem[]=[{"id":"cnc-0","name":"MDF 22 Strada Handle","price":10,"unit":"door"},{"id":"cnc-1","name":"Frame Door","price":10,"unit":"door"},{"id":"cnc-2","name":"Shaker Door","price":25,"unit":"door"},{"id":"cnc-3","name":"Grooving","price":50,"unit":"m²"},{"id":"cnc-4","name":"Decor Pieces - High Complexity","price":45,"unit":"each"},{"id":"cnc-5","name":"Decor Pieces - Medium Complexity","price":30,"unit":"each"},{"id":"cnc-6","name":"Decor Pieces - Low Complexity","price":15,"unit":"each"},{"id":"cnc-7","name":"Bent Panel","price":120,"unit":"each"},{"id":"cnc-8","name":"Bent Panel - Shaker Door","price":170,"unit":"each"},{"id":"cnc-9","name":"Bent Panel - Big Piece","price":190,"unit":"each"},{"id":"cnc-10","name":"Bent Panel - Big Piece Shaker Door","price":240,"unit":"each"},{"id":"cnc-11","name":"Built-in Handle","price":20,"unit":"door"},{"id":"cnc-12","name":"PVC Film Covering","price":20,"unit":"piece"}];
-type Q={includeVat?:boolean;name?:string;number?:string;date?:string;client?:string;project?:string;email?:string;phone?:string;address?:string;chosenUnits?:QuoteUnit[];chosenHardware?:QuoteHardware[];chosenLabour?:{id:string;qty:number}[];chosenElectrics?:{id:string;qty:number}[];chosenFinishes?:{id:string;qty:number}[];chosenFillers?:{id:string;qty:number}[];chosenTimber?:{id:string;qty:number}[];chosenCnc?:{id:string;qty:number}[];chosenProduction?:{id:string;qty:number}[];chosenWorktops?:{id:string;name:string;qty:number;rate:number;unit:string}[];chosenCustomProducts?:{id:string;name:string;price?:number;lines?:{id:string;description:string;price:number}[]}[]};
+type CustomLine={id:string;qty:number;customName?:string;customPrice?:number};
+type Q={includeVat?:boolean;name?:string;number?:string;date?:string;client?:string;project?:string;email?:string;phone?:string;address?:string;chosenUnits?:(QuoteUnit & CustomLine)[];chosenHardware?:(QuoteHardware & CustomLine)[];chosenLabour?:CustomLine[];chosenElectrics?:CustomLine[];chosenFinishes?:CustomLine[];chosenFillers?:CustomLine[];chosenTimber?:CustomLine[];chosenCnc?:CustomLine[];chosenProduction?:CustomLine[];chosenWorktops?:{id:string;name:string;qty:number;rate:number;unit:string}[];chosenCustomProducts?:{id:string;name:string;price?:number;lines?:{id:string;description:string;price:number}[]}[]};
 export default function Preview(){
  const [q,setQ]=useState<Q>({});
  const [timberRates,setTimberRates]=useState<Record<string,number>>({});
@@ -16,15 +17,18 @@ const [doorRates,setDoorRates]=useState<Record<string,number>>(DEFAULT_FINISH_RA
  const [hardware,setHardware]=useState<Hardware[]>([]);
  const [labour,setLabour]=useState<Labour[]>([]);const [electrics,setElectrics]=useState<ExtraCost[]>([]),[finishes,setFinishes]=useState<ExtraCost[]>([]),[fillers,setFillers]=useState<ExtraCost[]>([]);
  useEffect(()=>{setCnc(read<CostItem[]>('dj_cnc_production',DEFAULT_CNC));setProduction(read<CostItem[]>('dj_production_costs',[]));setDoorRates({...DEFAULT_FINISH_RATES,...read<Record<string,number>>('dj_door_rates',{})});setTimberRates(read<Record<string,number>>('dj_timber_rates',{}));setQ(read<Q>('dj_quote',{}));setUnits(read<Unit[]>('dj_units',[]));setHardware(read<Hardware[]>('dj_hardware',DEFAULT_HARDWARE));setLabour(read<Labour[]>('dj_labour',[]));setElectrics(read<ExtraCost[]>('dj_electrics',[]));setFinishes(read<ExtraCost[]>('dj_finishes',[]));setFillers(read<ExtraCost[]>('dj_fillers',[]));},[]);
- const rows=(q.chosenUnits||[]).flatMap(x=>{const u=units.find(z=>z.id===x.id);return u?[{label:u.name+(x.adc?' · With doors':' · Carcass only'),detail:`${u.width} × ${u.height} × ${u.depth} mm${x.adc?` · ${x.doorFinish||'MFC'} · ${doorSqm(x).toFixed(3)} m² · Doors included`:''}`,qty:x.qty,price:u.price+(x.adc?pricedDoor(x,doorRates,u):0)}]:[]});
- const hw=(q.chosenHardware||[]).flatMap(x=>{const h=hardware.find(z=>z.id===x.id);return h?[{label:h.name,detail:'Hardware',qty:x.qty,price:h.price}]:[]});
- const work=(q.chosenLabour||[]).flatMap(x=>{const l=labour.find(z=>z.id===x.id);return l?[{label:l.name,detail:`Labour / ${l.unit}`,qty:x.qty,price:l.price}]:[]});
- const er=(q.chosenElectrics||[]).flatMap(x=>{const y=electrics.find(z=>z.id===x.id);return y?[{label:y.name,detail:'Electrics',qty:x.qty,price:y.price}]:[]});
- const fr=(q.chosenFinishes||[]).flatMap(x=>{const y=finishes.find(z=>z.id===x.id);return y?[{label:y.name,detail:'Finishes / fillers',qty:x.qty,price:y.price}]:[]});
- const pr=(q.chosenFillers||[]).flatMap(x=>{const y=fillers.find(z=>z.id===x.id);return y?[{label:y.name,detail:'Filler / Plinths & Coving',qty:x.qty,price:y.price}]:[]});
- const timber=(q.chosenTimber||[]).map(x=>({label:x.id,detail:'Timber · linear feet',qty:x.qty,price:timberRates[x.id]||0}));
- const cncRows=(q.chosenCnc||[]).flatMap(x=>{const c=cnc.find(z=>z.id===x.id);return c?[{label:c.name,detail:`CNC Production / ${c.unit}`,qty:x.qty,price:c.price}]:[]});
- const productionRows=(q.chosenProduction||[]).flatMap(x=>{const c=production.find(z=>z.id===x.id);return c?[{label:c.name,detail:`Production Costs / ${c.unit}`,qty:x.qty,price:c.price}]:[]});
+ // Resolve custom-priced entries as first-class quotation lines, without requiring a matching library item.
+ // Both the on-screen preview and the downloaded PDF use this same list and totals.
+ const customRow=(x:CustomLine,detail:string)=>x.customName?{label:x.customName,detail,qty:Number(x.qty)||0,price:Number(x.customPrice)||0}:null;
+ const rows=(q.chosenUnits||[]).flatMap(x=>{const u=units.find(z=>z.id===x.id);const custom=customRow(x,'Units / custom');if(custom)return [custom];return u?[{label:u.name+(x.adc?' · With doors':' · Carcass only'),detail:`${u.width} × ${u.height} × ${u.depth} mm${x.adc?` · ${x.doorFinish||'MFC'} · ${doorSqm(x).toFixed(3)} m² · Doors included`:''}`,qty:x.qty,price:u.price+(x.adc?pricedDoor(x,doorRates,u):0)}]:[]});
+ const hw=(q.chosenHardware||[]).flatMap(x=>{const custom=customRow(x,'Hardware / custom');if(custom)return [custom];const h=hardware.find(z=>z.id===x.id);return h?[{label:h.name,detail:'Hardware',qty:x.qty,price:h.price}]:[]});
+ const work=(q.chosenLabour||[]).flatMap(x=>{const custom=customRow(x,'Labour / custom');if(custom)return [custom];const l=labour.find(z=>z.id===x.id);return l?[{label:l.name,detail:`Labour / ${l.unit}`,qty:x.qty,price:l.price}]:[]});
+ const er=(q.chosenElectrics||[]).flatMap(x=>{const custom=customRow(x,'Electrics / custom');if(custom)return [custom];const y=electrics.find(z=>z.id===x.id);return y?[{label:y.name,detail:'Electrics',qty:x.qty,price:y.price}]:[]});
+ const fr=(q.chosenFinishes||[]).flatMap(x=>{const custom=customRow(x,'Finishes / custom');if(custom)return [custom];const y=finishes.find(z=>z.id===x.id);return y?[{label:y.name,detail:'Finishes / fillers',qty:x.qty,price:y.price}]:[]});
+ const pr=(q.chosenFillers||[]).flatMap(x=>{const custom=customRow(x,'Filler / Plinths & Coving / custom');if(custom)return [custom];const y=fillers.find(z=>z.id===x.id);return y?[{label:y.name,detail:'Filler / Plinths & Coving',qty:x.qty,price:y.price}]:[]});
+ const timber=(q.chosenTimber||[]).map(x=>({label:x.customName||x.id,detail:'Timber · linear feet',qty:x.qty,price:x.customName?(Number(x.customPrice)||0):(timberRates[x.id]||0)}));
+ const cncRows=(q.chosenCnc||[]).flatMap(x=>{const custom=customRow(x,'CNC Production / custom');if(custom)return [custom];const c=cnc.find(z=>z.id===x.id);return c?[{label:c.name,detail:`CNC Production / ${c.unit}`,qty:x.qty,price:c.price}]:[]});
+ const productionRows=(q.chosenProduction||[]).flatMap(x=>{const custom=customRow(x,'Production Costs / custom');if(custom)return [custom];const c=production.find(z=>z.id===x.id);return c?[{label:c.name,detail:`Production Costs / ${c.unit}`,qty:x.qty,price:c.price}]:[]});
  const worktops=(q.chosenWorktops||[]).map(x=>({label:x.name,detail:`Worktops / ${x.unit}`,qty:x.qty,price:x.rate}));
  const customProducts=(q.chosenCustomProducts||[]).map(product=>({label:product.name,detail:'Custom product',qty:1,price:typeof product.price==='number'?product.price:(product.lines||[]).reduce((s,l)=>s+(Number(l.price)||0),0)}));
  const all=[...rows,...hw,...work,...er,...fr,...pr,...timber,...worktops,...cncRows,...productionRows,...customProducts];
@@ -77,7 +81,7 @@ const [doorRates,setDoorRates]=useState<Record<string,number>>(DEFAULT_FINISH_RA
    write('Quotation breakdown',left,y,15,'bold');
    y+=8;
    // Compact, dynamically scaled layout: all quotation lines and totals stay on one A4 page.
-   const unitRows=(q.chosenUnits||[]).flatMap(x=>{const u=units.find(z=>z.id===x.id);return u?[{x,u}]:[]});
+   const unitRows=(q.chosenUnits||[]).flatMap(x=>{const u=units.find(z=>z.id===x.id);return x.customName?[null]:u?[{x,u}]:[]});
    const prepared=all.map((item,index)=>{
     const unit=unitRows[index];
     const details:string[]=[];

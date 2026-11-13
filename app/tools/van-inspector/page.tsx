@@ -59,6 +59,8 @@ export default function VanInspector(){
    const margin=16,pageRight=281,contentBottom=192;
    const colWidth=128,colX=[16,153];
    const state=[{page:1,y:77},{page:1,y:77}];
+   type SectionBox={page:number;startY:number;title:string};
+   const activeBoxes:(SectionBox|null)[]=[null,null];
    const status=!isComplete(i)?'INCOMPLETE - FURTHER CHECKS REQUIRED':fault(i)?'DEFECTS RECORDED - ACTION REQUIRED':'NO DEFECTS REPORTED IN CHECKED ITEMS';
    const drawHeader=()=>{
     doc.setTextColor(...dark);doc.setFont('helvetica','bold');doc.setFontSize(16);
@@ -94,15 +96,30 @@ export default function VanInspector(){
     while(doc.getNumberOfPages()<n){doc.addPage('a4','landscape');drawHeader()}
     doc.setPage(n);
    };
+   const closeBox=(col:number,spacing=true)=>{
+    const current=activeBoxes[col];
+    if(!current)return;
+    makePage(current.page);
+    const top=current.startY-2.1;
+    const bottom=Math.min(195,state[col].y+3.2);
+    doc.setDrawColor(165,188,202);doc.setLineWidth(.34);
+    doc.roundedRect(colX[col]-2.2,top,colWidth+4.4,Math.max(13,bottom-top),1.6,1.6,'S');
+    activeBoxes[col]=null;
+    if(spacing)state[col].y+=10.5;
+   };
    const nextPage=(col:number,heading:string)=>{
-    state[col].page+=1;state[col].y=38;
+    const label=activeBoxes[col]?.title||heading;
+    closeBox(col,false);
+    state[col].page+=1;state[col].y=39;
     makePage(state[col].page);
-    if(heading){
-     const x=colX[col];
-     doc.setFont('helvetica','bold');doc.setFontSize(8.3);doc.setTextColor(...accent);
-     doc.text(heading.toUpperCase()+'  /  CONTINUED',x,state[col].y+4);
-     doc.setDrawColor(...rule);doc.setLineWidth(.18);doc.line(x,state[col].y+7,x+colWidth,state[col].y+7);
-     state[col].y+=11;
+    if(label){
+     activeBoxes[col]={page:state[col].page,startY:state[col].y,title:label};
+     const x=colX[col],y=state[col].y;
+     doc.setFont('helvetica','bold');doc.setFontSize(8.4);doc.setTextColor(...accent);
+     doc.text(label.toUpperCase()+'  /  CONTINUED',x+1.4,y+6);
+     doc.setDrawColor(...rule);doc.setLineWidth(.22);
+     doc.line(x+1.4,y+9.4,x+colWidth-1.4,y+9.4);
+     state[col].y+=14;
     }
    };
    const ensure=(col:number,height:number,heading:string)=>{
@@ -110,12 +127,15 @@ export default function VanInspector(){
     makePage(state[col].page);
    };
    const heading=(col:number,number:string,text:string)=>{
-    ensure(col,24,'');
+    closeBox(col);
+    ensure(col,26,'');
     const x=colX[col],y=state[col].y;
+    activeBoxes[col]={page:state[col].page,startY:y,title:number+'  '+text.toUpperCase()};
     doc.setTextColor(...accent);doc.setFont('helvetica','bold');doc.setFontSize(9.5);
-    doc.text(number+'  '+text.toUpperCase(),x,y+4.8);
-    doc.setDrawColor(...rule);doc.setLineWidth(.25);doc.line(x,y+7.2,x+colWidth,y+7.2);
-    state[col].y+=10.6;
+    doc.text(number+'  '+text.toUpperCase(),x+1.4,y+6);
+    doc.setDrawColor(...rule);doc.setLineWidth(.25);
+    doc.line(x+1.4,y+9.5,x+colWidth-1.4,y+9.5);
+    state[col].y+=14;
    };
    const entry=(col:number,label:string,value:string,continued:string)=>{
     doc.setFont('helvetica','normal');doc.setFontSize(8.3);
@@ -123,7 +143,7 @@ export default function VanInspector(){
     doc.setFont('helvetica','bold');doc.setFontSize(8.3);
     const values=doc.splitTextToSize(value||'Not checked',48) as string[];
     const rowHeight=Math.max(6.4,2.6+Math.max(labels.length,values.length)*3.8);
-    ensure(col,rowHeight,continued);
+    ensure(col,rowHeight+5,continued);
     const x=colX[col],y=state[col].y;
     doc.setTextColor(...secondary);doc.setFont('helvetica','normal');doc.setFontSize(8.3);
     doc.text(labels,x+1.4,y+4.35,{lineHeightFactor:1.28});
@@ -139,9 +159,9 @@ export default function VanInspector(){
     const lines=doc.splitTextToSize(value,121) as string[];
     let at=0;
     while(at<lines.length){
-     if(state[col].y+15>contentBottom)nextPage(col,continued);
+     if(state[col].y+21>contentBottom)nextPage(col,continued);
      makePage(state[col].page);
-     const remaining=contentBottom-state[col].y;
+     const remaining=contentBottom-state[col].y-5;
      const take=Math.min(lines.length-at,Math.max(1,Math.floor((remaining-10)/4.25)));
      const x=colX[col],y=state[col].y;
      doc.setFont('helvetica','bold');doc.setFontSize(7.4);doc.setTextColor(...accent);
@@ -174,6 +194,8 @@ export default function VanInspector(){
    observation(1,'Exterior observations',i.outsideNotes||'','03 / INTERIOR AND EXTERIOR');
    heading(1,'04','Safety and equipment');
    for(const item of standardChecks)entry(1,item,i.checks?.[item]||'Not checked','04 / SAFETY AND EQUIPMENT');
+   closeBox(0,false);
+   closeBox(1,false);
    // Photographs, if present, follow on a clean image-evidence page.
    const photoGroups:[string,string][]=[['dashboard','Dashboard / odometer'],['tyres','Tyre condition'],['inside','Interior'],['outside','Exterior / bodywork'],['vehicle','Vehicle overview']];
    const photos=photoGroups.flatMap(([key,label])=>(i.photos?.[key]||[]).map(p=>({p,label})));
@@ -183,6 +205,8 @@ export default function VanInspector(){
     const newPhotosPage=()=>{
      if(photoIndex>0){doc.addPage('a4','landscape');drawHeader()}
      doc.setTextColor(...accent);doc.setFont('helvetica','bold');doc.setFontSize(9.5);
+     doc.setDrawColor(165,188,202);doc.setLineWidth(.34);
+     doc.roundedRect(13.8,34,269.4,154.5,1.6,1.6,'S');
      doc.text('06  PHOTOGRAPHIC EVIDENCE',margin,40);
      doc.setDrawColor(...rule);doc.setLineWidth(.25);doc.line(margin,43,pageRight,43);
     };

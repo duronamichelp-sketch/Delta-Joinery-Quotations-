@@ -33,7 +33,6 @@ export default function DesktopSidebar({active}:{active:'home'|'quote'|'quotes'|
       {toolsOpen&&<div className="dj-tools-submenu">
         <Link className={'dj-tool-link '+(pathname==='/tools/addresses'?'current':'')} href="/tools/addresses"><span>⌖</span><span>Addresses</span></Link>
         <Link className={'dj-tool-link '+(pathname.includes('measurements')?'current':'')} href="/tools/measurements"><span>▱</span><span>Measurements</span></Link>
-        <Link className={'dj-tool-link '+(pathname==='/tools/skoda'?'current':'')} href="/tools/skoda"><span>▣</span><span>Škoda</span></Link>
         <Link className={'dj-tool-link '+(pathname.includes('cutting-list')?'current':'')} href="/tools/cutting-list"><span>▤</span><span>Cutting List</span></Link>
       </div>}
     </nav>

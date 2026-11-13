@@ -9,7 +9,7 @@ import {localDateKey,weekHours as calculateWeekHours,type TimeRecords} from '../
 import {useLiveNow} from './useLiveNow';
 import LiveHoursLabel from './LiveHoursLabel';
 type SiteImage={path:string;name:string};
-type Task={id:string;client:string;project:string;due:string;notes:string;status:'upcoming'|'finished';created:string;finished?:string;amount?:number;siteImages?:SiteImage[]};
+type Task={id:string;client:string;project:string;due:string;notes:string;status:'upcoming'|'finished';created:string;finished?:string;amount?:number;quotationId?:string;siteImages?:SiteImage[]};
 // Dashboard includes manual finished quotation entries.
 const KEY='dj_quotation_tasks';
 const dateToday=()=>new Date().toLocaleDateString('en-CA');

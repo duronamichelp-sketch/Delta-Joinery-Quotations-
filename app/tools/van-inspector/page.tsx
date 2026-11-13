@@ -110,7 +110,7 @@ export default function VanInspector(){
     makePage(state[col].page);
    };
    const heading=(col:number,number:string,text:string)=>{
-    ensure(col,19,'');
+    ensure(col,24,'');
     const x=colX[col],y=state[col].y;
     doc.setTextColor(...accent);doc.setFont('helvetica','bold');doc.setFontSize(9.5);
     doc.text(number+'  '+text.toUpperCase(),x,y+5);
@@ -139,7 +139,7 @@ export default function VanInspector(){
     const lines=doc.splitTextToSize(value,121) as string[];
     let at=0;
     while(at<lines.length){
-     if(state[col].y+13>contentBottom)nextPage(col,continued);
+     if(state[col].y+15>contentBottom)nextPage(col,continued);
      makePage(state[col].page);
      const remaining=contentBottom-state[col].y;
      const take=Math.min(lines.length-at,Math.max(1,Math.floor((remaining-10)/4.25)));
@@ -162,17 +162,17 @@ export default function VanInspector(){
    heading(0,'02','Tyre condition');
    for(const wheel of wheels)entry(0,wheel,i.tyres?.[wheel]||'Not checked','02 / TYRE CONDITION');
    observation(0,'Tyre observations',i.tyreNotes||'','02 / TYRE CONDITION');
-   heading(0,'05','Inspector summary');
-   entry(0,'Inspection record',isComplete(i)?'Completed':'Saved draft','05 / INSPECTOR SUMMARY');
-   observation(0,'Additional observations',i.notes||'','05 / INSPECTOR SUMMARY');
+   heading(0,'03','Inspector summary');
+   entry(0,'Inspection record',isComplete(i)?'Completed':'Saved draft','03 / INSPECTOR SUMMARY');
+   observation(0,'Additional observations',i.notes||'','03 / INSPECTOR SUMMARY');
    // Right column: cabin/exterior grading and the complete safety checklist.
-   heading(1,'03','Interior and exterior');
-   entry(1,'Interior grade',i.insideGrade||'Not graded','03 / INTERIOR AND EXTERIOR');
-   entry(1,'Exterior grade',i.outsideGrade||'Not graded','03 / INTERIOR AND EXTERIOR');
-   observation(1,'Interior observations',i.insideNotes||'','03 / INTERIOR AND EXTERIOR');
-   observation(1,'Exterior observations',i.outsideNotes||'','03 / INTERIOR AND EXTERIOR');
-   heading(1,'04','Safety and equipment');
-   for(const item of standardChecks)entry(1,item,i.checks?.[item]||'Not checked','04 / SAFETY AND EQUIPMENT');
+   heading(1,'04','Interior and exterior');
+   entry(1,'Interior grade',i.insideGrade||'Not graded','04 / INTERIOR AND EXTERIOR');
+   entry(1,'Exterior grade',i.outsideGrade||'Not graded','04 / INTERIOR AND EXTERIOR');
+   observation(1,'Interior observations',i.insideNotes||'','04 / INTERIOR AND EXTERIOR');
+   observation(1,'Exterior observations',i.outsideNotes||'','04 / INTERIOR AND EXTERIOR');
+   heading(1,'05','Safety and equipment');
+   for(const item of standardChecks)entry(1,item,i.checks?.[item]||'Not checked','05 / SAFETY AND EQUIPMENT');
    // Photographs, if present, follow on a clean image-evidence page.
    const photoGroups:[string,string][]=[['dashboard','Dashboard / odometer'],['tyres','Tyre condition'],['inside','Interior'],['outside','Exterior / bodywork'],['vehicle','Vehicle overview']];
    const photos=photoGroups.flatMap(([key,label])=>(i.photos?.[key]||[]).map(p=>({p,label})));

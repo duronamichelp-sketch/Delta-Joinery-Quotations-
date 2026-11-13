@@ -147,7 +147,7 @@ async function save(){
  const all=read<any[]>('dj_saved_quotes',[]);
  const id=q.number||String(Date.now());
  const previous=all.find(x=>x.id===id);
- const snapshot=savedQuoteDetails({...q,id});
+ const snapshot=savedQuoteDetails({...q,id,costLines:undefined,costBreakdown:undefined,subtotalAmount:undefined,vatAmount:undefined,totalAmount:undefined});
  const entry={...q,id,name:q.project,savedAt:new Date().toISOString(),costLines:snapshot.lines,costBreakdown:snapshot.breakdown,subtotalAmount:Math.round(grand*100)/100,vatAmount:Math.round(vatAmount*100)/100,totalAmount:Math.round(finalTotal*100)/100,finished:!!previous?.finished,finishedAt:previous?.finishedAt};
  const next=[entry,...all.filter(x=>x.id!==entry.id)];
  try{

@@ -58,7 +58,7 @@ export default function VanInspector(){
    const paperText:[number,number,number]=[36,49,57];
    const margin=16,pageRight=281,contentBottom=192;
    const colWidth=128,colX=[16,153];
-   const state=[{page:1,y:79},{page:1,y:79}];
+   const state=[{page:1,y:77},{page:1,y:77}];
    const status=!isComplete(i)?'INCOMPLETE - FURTHER CHECKS REQUIRED':fault(i)?'DEFECTS RECORDED - ACTION REQUIRED':'NO DEFECTS REPORTED IN CHECKED ITEMS';
    const drawHeader=()=>{
     doc.setTextColor(...dark);doc.setFont('helvetica','bold');doc.setFontSize(16);
@@ -113,22 +113,22 @@ export default function VanInspector(){
     ensure(col,24,'');
     const x=colX[col],y=state[col].y;
     doc.setTextColor(...accent);doc.setFont('helvetica','bold');doc.setFontSize(9.5);
-    doc.text(number+'  '+text.toUpperCase(),x,y+5);
-    doc.setDrawColor(...rule);doc.setLineWidth(.25);doc.line(x,y+8,x+colWidth,y+8);
-    state[col].y+=12.5;
+    doc.text(number+'  '+text.toUpperCase(),x,y+4.8);
+    doc.setDrawColor(...rule);doc.setLineWidth(.25);doc.line(x,y+7.2,x+colWidth,y+7.2);
+    state[col].y+=10.6;
    };
    const entry=(col:number,label:string,value:string,continued:string)=>{
     doc.setFont('helvetica','normal');doc.setFontSize(8.3);
     const labels=doc.splitTextToSize(label,73) as string[];
     doc.setFont('helvetica','bold');doc.setFontSize(8.3);
     const values=doc.splitTextToSize(value||'Not checked',48) as string[];
-    const rowHeight=Math.max(7.7,4.0+Math.max(labels.length,values.length)*4.1);
+    const rowHeight=Math.max(6.4,2.6+Math.max(labels.length,values.length)*3.8);
     ensure(col,rowHeight,continued);
     const x=colX[col],y=state[col].y;
     doc.setTextColor(...secondary);doc.setFont('helvetica','normal');doc.setFontSize(8.3);
-    doc.text(labels,x+1.4,y+5,{lineHeightFactor:1.35});
+    doc.text(labels,x+1.4,y+4.35,{lineHeightFactor:1.28});
     doc.setTextColor(...paperText);doc.setFont('helvetica','bold');doc.setFontSize(8.3);
-    doc.text(values,x+79,y+5,{lineHeightFactor:1.35});
+    doc.text(values,x+79,y+4.35,{lineHeightFactor:1.28});
     doc.setDrawColor(...rule);doc.setLineWidth(.12);
     doc.line(x,y+rowHeight,x+colWidth,y+rowHeight);
     state[col].y+=rowHeight;
@@ -162,17 +162,18 @@ export default function VanInspector(){
    heading(0,'02','Tyre condition');
    for(const wheel of wheels)entry(0,wheel,i.tyres?.[wheel]||'Not checked','02 / TYRE CONDITION');
    observation(0,'Tyre observations',i.tyreNotes||'','02 / TYRE CONDITION');
-   heading(0,'03','Inspector summary');
-   entry(0,'Inspection record',isComplete(i)?'Completed':'Saved draft','03 / INSPECTOR SUMMARY');
-   observation(0,'Additional observations',i.notes||'','03 / INSPECTOR SUMMARY');
+   if(i.notes?.trim()){
+    heading(0,'05','Additional observations');
+    observation(0,'Inspector notes',i.notes,'05 / ADDITIONAL OBSERVATIONS');
+   }
    // Right column: cabin/exterior grading and the complete safety checklist.
-   heading(1,'04','Interior and exterior');
-   entry(1,'Interior grade',i.insideGrade||'Not graded','04 / INTERIOR AND EXTERIOR');
-   entry(1,'Exterior grade',i.outsideGrade||'Not graded','04 / INTERIOR AND EXTERIOR');
-   observation(1,'Interior observations',i.insideNotes||'','04 / INTERIOR AND EXTERIOR');
-   observation(1,'Exterior observations',i.outsideNotes||'','04 / INTERIOR AND EXTERIOR');
-   heading(1,'05','Safety and equipment');
-   for(const item of standardChecks)entry(1,item,i.checks?.[item]||'Not checked','05 / SAFETY AND EQUIPMENT');
+   heading(1,'03','Interior and exterior');
+   entry(1,'Interior grade',i.insideGrade||'Not graded','03 / INTERIOR AND EXTERIOR');
+   entry(1,'Exterior grade',i.outsideGrade||'Not graded','03 / INTERIOR AND EXTERIOR');
+   observation(1,'Interior observations',i.insideNotes||'','03 / INTERIOR AND EXTERIOR');
+   observation(1,'Exterior observations',i.outsideNotes||'','03 / INTERIOR AND EXTERIOR');
+   heading(1,'04','Safety and equipment');
+   for(const item of standardChecks)entry(1,item,i.checks?.[item]||'Not checked','04 / SAFETY AND EQUIPMENT');
    // Photographs, if present, follow on a clean image-evidence page.
    const photoGroups:[string,string][]=[['dashboard','Dashboard / odometer'],['tyres','Tyre condition'],['inside','Interior'],['outside','Exterior / bodywork'],['vehicle','Vehicle overview']];
    const photos=photoGroups.flatMap(([key,label])=>(i.photos?.[key]||[]).map(p=>({p,label})));

@@ -9,7 +9,7 @@ import {savedQuoteDetails,type SavedQuotation} from '../../lib/quotationTotals';
 
 type SiteImage={path:string;name:string};
 type Q=SavedQuotation & {id:string;siteImages?:SiteImage[]};
-type Task={id:string;client:string;project:string;due:string;notes:string;status:'upcoming'|'finished';created:string;finished?:string;amount?:number;siteImages?:SiteImage[];quotationNumber?:string;originalQuotation?:string;costBreakdown?:string};
+type Task={id:string;client:string;project:string;due:string;notes:string;status:'upcoming'|'finished';created:string;finished?:string;amount?:number;quotationId?:string;siteImages?:SiteImage[];quotationNumber?:string;originalQuotation?:string;costBreakdown?:string};
 type Selected={kind:'saved';quote:Q}|{kind:'manual';task:Task};
 const clean=(v?:string)=>String(v||'').trim().toLowerCase();
 
@@ -48,14 +48,14 @@ export default function FinishedQuotes(){
  },[storageClient,selected]);
 
  const finishedSaved=quotes.filter(q=>q.finished).sort((a,b)=>String(b.finishedAt||b.savedAt||'').localeCompare(String(a.finishedAt||a.savedAt||'')));
- const legacy=useMemo(()=>tasks.filter(t=>t.status==='finished'&&!finishedSaved.some(q=>clean(q.project)===clean(t.project)&&clean(q.client)===clean(t.client))).sort((a,b)=>String(b.finished||b.created||'').localeCompare(String(a.finished||a.created||''))),[tasks,quotes]);
+ const legacy=useMemo(()=>tasks.filter(t=>t.status==='finished'&&!quotes.some(q=>t.quotationId===q.id||(!t.quotationId&&clean(q.project)===clean(t.project)&&clean(q.client)===clean(t.client)))).sort((a,b)=>String(b.finished||b.created||'').localeCompare(String(a.finished||a.created||''))),[tasks,quotes]);
  const filteredSaved=finishedSaved.filter(q=>[q.number,q.client,q.project].join(' ').toLowerCase().includes(search.toLowerCase()));
  const filteredLegacy=legacy.filter(t=>[t.client,t.project,t.notes].join(' ').toLowerCase().includes(search.toLowerCase()));
  const total=finishedSaved.reduce((s,q)=>s+savedQuoteDetails(q).total,0)+legacy.reduce((s,t)=>s+(Number(t.amount)||0),0);
 
  function reopen(q:Q){
   const next=quotes.map(x=>x.id===q.id?{...x,finished:false,finishedAt:undefined}:x);setQuotes(next);localStorage.setItem('dj_saved_quotes',JSON.stringify(next));
-  const updated=tasks.map(t=>clean(t.project)===clean(q.project)&&clean(t.client)===clean(q.client)?{...t,status:'upcoming' as const,finished:undefined}:t);
+  const updated=tasks.map(t=>t.quotationId===q.id||(!t.quotationId&&clean(t.project)===clean(q.project)&&clean(t.client)===clean(q.client))?{...t,status:'upcoming' as const,finished:undefined,amount:0}:t);
   setTasks(updated);localStorage.setItem('dj_quotation_tasks',JSON.stringify(updated));setSelected(null);
  }
  async function editFull(q:Q){
@@ -63,8 +63,8 @@ export default function FinishedQuotes(){
    const reopened={...q,finished:false,finishedAt:undefined};
    const nextQuotes=quotes.map(x=>x.id===q.id?reopened:x);
    const nextTasks=tasks.map(t=>{
-    const same=q.sourceTaskId?t.id===q.sourceTaskId:(clean(t.project)===clean(q.project)&&clean(t.client)===clean(q.client));
-    return same?{...t,status:'upcoming' as const,finished:undefined}:t;
+    const same=t.quotationId===q.id||(q.sourceTaskId?t.id===q.sourceTaskId:(!t.quotationId&&clean(t.project)===clean(q.project)&&clean(t.client)===clean(q.client)));
+    return same?{...t,quotationId:q.id,status:'upcoming' as const,finished:undefined,amount:0}:t;
    });
    if(account){
     await account.saveTool('dj_saved_quotes',nextQuotes);
@@ -99,7 +99,7 @@ export default function FinishedQuotes(){
     // or remain included in the dashboard total.
     nextTasks=tasks.filter(t=>{
      if(t.status!=='finished')return true;
-     if(q.sourceTaskId&&t.id===q.sourceTaskId)return false;
+     if(t.quotationId===q.id||(q.sourceTaskId&&t.id===q.sourceTaskId))return false;
      return !(clean(t.project)===clean(q.project)
        &&clean(t.client)===clean(q.client)
        &&t.notes==='Finished from saved quotation');

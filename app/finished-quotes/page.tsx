@@ -201,7 +201,7 @@ export default function FinishedQuotes(){
    <div className="dj-finished-summary"><div><span>Finished Quotations</span><strong>{finishedSaved.length+legacy.length}</strong></div><div><span>Total Finished Value</span><strong>{currency(total)}</strong></div></div>
    <input className="rev-select-row rev-search rev-search-input" aria-label="Search finished quotations" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search client or project..."/>
 
-   {filteredSaved.map(q=><button type="button" className="rev-saved-row dj-finished-list-button" key={'saved-'+q.id} onClick={()=>setSelected({kind:'saved',quote:q})}>
+   {filteredSaved.map(q=><button type="button" className="rev-saved-row dj-finished-list-button" key={'saved-'+q.id} onClick={()=>void editFull(q)}>
     <div className="rev-saved-top"><span>{q.number||'Quotation'}</span><small>Finished · Full quotation</small></div>
     <h2>{q.project||'Untitled project'}</h2>
     <p>{q.client||'No client'} · {currency(savedQuoteDetails(q).total)}</p>

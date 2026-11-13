@@ -9,15 +9,15 @@ export type SavedQuotation={
  includeVat?:boolean;totalAmount?:number;subtotalAmount?:number;vatAmount?:number;
  finished?:boolean;finishedAt?:string;siteImages?:{path:string;name:string}[];
  costLines?:SavedQuoteLine[];costBreakdown?:SavedQuoteBreakdown[];
- chosenUnits?:{id:string;qty:number;adc?:boolean;hasDoors?:boolean;doorMaterial?:string;doorCount?:number;doorSqm?:number;doorWidth?:number;doorHeight?:number;doorFinish?:string;doorCategory?:string}[];
- chosenHardware?:{id:string;qty:number}[];
- chosenLabour?:{id:string;qty:number}[];
- chosenCnc?:{id:string;qty:number}[];
- chosenProduction?:{id:string;qty:number}[];
- chosenElectrics?:{id:string;qty:number}[];
- chosenFinishes?:{id:string;qty:number}[];
- chosenFillers?:{id:string;qty:number}[];
- chosenTimber?:{id:string;qty:number}[];
+ chosenUnits?:{id:string;qty:number;customName?:string;customPrice?:number;adc?:boolean;hasDoors?:boolean;doorMaterial?:string;doorCount?:number;doorSqm?:number;doorWidth?:number;doorHeight?:number;doorFinish?:string;doorCategory?:string}[];
+ chosenHardware?:{id:string;qty:number;customName?:string;customPrice?:number}[];
+ chosenLabour?:{id:string;qty:number;customName?:string;customPrice?:number}[];
+ chosenCnc?:{id:string;qty:number;customName?:string;customPrice?:number}[];
+ chosenProduction?:{id:string;qty:number;customName?:string;customPrice?:number}[];
+ chosenElectrics?:{id:string;qty:number;customName?:string;customPrice?:number}[];
+ chosenFinishes?:{id:string;qty:number;customName?:string;customPrice?:number}[];
+ chosenFillers?:{id:string;qty:number;customName?:string;customPrice?:number}[];
+ chosenTimber?:{id:string;qty:number;customName?:string;customPrice?:number}[];
  chosenWorktops?:{id:string;name:string;qty:number;rate:number;unit:string}[];
  chosenCustomProducts?:{id:string;name:string;price?:number;lines?:{id:string;description:string;price:number}[]}[];
 };
@@ -61,22 +61,22 @@ export function savedQuoteDetails(q:SavedQuotation){
 
  for(const x of q.chosenUnits||[]){
   const u=units.find(z=>z.id===x.id);
-  if(!u)continue;
-  addLine('Units',u.name,Number(x.qty)||0,Number(u.price)||0,'unit');
-  if(x.adc){
+  if(!u&&!x.customName)continue;
+  addLine('Units',x.customName||u!.name,Number(x.qty)||0,x.customName?(Number(x.customPrice)||0):(Number(u!.price)||0),'unit');
+  if(x.adc&&u){
    const doorRate=pricedDoor({...x,hasDoors:!!x.adc,doorMaterial:'MFC',doorCount:x.doorCount||1,doorSqm:x.doorSqm||0} as any,doorRates,u);
    if(doorRate>0)addLine('Units',`${u.name} — ${x.doorFinish||'Door'}`,Number(x.qty)||0,doorRate,'door set');
   }
  }
- for(const x of q.chosenHardware||[]){const row=hardware.find(z=>z.id===x.id);if(row)addLine('Hardware',row.name,x.qty,row.price,'each')}
- for(const x of q.chosenLabour||[]){const row=labour.find(z=>z.id===x.id);if(row)addLine('Labour',row.name,x.qty,row.price,row.unit)}
- for(const x of q.chosenElectrics||[]){const row=electrics.find(z=>z.id===x.id);if(row)addLine('Electrics',row.name,x.qty,row.price,'each')}
- for(const x of q.chosenFinishes||[]){const row=finishes.find(z=>z.id===x.id);if(row)addLine('Finishes',row.name,x.qty,row.price,'each')}
- for(const x of q.chosenFillers||[]){const row=fillers.find(z=>z.id===x.id);if(row)addLine('Fillers / Plinths & Coving',row.name,x.qty,row.price,'each')}
- for(const x of q.chosenTimber||[]){addLine('Timber',x.id,x.qty,timberRates[x.id]||0,'ft')}
+ for(const x of q.chosenHardware||[]){const row=hardware.find(z=>z.id===x.id);if(x.customName)addLine('Hardware',x.customName,x.qty,Number(x.customPrice)||0,'each');else if(row)addLine('Hardware',row.name,x.qty,row.price,'each')}
+ for(const x of q.chosenLabour||[]){const row=labour.find(z=>z.id===x.id);if(x.customName)addLine('Labour',x.customName,x.qty,Number(x.customPrice)||0,'each');else if(row)addLine('Labour',row.name,x.qty,row.price,row.unit)}
+ for(const x of q.chosenElectrics||[]){const row=electrics.find(z=>z.id===x.id);if(x.customName)addLine('Electrics',x.customName,x.qty,Number(x.customPrice)||0,'each');else if(row)addLine('Electrics',row.name,x.qty,row.price,'each')}
+ for(const x of q.chosenFinishes||[]){const row=finishes.find(z=>z.id===x.id);if(x.customName)addLine('Finishes',x.customName,x.qty,Number(x.customPrice)||0,'each');else if(row)addLine('Finishes',row.name,x.qty,row.price,'each')}
+ for(const x of q.chosenFillers||[]){const row=fillers.find(z=>z.id===x.id);if(x.customName)addLine('Fillers / Plinths & Coving',x.customName,x.qty,Number(x.customPrice)||0,'each');else if(row)addLine('Fillers / Plinths & Coving',row.name,x.qty,row.price,'each')}
+ for(const x of q.chosenTimber||[]){addLine('Timber',x.customName||x.id,x.qty,x.customName?(Number(x.customPrice)||0):(timberRates[x.id]||0),'ft')}
  for(const x of q.chosenWorktops||[]){addLine('Worktops',x.name,x.qty,x.rate,x.unit)}
- for(const x of q.chosenCnc||[]){const row=cnc.find(z=>z.id===x.id);if(row)addLine('CNC Production',row.name,x.qty,row.price,row.unit)}
- for(const x of q.chosenProduction||[]){const row=production.find(z=>z.id===x.id);if(row)addLine('Production Costs',row.name,x.qty,row.price,row.unit)}
+ for(const x of q.chosenCnc||[]){const row=cnc.find(z=>z.id===x.id);if(x.customName)addLine('CNC Production',x.customName,x.qty,Number(x.customPrice)||0,'each');else if(row)addLine('CNC Production',row.name,x.qty,row.price,row.unit)}
+ for(const x of q.chosenProduction||[]){const row=production.find(z=>z.id===x.id);if(x.customName)addLine('Production Costs',x.customName,x.qty,Number(x.customPrice)||0,'each');else if(row)addLine('Production Costs',row.name,x.qty,row.price,row.unit)}
  for(const product of q.chosenCustomProducts||[]){const price=typeof product.price==='number'?product.price:(product.lines||[]).reduce((s,l)=>s+(Number(l.price)||0),0);addLine('Custom Products',product.name,1,price,'item')}
 
  const effectiveLines=q.costLines?.length?q.costLines:lines;

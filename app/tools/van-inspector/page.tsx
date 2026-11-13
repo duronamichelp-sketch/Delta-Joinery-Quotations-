@@ -76,7 +76,7 @@ export default function VanInspector(){
     doc.setDrawColor(218,229,235);doc.setLineWidth(.15);doc.line(left,y+h,right,y+h);
     doc.setTextColor(...grey);doc.setFont('helvetica','bold');doc.setFontSize(8);
     doc.text(label,left+3,y+6.1);
-    doc.setTextColor(...(status&&(value==='Good'||value==='Excellent')?[27,112,81]:ink));
+    doc.setTextColor(...(status&&(value==='Good'||value==='Excellent')?([27,112,81] as [number,number,number]):ink));
     doc.setFont('helvetica','normal');doc.text(data,left+62,y+6.1);
     y+=h;
    };
@@ -94,7 +94,7 @@ export default function VanInspector(){
    doc.text('INSPECTION DATE',left,y);doc.text('VEHICLE REGISTRATION',82,y);doc.text('REPORT STATUS',146,y);
    y+=6;doc.setFontSize(11);doc.setTextColor(...ink);
    doc.text(i.date,left,y);doc.text(van?.registration||'N/A',82,y);
-   doc.setTextColor(...(issues?[161,81,31]:[30,115,82]));
+   doc.setTextColor(...(issues?([161,81,31] as [number,number,number]):([30,115,82] as [number,number,number])));
    doc.text(issues?'ATTENTION REQUIRED':'NO DEFECTS REPORTED',146,y,{maxWidth:48});y+=13;
    title('01','Vehicle and inspection details');
    row('Vehicle',vehicle);row('Inspected by',i.inspector);row('Last driver',i.lastDriver);row('Odometer',i.km+' km');row('Inspection date',i.date);

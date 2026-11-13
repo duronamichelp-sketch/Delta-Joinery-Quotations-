@@ -18,6 +18,7 @@ export default function FinishedQuotes(){
  const [quotes,setQuotes]=useState<Q[]>([]),[tasks,setTasks]=useState<Task[]>([]),[search,setSearch]=useState('');
  const [selected,setSelected]=useState<Selected|null>(null);
  const [manualEdit,setManualEdit]=useState<Task|null>(null);
+ const [deleting,setDeleting]=useState(false);
  const [imageUrls,setImageUrls]=useState<Record<string,string>>({});
  const [storageClient]=useState<SupabaseClient|null>(()=>{const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;return url&&key?createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true}}):null});
 
@@ -80,6 +81,45 @@ export default function FinishedQuotes(){
    alert('Could not reopen quotation for editing: '+(e instanceof Error?e.message:'Unknown error'));
   }
  }
+ async function deleteFinished(item:Selected){
+  if(deleting)return;
+  const isSaved=item.kind==='saved';
+  const record=isSaved?item.quote:item.task;
+  const name=record.project||'this quotation';
+  if(!window.confirm(`Permanently delete "${name}" from Finished Quotations? Its value will also be removed from the Final Sent Quotations total. This cannot be undone.`))return;
+  setDeleting(true);
+  try{
+   let nextQuotes=quotes;
+   let nextTasks=tasks;
+   if(item.kind==='saved'){
+    const q=item.quote;
+    nextQuotes=quotes.filter(x=>x.id!==q.id);
+    // Finishing a saved quotation may also have created/updated a task.
+    // Remove its linked finished task so it cannot reappear as a historical entry
+    // or remain included in the dashboard total.
+    nextTasks=tasks.filter(t=>{
+     if(t.status!=='finished')return true;
+     if(q.sourceTaskId&&t.id===q.sourceTaskId)return false;
+     return !(clean(t.project)===clean(q.project)
+       &&clean(t.client)===clean(q.client)
+       &&t.notes==='Finished from saved quotation');
+    });
+   }else{
+    nextTasks=tasks.filter(t=>t.id!==item.task.id);
+   }
+   if(account){
+    if(item.kind==='saved')await account.saveTool('dj_saved_quotes',nextQuotes);
+    await account.saveTool('dj_quotation_tasks',nextTasks);
+   }else{
+    if(item.kind==='saved')localStorage.setItem('dj_saved_quotes',JSON.stringify(nextQuotes));
+    localStorage.setItem('dj_quotation_tasks',JSON.stringify(nextTasks));
+   }
+   setQuotes(nextQuotes);setTasks(nextTasks);setSelected(null);setManualEdit(null);
+  }catch(e){
+   alert('Could not delete quotation: '+(e instanceof Error?e.message:'Unknown error'));
+  }finally{setDeleting(false)}
+ }
+
  function saveManualEdit(){
   if(!manualEdit)return;
   const next=tasks.map(t=>t.id===manualEdit.id?manualEdit:t);
@@ -98,7 +138,7 @@ export default function FinishedQuotes(){
   const amount=q?details!.total:Number(viewTask?.amount)||0;
   const editingManual=!!(t&&manualEdit&&manualEdit.id===t.id);
   return <main className="rev-shell dj-full-desktop dj-functional dj-unified-page dj-finished-page"><DesktopSidebar active="finished"/><div className="rev-phone rev-inner">
-   <header className="rev-screen-head dj-page-header dj-route-toolbar"><button type="button" className="rev-back-link" onClick={()=>{setManualEdit(null);setSelected(null)}}>‹</button><b>Finished Quotation</b><div className="dj-header-actions"><button type="button" className="dj-primary-action" onClick={()=>window.print()}>🖨 Print Quotation</button>{q&&<button className="dj-secondary-action" onClick={()=>editFull(q)}>✎ Edit Quotation</button>}{t&&<button className="dj-secondary-action" onClick={()=>setManualEdit({...t})}>✎ Edit Details</button>}{q&&<button className="dj-secondary-action" onClick={()=>reopen(q)}>↶ Reopen to Saved</button>}</div></header>
+   <header className="rev-screen-head dj-page-header dj-route-toolbar"><button type="button" className="rev-back-link" onClick={()=>{setManualEdit(null);setSelected(null)}}>‹</button><b>Finished Quotation</b><div className="dj-header-actions"><button type="button" className="dj-primary-action" onClick={()=>window.print()}>🖨 Print Quotation</button>{q&&<button className="dj-secondary-action" onClick={()=>editFull(q)}>✎ Edit Quotation</button>}{t&&<button className="dj-secondary-action" onClick={()=>setManualEdit({...t})}>✎ Edit Details</button>}{q&&<button className="dj-secondary-action" onClick={()=>reopen(q)}>↶ Reopen to Saved</button>}<button type="button" className="dj-danger-action" disabled={deleting} onClick={()=>void deleteFinished(selected)}>{deleting?'Deleting…':'Delete Quotation'}</button></div></header>
    <section className="rev-screen-body dj-page-body">
     <div className="dj-print-tech-title">
      <div className="brand"><strong>DELTA JOINERY</strong><span>FINISHED QUOTATION RECORD</span></div>

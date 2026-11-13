@@ -2,9 +2,9 @@
 import {createContext,useContext,useEffect,useRef,useState} from 'react';
 import {createClient, type SupabaseClient} from '@supabase/supabase-js';
 import DesktopWelcome from './DesktopWelcome';
-const KEYS=['dj_units','dj_hardware','dj_labour','dj_electrics','dj_finishes','dj_door_rates','dj_quote','dj_saved_quotes','dj_quotation_tasks','dj_timesheets','dj_tool_addresses','dj_cutting_projects','dj_worktop_rates','dj_timber_rates','dj_fillers','dj_skoda_installations'];
+const KEYS=['dj_units','dj_hardware','dj_labour','dj_electrics','dj_finishes','dj_door_rates','dj_quote','dj_saved_quotes','dj_quotation_tasks','dj_timesheets','dj_tool_addresses','dj_cutting_projects','dj_worktop_rates','dj_timber_rates','dj_fillers','dj_skoda_installations','dj_van_inspections'];
 type Profile={id:string;email?:string};
-export const DeltaAccountContext=createContext<{email:string;message:string;signOut:()=>void;loadHours:()=>Promise<Record<string,unknown>|null>;saveHours:(hours:Record<string,unknown>)=>Promise<void>;saveTool:(key:'dj_tool_addresses'|'dj_cutting_projects'|'dj_skoda_installations'|'dj_quotation_tasks'|'dj_saved_quotes'|'dj_quote',payload:unknown)=>Promise<void>;uploadQuotationImages:(quotationId:string,files:File[])=>Promise<{path:string;name:string}[]>;removeQuotationImages:(paths:string[])=>Promise<void>;getQuotationImageUrl:(path:string)=>Promise<string>}|null>(null);
+export const DeltaAccountContext=createContext<{email:string;message:string;signOut:()=>void;loadHours:()=>Promise<Record<string,unknown>|null>;saveHours:(hours:Record<string,unknown>)=>Promise<void>;saveTool:(key:'dj_tool_addresses'|'dj_cutting_projects'|'dj_skoda_installations'|'dj_quotation_tasks'|'dj_saved_quotes'|'dj_quote'|'dj_van_inspections',payload:unknown)=>Promise<void>;uploadQuotationImages:(quotationId:string,files:File[])=>Promise<{path:string;name:string}[]>;removeQuotationImages:(paths:string[])=>Promise<void>;getQuotationImageUrl:(path:string)=>Promise<string>}|null>(null);
 export const useDeltaAccount=()=>useContext(DeltaAccountContext);
 export default function CloudSync({children}:{children:React.ReactNode}){
  const [checking,setChecking]=useState(true);const [client,setClient]=useState<SupabaseClient|null>(null),[person,setPerson]=useState<Profile|null>(null),[open,setOpen]=useState(false),[email,setEmail]=useState(''),[password,setPassword]=useState(''),[message,setMessage]=useState('');
@@ -135,13 +135,13 @@ export default function CloudSync({children}:{children:React.ReactNode}){
    finally{refreshingQuotes=false}
   };
   // Keep addresses and cutting lists in sync across signed-in devices.
-  const toolsKeys=['dj_tool_addresses','dj_cutting_projects','dj_skoda_installations'];
+  const toolsKeys=['dj_tool_addresses','dj_cutting_projects','dj_skoda_installations','dj_van_inspections'];
   const toolChannel=supabase.channel('dj-tools-sync').on('postgres_changes',{
    event:'*',schema:'public',table:'joinery_data'
   },payload=>{
    const row=payload.new as {user_id?:string;data_key?:string;payload?:unknown};
    if(!personRef.current||row.user_id!==personRef.current.id||!row.data_key||!toolsKeys.includes(row.data_key)||pending.current[row.data_key])return;
-   const received=JSON.stringify(row.payload??(row.data_key==='dj_tool_addresses'?[]:{}));
+   const received=JSON.stringify(row.payload??(row.data_key==='dj_tool_addresses'||row.data_key==='dj_van_inspections'?[]:{}));
    if(localStorage.getItem(row.data_key)===received)return;
    pause.current=true;
    try{localStorage.setItem(row.data_key,received)}finally{pause.current=false}
@@ -208,7 +208,7 @@ export default function CloudSync({children}:{children:React.ReactNode}){
   pause.current=true;
   try{localStorage.setItem('dj_timesheets',JSON.stringify(hours))}finally{pause.current=false}
  }
- async function saveTool(key:'dj_tool_addresses'|'dj_cutting_projects'|'dj_skoda_installations'|'dj_quotation_tasks'|'dj_saved_quotes'|'dj_quote',payload:unknown){
+ async function saveTool(key:'dj_tool_addresses'|'dj_cutting_projects'|'dj_skoda_installations'|'dj_quotation_tasks'|'dj_saved_quotes'|'dj_quote'|'dj_van_inspections',payload:unknown){
   const sb=clientRef.current,user=personRef.current;
   if(!sb||!user)throw new Error('Cloud account not ready');
   const {data,error}=await sb.from('joinery_data').upsert({user_id:user.id,data_key:key,payload},{onConflict:'user_id,data_key'}).select('data_key,payload').single();

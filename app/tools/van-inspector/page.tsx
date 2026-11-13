@@ -39,9 +39,146 @@ export default function VanInspector(){
  async function saveInspection(){if(!draft||!draft.vehicleId||!draft.inspector.trim()||!draft.lastDriver.trim()||!draft.km||Number(draft.km)<0){setStatus('Select a van and enter inspector, last driver and mileage');return}setBusy(true);try{const exists=store.inspections.some(i=>i.id===draft.id);await saveStore({...store,inspections:exists?store.inspections.map(i=>i.id===draft.id?draft:i):[draft,...store.inspections]});setView('list');setDraft(null)}catch(e){setStatus('Save failed: '+String(e))}finally{setBusy(false)}}
  async function upload(section:string,files:FileList|null){if(!files?.length||!draft||!account)return;setBusy(true);setStatus('Uploading images...');try{const picked=Array.from(files).filter(f=>f.type.startsWith('image/'));if(!picked.length)throw new Error('Select JPG, PNG, WEBP or another image format');const added=await account.uploadQuotationImages('van-inspection-'+draft.id,picked);const next={...draft,photos:{...draft.photos,[section]:[...(draft.photos[section]||[]),...added]}};setDraft(next);setStatus('Images uploaded. Save inspection to keep them in its record.');const urls=await Promise.all(added.map(async p=>[p.path,await account.getQuotationImageUrl(p.path)] as const));setPhotoURLs(x=>({...x,...Object.fromEntries(urls)}))}catch(e){setStatus('Upload failed: '+String(e))}finally{setBusy(false)}}
  async function removePhoto(section:string,p:Photo){if(!draft||!account)return;setBusy(true);try{await account.removeQuotationImages([p.path]);edit({photos:{...draft.photos,[section]:(draft.photos[section]||[]).filter(x=>x.path!==p.path)}});setStatus('Photo removed; save the inspection to confirm')}catch(e){setStatus('Could not remove photo: '+String(e))}finally{setBusy(false)}}
- async function pdf(i:Inspection){setBusy(true);setStatus('Preparing PDF with photographs...');try{const {jsPDF}=await import('jspdf');const doc=new jsPDF({format:'a4',unit:'mm'});const van=store.vehicles.find(v=>v.id===i.vehicleId);let y=16;const page=()=>{doc.addPage();y=17};const line=(a:string,b:string)=>{if(y>267)page();doc.setTextColor(28,46,58);doc.setFontSize(10);doc.setFont('helvetica','bold');doc.text(a,17,y);doc.setFont('helvetica','normal');const lines=doc.splitTextToSize(b||'-',113);doc.text(lines,78,y);y+=Math.max(8,lines.length*5+3)};doc.setFillColor(9,35,56);doc.rect(0,0,210,35,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(17);doc.text('DELTA JOINERY',17,16);doc.setFontSize(10);doc.text('VAN INSPECTION REPORT',17,25);y=45;line('Vehicle',van?[van.registration,van.make,van.model].filter(Boolean).join(' | '):i.vehicleId);line('Inspection date',i.date);line('Inspected by',i.inspector);line('Last driver',i.lastDriver);line('Dashboard mileage',i.km+' km');line('Engine oil',i.oil);line('Oil notes',i.oilNotes);line('Warning lights',i.warningLights.join(', ')||'None reported');line('Warning details',i.warningNotes);line('Interior grade',i.insideGrade);line('Interior notes',i.insideNotes);line('Exterior grade',i.outsideGrade);line('Exterior notes',i.outsideNotes);for(const w of wheels)line('Tyre: '+w,i.tyres[w]||'Not checked');line('Tyre notes',i.tyreNotes);for(const c of standardChecks)line(c,i.checks[c]||'Not checked');line('Additional notes',i.notes);line('Inspection result',fault(i)?'DEFECTS / ATTENTION REQUIRED':'NO DEFECTS REPORTED');
- for(const [section,photos] of Object.entries(i.photos||{})){if(!photos.length)continue;page();doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(15,53,79);doc.text(section.toUpperCase()+' PHOTOGRAPHS',17,y);y+=11;for(const p of photos){try{const url=await account?.getQuotationImageUrl(p.path);if(!url)continue;const res=await fetch(url);if(!res.ok)throw new Error('image');const blob=await res.blob();const dataUrl=await new Promise<string>((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result));reader.onerror=()=>reject(new Error('Image unavailable'));reader.readAsDataURL(blob)});const image=new Image();image.src=dataUrl;await image.decode();const w=Math.min(175,175*image.naturalWidth/image.naturalHeight),h=Math.min(95,w*image.naturalHeight/image.naturalWidth);if(y+h+12>280)page();doc.addImage(dataUrl,blob.type.includes('png')?'PNG':'JPEG',17,y,w,h);y+=h+12}catch{line('Image not available',p.name)}}}
- doc.save('Delta-Joinery-Van-Inspection-'+(van?.registration||'vehicle')+'-'+i.date+'.pdf');setStatus('PDF downloaded')}catch(e){setStatus('PDF export failed: '+String(e))}finally{setBusy(false)}}
+ async function pdf(i:Inspection){
+  setBusy(true);setStatus('Preparing technical inspection PDF...');
+  try{
+   const {jsPDF}=await import('jspdf');
+   const doc=new jsPDF({format:'a4',unit:'mm',compress:true});
+   const van=store.vehicles.find(v=>v.id===i.vehicleId);
+   const vehicle=van?[van.registration,van.make,van.model].filter(Boolean).join(' / '):i.vehicleId;
+   const reportId=i.id.slice(0,8).toUpperCase();
+   const issues=fault(i);
+   const left=16,right=194,width=178;
+   const navy:[number,number,number]=[12,32,49],blue:[number,number,number]=[36,105,143];
+   const grey:[number,number,number]=[92,108,119],ink:[number,number,number]=[25,42,53];
+   const pale:[number,number,number]=[239,245,248];
+   let y=43;
+   const header=()=>{
+    doc.setFillColor(...navy);doc.rect(0,0,210,30,'F');
+    doc.setDrawColor(57,138,173);doc.setLineWidth(.8);doc.line(16,30,194,30);
+    doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(17);doc.text('DELTA JOINERY',16,14);
+    doc.setFontSize(8);doc.setFont('helvetica','normal');doc.text('BESPOKE INTERIORS  /  FLEET MANAGEMENT',16,22);
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text('VEHICLE INSPECTION REPORT',194,14,{align:'right'});
+    doc.setFont('helvetica','normal');doc.text('REF: '+reportId,194,21,{align:'right'});
+   };
+   const page=()=>{doc.addPage();header();y=40};
+   const space=(height:number)=>{if(y+height>270)page()};
+   const title=(num:string,text:string)=>{
+    space(19);
+    doc.setFillColor(...navy);doc.roundedRect(left,y,width,10,1.5,1.5,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(255,255,255);
+    doc.text(num+'  '+text.toUpperCase(),left+4,y+6.6);y+=15;
+   };
+   const row=(label:string,value:string,status=false)=>{
+    const data=doc.splitTextToSize(String(value||'Not recorded'),106) as string[];
+    const h=Math.max(10,data.length*4.4+5);space(h);
+    doc.setFillColor(...pale);doc.rect(left,y,58,h,'F');
+    doc.setDrawColor(218,229,235);doc.setLineWidth(.15);doc.line(left,y+h,right,y+h);
+    doc.setTextColor(...grey);doc.setFont('helvetica','bold');doc.setFontSize(8);
+    doc.text(label,left+3,y+6.1);
+    doc.setTextColor(...(status&&(value==='Good'||value==='Excellent')?[27,112,81]:ink));
+    doc.setFont('helvetica','normal');doc.text(data,left+62,y+6.1);
+    y+=h;
+   };
+   const textNote=(label:string,value:string)=>{
+    if(!value.trim())return;
+    const lines=doc.splitTextToSize(value,169) as string[];
+    const h=lines.length*4.5+11;space(h);
+    doc.setFillColor(248,250,251);doc.roundedRect(left,y,width,h,1.4,1.4,'F');
+    doc.setFont('helvetica','bold');doc.setTextColor(...blue);doc.setFontSize(7.5);doc.text(label.toUpperCase(),left+4,y+5);
+    doc.setFont('helvetica','normal');doc.setTextColor(...ink);doc.setFontSize(8);doc.text(lines,left+4,y+11);
+    y+=h+4;
+   };
+   header();
+   doc.setTextColor(...grey);doc.setFont('helvetica','bold');doc.setFontSize(8);
+   doc.text('INSPECTION DATE',left,y);doc.text('VEHICLE REGISTRATION',82,y);doc.text('REPORT STATUS',146,y);
+   y+=6;doc.setFontSize(11);doc.setTextColor(...ink);
+   doc.text(i.date,left,y);doc.text(van?.registration||'N/A',82,y);
+   doc.setTextColor(...(issues?[161,81,31]:[30,115,82]));
+   doc.text(issues?'ATTENTION REQUIRED':'NO DEFECTS REPORTED',146,y,{maxWidth:48});y+=13;
+   title('01','Vehicle and inspection details');
+   row('Vehicle',vehicle);row('Inspected by',i.inspector);row('Last driver',i.lastDriver);row('Odometer',i.km+' km');row('Inspection date',i.date);
+   title('02','Oil and mechanical checks');
+   row('Engine oil',i.oil,true);textNote('Oil observations',i.oilNotes);
+   title('03','Tyre condition');
+   for(const wheel of wheels)row(wheel,i.tyres[wheel]||'Not checked',true);
+   textNote('Tyre observations',i.tyreNotes);
+   title('04','Dashboard warning indicators');
+   if(!i.warningLights.length)row('Warning lights','None reported');
+   else for(const light of i.warningLights)row('Warning recorded',light);
+   textNote('Warning light observations',i.warningNotes);
+   title('05','Bodywork and cabin condition');
+   row('Interior grade',i.insideGrade,true);textNote('Interior observations',i.insideNotes);
+   row('Exterior grade',i.outsideGrade,true);textNote('Exterior observations',i.outsideNotes);
+   title('06','Safety and equipment checklist');
+   for(const check of standardChecks)row(check,i.checks[check]||'Not checked',true);
+   title('07','Inspector notes and report conclusion');
+   textNote('Additional observations',i.notes);
+   row('Overall result',issues?'Issues identified - review defects and arrange corrective action':'No defects reported in completed fields');
+   row('Inspection reference',reportId);
+   const photoGroups:[string,string][]=[['vehicle','Vehicle overview'],['dashboard','Dashboard and odometer'],['tyres','Tyre condition'],['inside','Interior condition'],['outside','Exterior and bodywork']];
+   const photos=photoGroups.flatMap(([key,label])=>(i.photos?.[key]||[]).map(p=>({p,label})));
+   if(photos.length){
+    page();title('08','Photographic evidence');
+    let imageIndex=0;
+    for(const item of photos){
+     imageIndex++;
+     let jpeg:string|undefined;
+     let ratio=1;
+     try{
+      const url=await account?.getQuotationImageUrl(item.p.path);
+      if(!url)throw new Error('Missing image URL');
+      const response=await fetch(url);
+      if(!response.ok)throw new Error('Image unavailable');
+      const blob=await response.blob();
+      const objectUrl=URL.createObjectURL(blob);
+      try{
+       const img=new Image();img.src=objectUrl;await img.decode();
+       ratio=img.naturalWidth/img.naturalHeight;
+       const canvas=document.createElement('canvas');
+       const scale=Math.min(1,1500/Math.max(img.naturalWidth,img.naturalHeight));
+       canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
+       canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+       const ctx=canvas.getContext('2d');
+       if(!ctx)throw new Error('Canvas unavailable');
+       ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+       ctx.drawImage(img,0,0,canvas.width,canvas.height);
+       jpeg=canvas.toDataURL('image/jpeg',.79);
+      }finally{URL.revokeObjectURL(objectUrl)}
+     }catch{jpeg=undefined}
+     const panelW=85, panelH=72;
+     const slot=(imageIndex-1)%2;
+     if(slot===0){space(panelH+9)}
+     const x=left+slot*93,top=y;
+     doc.setDrawColor(215,229,235);doc.setFillColor(248,250,251);
+     doc.roundedRect(x,top,panelW,panelH,2,2,'FD');
+     doc.setTextColor(...blue);doc.setFont('helvetica','bold');doc.setFontSize(8);
+     doc.text(String(imageIndex).padStart(2,'0')+'  '+item.label.toUpperCase(),x+3,top+6,{maxWidth:panelW-6});
+     if(jpeg){
+      const maxW=panelW-6,maxH=panelH-20;
+      const fitW=Math.min(maxW,maxH*ratio),fitH=fitW/ratio;
+      doc.addImage(jpeg,'JPEG',x+(panelW-fitW)/2,top+9+(maxH-fitH)/2,fitW,fitH);
+     }else{
+      doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...grey);
+      doc.text('Image unavailable',x+4,top+31);
+     }
+     doc.setTextColor(...grey);doc.setFont('helvetica','normal');doc.setFontSize(7);
+     doc.text(item.p.name.length>32?item.p.name.slice(0,29)+'...':item.p.name,x+3,top+panelH-4);
+     if(slot===1||imageIndex===photos.length)y+=panelH+9;
+    }
+   }
+   const pages=doc.getNumberOfPages();
+   for(let p=1;p<=pages;p++){
+    doc.setPage(p);doc.setDrawColor(207,219,227);doc.line(left,282,right,282);
+    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...grey);
+    doc.text('DELTA JOINERY  |  VEHICLE INSPECTION RECORD  |  '+(van?.registration||'UNKNOWN'),left,288);
+    doc.text('PAGE '+p+' / '+pages,right,288,{align:'right'});
+   }
+   doc.save('Delta-Joinery-Technical-Van-Inspection-'+(van?.registration||'vehicle')+'-'+i.date+'.pdf');
+   setStatus('Technical PDF downloaded');
+  }catch(error){setStatus('PDF export failed: '+String(error))}
+  finally{setBusy(false)}
+ }
  const selectVan=store.vehicles.find(v=>v.id===draft?.vehicleId);
  const photoSection=(section:string,title:string)=><div style={{...box,marginTop:12}}><b>{title}</b><p style={{fontSize:12,opacity:.7,margin:'5px 0 12px'}}>Upload photos to keep with this inspection and include in the PDF.</p><input type="file" accept="image/*" multiple disabled={busy} onChange={e=>{void upload(section,e.target.files);e.currentTarget.value=''}} style={{...input,fontSize:12}}/><div style={{display:'flex',flexWrap:'wrap',gap:10,marginTop:10}}>{(draft?.photos[section]||[]).map(p=><div key={p.path} style={{width:112}}>{photoURLs[p.path]?<img src={photoURLs[p.path]} alt={p.name} style={{width:110,height:85,objectFit:'cover',borderRadius:6}}/>:<div style={{height:85,background:'#17344b',fontSize:11,padding:8}}>Loading image...</div>}<button disabled={busy} onClick={()=>void removePhoto(section,p)} style={{fontSize:11,color:'#ffbe95'}}>Remove</button></div>)}</div></div>;
  return <main className="dj-desktop dj-unified-page"><DesktopSidebar active="tools"/><div className="dj-unified-content" style={{minWidth:0,minHeight:'100vh',padding:'28px 18px'}}><div className="dj-page-inner" style={{maxWidth:1250,margin:'0 auto',color:'#f2f8ff'}}><header style={{display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:14,alignItems:'center',marginBottom:18}}><div><div style={{color:'#ffc861',fontSize:12,fontWeight:800,letterSpacing:1}}>DELTA JOINERY / TOOLS</div><h1 style={{fontSize:31,fontWeight:850,margin:'4px 0'}}>Van Inspector</h1><p style={{margin:0,color:'#d5e3ef',fontSize:13}}>Vehicle condition checks, photographs and inspection records</p></div><button style={btn} onClick={()=>{setStatus('');setView('vehicles')}}>Manage Vans</button></header>

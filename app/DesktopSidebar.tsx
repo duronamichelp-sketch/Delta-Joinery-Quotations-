@@ -20,7 +20,6 @@ export default function DesktopSidebar({active}:{active:'home'|'quote'|'quotes'|
       <Link className={active==='quotes'?'current':''} href="/quotes">▤ <span>Saved Quotations</span></Link>
       <Link className={active==='finished'?'current':''} href="/finished-quotes">✓ <span>Finished Quotations</span></Link>
       <Link className={active==='library'?'current':''} href="/units">▣ <span>Price Library</span></Link>
-      <Link className={active==='preview'?'current':''} href="/preview">▤ <span>Preview / PDF</span></Link>
       <Link className={active==='hours'?'current':''} href="/hours">◷ <span>My Hours</span></Link>
       <button
         type="button"

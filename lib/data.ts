@@ -1,7 +1,7 @@
 export type Unit={id:string;name:string;width:number;height:number;depth:number;sqm:number;price:number;material?:UnitMaterial;doorCost?:number;hingesPerUnit?:number;hingePrice?:number;image?:string;doorPrices?:Record<string,number>};
 export type Hardware={id:string;name:string;category:string;price:number;image?:string};
 export type DoorMaterial='MFC'|'Veneer'|'Painted MDF';
-export type QuoteUnit={id:string;qty:number;hasDoors:boolean;doorMaterial:DoorMaterial;doorCount:number;doorSqm:number;adc?:boolean;doorFinish?:string;doorCategory?:string;doorWidth?:number;doorHeight?:number};
+export type QuoteUnit={id:string;qty:number;hasDoors:boolean;doorMaterial:DoorMaterial;doorCount:number;doorSqm:number;adc?:boolean;doorFinish?:string;doorCategory?:string;doorWidth?:number;doorHeight?:number;ais?:boolean;shelfMaterial?:UnitMaterial;shelfQty?:number};
 export type QuoteHardware={id:string;qty:number};
 export const DEFAULT_HARDWARE:Hardware[]=[{id:'hinge',name:'Blumotion 110° Hinge',category:'Hinges',price:4},{id:'movento',name:'Blum Movento 40kg',category:'Drawer systems',price:120},{id:'tipon',name:'Blum Movento TIP-ON',category:'Drawer systems',price:128},{id:'merivobox',name:'Blum MERIVOBOX',category:'Drawer systems',price:90}];
 export const DEFAULT_DOOR_RATES:Record<DoorMaterial,number>={'MFC':120,'Veneer':240,'Painted MDF':190};
@@ -49,4 +49,21 @@ export const carcassArea=(w:number,h:number,d:number)=>(2*h*d+2*w*d+w*h)/1000000
 const REFERENCE_AREA=carcassArea(600,720,550);
 export const sizePrice=(w:number,h:number,d:number,material:UnitMaterial='MFC')=>Math.round(carcassArea(w,h,d)/REFERENCE_AREA*UNIT_BENCHMARK[material]*100)/100;
 export const unitMaterial=(unit:Unit):UnitMaterial=>unit.material||( /veneer/i.test(unit.name)?'Veneer': /\bmdf\b/i.test(unit.name)?'MDF':'MFC');
+// 18 mm carcass panels; internal shelf sits between the sides and stops at the full back.
+export function shelfDimensions(unit:Unit){
+ return {width:Math.max(0,Number(unit.width)-36),depth:Math.max(0,Number(unit.depth)-18)};
+}
+export function shelfArea(unit:Unit){
+ const s=shelfDimensions(unit);
+ return s.width*s.depth/1000000;
+}
+// Price per internal shelf, using the same material-specific reference rates as carcasses.
+export function shelfPrice(unit:Unit,material:UnitMaterial='MFC'){
+ return Math.round(shelfArea(unit)/REFERENCE_AREA*UNIT_BENCHMARK[material]*100)/100;
+}
+export function shelvesTotal(options:{ais?:boolean;shelfMaterial?:UnitMaterial;shelfQty?:number},unit?:Unit){
+ if(!options.ais||!unit)return 0;
+ const qty=Math.max(0,Math.trunc(Number(options.shelfQty)||0));
+ return Math.round(shelfPrice(unit,options.shelfMaterial||unitMaterial(unit))*qty*100)/100;
+}
 export const sizeKey=(w:number,h:number,d:number)=>[w,h,d].join('x');

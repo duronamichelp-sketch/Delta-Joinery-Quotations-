@@ -84,7 +84,7 @@ export function savedQuoteDetails(q:SavedQuotation){
  for(const x of q.chosenTimber||[]){addLine('Timber',x.customName||x.id,x.qty,x.customName?(Number(x.customPrice)||0):(timberRates[x.id]||0),'ft')}
  for(const x of q.chosenWorktops||[]){addLine('Worktops',x.name,x.qty,x.rate,x.unit)}
  for(const x of q.chosenCnc||[]){const row=cnc.find(z=>z.id===x.id);if(x.customName)addLine('CNC Production',x.customName,x.qty,Number(x.customPrice)||0,'each');else if(row)addLine('CNC Production',row.name,x.qty,row.price,row.unit)}
- for(const x of q.chosenProduction||[]){const row=production.find(z=>z.id===x.id);if(x.customName)addLine('Production Costs',x.customName,x.qty,Number(x.customPrice)||0,'each');else if(row)addLine('Production Costs',row.name,x.qty,row.price,row.unit)}
+ for(const x of q.chosenProduction||[]){const row=production.find(z=>z.id===x.id)||cnc.find(z=>z.id===x.id&&x.id.startsWith('prod-cnc-'));if(x.customName)addLine('Production Costs',x.customName,x.qty,Number(x.customPrice)||0,'each');else if(row)addLine('Production Costs',row.name,x.qty,row.price,row.unit)}
  for(const product of q.chosenCustomProducts||[]){const price=typeof product.price==='number'?product.price:(product.lines||[]).reduce((s,l)=>s+(Number(l.price)||0),0);addLine('Custom Products',product.name,1,price,'item')}
 
  const effectiveLines=q.costLines?.length?q.costLines:lines;

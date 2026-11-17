@@ -3,7 +3,7 @@ import {useEffect,useState} from 'react';
 import Link from 'next/link';
 import DesktopSidebar from '../DesktopSidebar';
 import Image from 'next/image';
-import {Unit,Hardware,Labour,ExtraCost,QuoteUnit,QuoteHardware,DEFAULT_HARDWARE,DEFAULT_FINISH_RATES,pricedDoor,doorSqm,shelvesTotal,shelfDimensions,currency,read} from '../../lib/data';
+import {Unit,Hardware,Labour,ExtraCost,QuoteUnit,QuoteHardware,DEFAULT_HARDWARE,DEFAULT_FINISH_RATES,pricedDoor,doorSqm,shelvesTotal,shelfDimensions,currency,read,DEFAULT_PRODUCTION_COSTS,productionCostsWithDefaults} from '../../lib/data';
 type CostItem={id:string;name:string;price:number;unit:string};
 const DEFAULT_CNC:CostItem[]=[{"id":"cnc-0","name":"MDF 22 Strada Handle","price":10,"unit":"door"},{"id":"cnc-1","name":"Frame Door","price":10,"unit":"door"},{"id":"cnc-2","name":"Shaker Door","price":25,"unit":"door"},{"id":"cnc-3","name":"Grooving","price":50,"unit":"m²"},{"id":"cnc-4","name":"Decor Pieces - High Complexity","price":45,"unit":"each"},{"id":"cnc-5","name":"Decor Pieces - Medium Complexity","price":30,"unit":"each"},{"id":"cnc-6","name":"Decor Pieces - Low Complexity","price":15,"unit":"each"},{"id":"cnc-7","name":"Bent Panel","price":120,"unit":"each"},{"id":"cnc-8","name":"Bent Panel - Shaker Door","price":170,"unit":"each"},{"id":"cnc-9","name":"Bent Panel - Big Piece","price":190,"unit":"each"},{"id":"cnc-10","name":"Bent Panel - Big Piece Shaker Door","price":240,"unit":"each"},{"id":"cnc-11","name":"Built-in Handle","price":20,"unit":"door"},{"id":"cnc-12","name":"PVC Film Covering","price":20,"unit":"piece"}];
 type CustomLine={id:string;qty:number;customName?:string;customPrice?:number};
@@ -11,12 +11,12 @@ type Q={includeVat?:boolean;name?:string;number?:string;date?:string;client?:str
 export default function Preview(){
  const [q,setQ]=useState<Q>({});
  const [timberRates,setTimberRates]=useState<Record<string,number>>({});
- const [cnc,setCnc]=useState<CostItem[]>(DEFAULT_CNC),[production,setProduction]=useState<CostItem[]>([]);
+ const [cnc,setCnc]=useState<CostItem[]>(DEFAULT_CNC),[production,setProduction]=useState<CostItem[]>(DEFAULT_PRODUCTION_COSTS);
 const [doorRates,setDoorRates]=useState<Record<string,number>>(DEFAULT_FINISH_RATES);
  const [units,setUnits]=useState<Unit[]>([]);
  const [hardware,setHardware]=useState<Hardware[]>([]);
  const [labour,setLabour]=useState<Labour[]>([]);const [electrics,setElectrics]=useState<ExtraCost[]>([]),[finishes,setFinishes]=useState<ExtraCost[]>([]),[fillers,setFillers]=useState<ExtraCost[]>([]);
- useEffect(()=>{setCnc(read<CostItem[]>('dj_cnc_production',DEFAULT_CNC));setProduction(read<CostItem[]>('dj_production_costs',[]));setDoorRates({...DEFAULT_FINISH_RATES,...read<Record<string,number>>('dj_door_rates',{})});setTimberRates(read<Record<string,number>>('dj_timber_rates',{}));setQ(read<Q>('dj_quote',{}));setUnits(read<Unit[]>('dj_units',[]));setHardware(read<Hardware[]>('dj_hardware',DEFAULT_HARDWARE));setLabour(read<Labour[]>('dj_labour',[]));setElectrics(read<ExtraCost[]>('dj_electrics',[]));setFinishes(read<ExtraCost[]>('dj_finishes',[]));setFillers(read<ExtraCost[]>('dj_fillers',[]));},[]);
+ useEffect(()=>{setCnc(read<CostItem[]>('dj_cnc_production',DEFAULT_CNC));setProduction(productionCostsWithDefaults(read<CostItem[]>('dj_production_costs',DEFAULT_PRODUCTION_COSTS)));setDoorRates({...DEFAULT_FINISH_RATES,...read<Record<string,number>>('dj_door_rates',{})});setTimberRates(read<Record<string,number>>('dj_timber_rates',{}));setQ(read<Q>('dj_quote',{}));setUnits(read<Unit[]>('dj_units',[]));setHardware(read<Hardware[]>('dj_hardware',DEFAULT_HARDWARE));setLabour(read<Labour[]>('dj_labour',[]));setElectrics(read<ExtraCost[]>('dj_electrics',[]));setFinishes(read<ExtraCost[]>('dj_finishes',[]));setFillers(read<ExtraCost[]>('dj_fillers',[]));},[]);
  // Resolve custom-priced entries as first-class quotation lines, without requiring a matching library item.
  // Both the on-screen preview and the downloaded PDF use this same list and totals.
  const customRow=(x:CustomLine,detail:string)=>x.customName?{label:x.customName,detail,qty:Number(x.qty)||0,price:Number(x.customPrice)||0}:null;

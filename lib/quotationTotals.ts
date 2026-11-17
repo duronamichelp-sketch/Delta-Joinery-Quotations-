@@ -1,4 +1,4 @@
-import {read, type Unit,type Hardware,type Labour,type ExtraCost,DEFAULT_HARDWARE,DEFAULT_FINISH_RATES,pricedDoor} from './data';
+import {read, type Unit,type Hardware,type Labour,type ExtraCost,DEFAULT_HARDWARE,DEFAULT_FINISH_RATES,pricedDoor,shelvesTotal,shelfDimensions,shelfPrice,type UnitMaterial} from './data';
 
 export type SavedQuoteLine={category:string;description:string;qty:number;rate:number;amount:number;unit?:string};
 export type SavedQuoteBreakdown={key:string;label:string;amount:number};
@@ -9,7 +9,7 @@ export type SavedQuotation={
  includeVat?:boolean;totalAmount?:number;subtotalAmount?:number;vatAmount?:number;
  finished?:boolean;finishedAt?:string;siteImages?:{path:string;name:string}[];
  costLines?:SavedQuoteLine[];costBreakdown?:SavedQuoteBreakdown[];
- chosenUnits?:{id:string;qty:number;customName?:string;customPrice?:number;adc?:boolean;hasDoors?:boolean;doorMaterial?:string;doorCount?:number;doorSqm?:number;doorWidth?:number;doorHeight?:number;doorFinish?:string;doorCategory?:string}[];
+ chosenUnits?:{id:string;qty:number;customName?:string;customPrice?:number;adc?:boolean;hasDoors?:boolean;doorMaterial?:string;doorCount?:number;doorSqm?:number;doorWidth?:number;doorHeight?:number;doorFinish?:string;doorCategory?:string;ais?:boolean;shelfMaterial?:UnitMaterial;shelfQty?:number}[];
  chosenHardware?:{id:string;qty:number;customName?:string;customPrice?:number}[];
  chosenLabour?:{id:string;qty:number;customName?:string;customPrice?:number}[];
  chosenCnc?:{id:string;qty:number;customName?:string;customPrice?:number}[];
@@ -67,6 +67,14 @@ export function savedQuoteDetails(q:SavedQuotation){
    const doorRate=pricedDoor({...x,hasDoors:!!x.adc,doorMaterial:'MFC',doorCount:x.doorCount||1,doorSqm:x.doorSqm||0} as any,doorRates,u);
    if(doorRate>0)addLine('Units',`${u.name} — ${x.doorFinish||'Door'}`,Number(x.qty)||0,doorRate,'door set');
   }
+  if(x.ais&&u){
+   const shelfRate=shelvesTotal(x,u);
+   if(shelfRate>0){
+    const size=shelfDimensions(u);
+    const material=x.shelfMaterial||'MFC';
+    addLine('Shelves',`${u.name} — AIS ${x.shelfQty||0} × ${material} shelves (${size.width} × ${size.depth} mm)`,Number(x.qty)||0,shelfRate,'shelf set');
+   }
+  }
  }
  for(const x of q.chosenHardware||[]){const row=hardware.find(z=>z.id===x.id);if(x.customName)addLine('Hardware',x.customName,x.qty,Number(x.customPrice)||0,'each');else if(row)addLine('Hardware',row.name,x.qty,row.price,'each')}
  for(const x of q.chosenLabour||[]){const row=labour.find(z=>z.id===x.id);if(x.customName)addLine('Labour',x.customName,x.qty,Number(x.customPrice)||0,'each');else if(row)addLine('Labour',row.name,x.qty,row.price,row.unit)}
@@ -80,7 +88,7 @@ export function savedQuoteDetails(q:SavedQuotation){
  for(const product of q.chosenCustomProducts||[]){const price=typeof product.price==='number'?product.price:(product.lines||[]).reduce((s,l)=>s+(Number(l.price)||0),0);addLine('Custom Products',product.name,1,price,'item')}
 
  const effectiveLines=q.costLines?.length?q.costLines:lines;
- const categoryOrder=['Units','Hardware','Labour','Electrics','Finishes','Fillers / Plinths & Coving','Timber','Worktops','CNC Production','Production Costs','Custom Products'];
+ const categoryOrder=['Units','Shelves','Hardware','Labour','Electrics','Finishes','Fillers / Plinths & Coving','Timber','Worktops','CNC Production','Production Costs','Custom Products'];
  const computedBreakdown=categoryOrder.map((label,index)=>({
   key:String(index+1),
   label,

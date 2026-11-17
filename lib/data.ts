@@ -1,4 +1,4 @@
-export type Unit={id:string;name:string;width:number;height:number;depth:number;sqm:number;price:number;doorCost?:number;hingesPerUnit?:number;hingePrice?:number;image?:string;doorPrices?:Record<string,number>};
+export type Unit={id:string;name:string;width:number;height:number;depth:number;sqm:number;price:number;material?:UnitMaterial;doorCost?:number;hingesPerUnit?:number;hingePrice?:number;image?:string;doorPrices?:Record<string,number>};
 export type Hardware={id:string;name:string;category:string;price:number;image?:string};
 export type DoorMaterial='MFC'|'Veneer'|'Painted MDF';
 export type QuoteUnit={id:string;qty:number;hasDoors:boolean;doorMaterial:DoorMaterial;doorCount:number;doorSqm:number;adc?:boolean;doorFinish?:string;doorCategory?:string;doorWidth?:number;doorHeight?:number};
@@ -28,8 +28,11 @@ export const UNIT_WIDTHS=[150,...Array.from({length:11},(_,i)=>(i+2)*100)];
 export const UNIT_DEPTHS=[300,350,400,450,500,550,600];
 // Delta Joinery MFC 18mm big-piece list rate; includes 15% uplift.
 // Carcass assumption: two sides, top, bottom, and full 18mm back; no doors.
-export const MFC_CARCASS_RATE=120;
-export const UNIT_MARKUP=1.15;
+export type UnitMaterial='MFC'|'MDF'|'Veneer';
+export const UNIT_BENCHMARK={MFC:250,MDF:375,Veneer:390} as const;
+// Full five-panel carcass: two sides, top, bottom, and back. Benchmark is 600w x 720h x 550d mm.
 export const carcassArea=(w:number,h:number,d:number)=>(2*h*d+2*w*d+w*h)/1000000;
-export const sizePrice=(w:number,h:number,d:number)=>Math.round(carcassArea(w,h,d)*MFC_CARCASS_RATE*UNIT_MARKUP*100)/100;
+const REFERENCE_AREA=carcassArea(600,720,550);
+export const sizePrice=(w:number,h:number,d:number,material:UnitMaterial='MFC')=>Math.round(carcassArea(w,h,d)/REFERENCE_AREA*UNIT_BENCHMARK[material]*100)/100;
+export const unitMaterial=(unit:Unit):UnitMaterial=>unit.material||( /veneer/i.test(unit.name)?'Veneer': /\bmdf\b/i.test(unit.name)?'MDF':'MFC');
 export const sizeKey=(w:number,h:number,d:number)=>[w,h,d].join('x');

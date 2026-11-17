@@ -17,14 +17,23 @@ export type ExtraCost={id:string;name:string;price:number;image?:string};
 export type ProductionCost={id:string;name:string;price:number;unit:string};
 // Standard hourly workshop charge-out prices: midpoint of quoted range + 10%.
 // No labour or material charges included. CNC remains optional, never automatically added.
-export const DEFAULT_PRODUCTION_COSTS:ProductionCost[]=[
+export const DEFAULT_CNC_MACHINE_COSTS:ProductionCost[]=[
  {id:'prod-cnc-machining',name:'CNC machining',price:99,unit:'hour'},
- {id:'prod-cnc-programming',name:'CNC programming / setup',price:52.25,unit:'hour'},
+ {id:'prod-cnc-programming',name:'CNC programming / setup',price:52.25,unit:'hour'}
+];
+export const DEFAULT_PRODUCTION_COSTS:ProductionCost[]=[
  {id:'prod-panel-cutting',name:'Panel saw / sheet cutting',price:55,unit:'hour'},
  {id:'prod-edge-banding',name:'Edge banding',price:60.5,unit:'hour'}
 ];
+export const cncCostsWithDefaults=(savedCnc:ProductionCost[]|null|undefined,savedProduction?:ProductionCost[]|null):ProductionCost[]=>{
+ const entries=Array.isArray(savedCnc)?savedCnc:[];
+ const old=Array.isArray(savedProduction)?savedProduction:[];
+ const additions=DEFAULT_CNC_MACHINE_COSTS.map(item=>old.find(x=>x.id===item.id)||item);
+ const ids=new Set(entries.map(x=>x.id));
+ return [...entries,...additions.filter(x=>!ids.has(x.id))];
+};
 export const productionCostsWithDefaults=(saved:ProductionCost[]|null|undefined):ProductionCost[]=>{
- const entries=Array.isArray(saved)?saved:[];
+ const entries=(Array.isArray(saved)?saved:[]).filter(x=>!DEFAULT_CNC_MACHINE_COSTS.some(c=>c.id===x.id));
  const ids=new Set(entries.map(x=>x.id));
  return [...entries,...DEFAULT_PRODUCTION_COSTS.filter(x=>!ids.has(x.id))];
 };

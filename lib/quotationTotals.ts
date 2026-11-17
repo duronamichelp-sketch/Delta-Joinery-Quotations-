@@ -1,4 +1,4 @@
-import {read, type Unit,type Hardware,type Labour,type ExtraCost,DEFAULT_HARDWARE,DEFAULT_FINISH_RATES,pricedDoor,DEFAULT_PRODUCTION_COSTS,productionCostsWithDefaults,shelvesTotal,shelfDimensions,shelfPrice,type UnitMaterial} from './data';
+import {read, type Unit,type Hardware,type Labour,type ExtraCost,DEFAULT_HARDWARE,DEFAULT_FINISH_RATES,pricedDoor,DEFAULT_PRODUCTION_COSTS,productionCostsWithDefaults,cncCostsWithDefaults,shelvesTotal,shelfDimensions,shelfPrice,type UnitMaterial} from './data';
 
 export type SavedQuoteLine={category:string;description:string;qty:number;rate:number;amount:number;unit?:string};
 export type SavedQuoteBreakdown={key:string;label:string;amount:number};
@@ -49,7 +49,7 @@ export function savedQuoteDetails(q:SavedQuotation){
  const finishes=read<ExtraCost[]>('dj_finishes',[]);
  const fillers=read<ExtraCost[]>('dj_fillers',[]);
  const timberRates=read<Record<string,number>>('dj_timber_rates',{});
- const cnc=read<{id:string;name:string;price:number;unit:string}[]>('dj_cnc_production',DEFAULT_CNC);
+ const cnc=cncCostsWithDefaults(read<{id:string;name:string;price:number;unit:string}[]>('dj_cnc_production',DEFAULT_CNC),read<{id:string;name:string;price:number;unit:string}[]>('dj_production_costs',DEFAULT_PRODUCTION_COSTS));
  const production=productionCostsWithDefaults(read<{id:string;name:string;price:number;unit:string}[]>('dj_production_costs',DEFAULT_PRODUCTION_COSTS));
 
  const lines:SavedQuoteLine[]=[];

@@ -20,8 +20,22 @@ export const DOOR_FINISHES=Object.values(DOOR_OPTIONS).flat();
 export function unitDoorPrice(unit:Unit,finish?:string){return Number((finish&&unit.doorPrices?.[finish])??unit.doorCost??0)}
 
 export const DEFAULT_FINISH_RATES:Record<string,number>={'MFC Plain':120,'MDF Plain':190,'MDF Veneer Plain':240};
-export function doorSqm(x:QuoteUnit){const calculated=(Number(x.doorWidth)||0)*(Number(x.doorHeight)||0)*(Number(x.doorCount)||0)/1000000;return Math.max(0,calculated>0?calculated:Number(x.doorSqm)||0)}
-export function pricedDoor(x:QuoteUnit,rates:Record<string,number>,unit?:Unit){const finish=x.doorFinish||'MFC';const rate=unit?.doorPrices?.[finish]??rates[finish]??0;return x.adc?doorSqm(x)*Math.max(0,Number(rate)||0):0}
+// ADC prices the combined door face at the selected unit's overall height and width.
+// The number of door leaves does not multiply the total front face area.
+export function doorSqm(x:QuoteUnit,unit?:Unit){
+ const width=Number(unit?.width)||0,height=Number(unit?.height)||0;
+ if(width>0&&height>0)return width*height/1000000;
+ const calculated=(Number(x.doorWidth)||0)*(Number(x.doorHeight)||0)*(Number(x.doorCount)||1)/1000000;
+ return Math.max(0,calculated>0?calculated:Number(x.doorSqm)||0);
+}
+export function pricedDoor(x:QuoteUnit,rates:Record<string,number>,unit?:Unit){
+ if(!x.adc)return 0;
+ const material=unit?unitMaterial(unit):'MFC';
+ const category=material==='Veneer'?'MDF VENEER':material;
+ const finish=x.doorFinish||DOOR_OPTIONS[category]?.[0]||'MFC Plain';
+ const rate=unit?.doorPrices?.[finish]??rates[finish]??DEFAULT_FINISH_RATES[finish]??0;
+ return doorSqm(x,unit)*Math.max(0,Number(rate)||0);
+}
 
 export const UNIT_HEIGHTS=[150,...Array.from({length:23},(_,i)=>(i+2)*100)];
 export const UNIT_WIDTHS=[150,...Array.from({length:11},(_,i)=>(i+2)*100)];

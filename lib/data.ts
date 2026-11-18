@@ -60,13 +60,23 @@ export function doorSqm(x:QuoteUnit,unit?:Unit){
  const calculated=(Number(x.doorWidth)||0)*(Number(x.doorHeight)||0)*(Number(x.doorCount)||1)/1000000;
  return Math.max(0,calculated>0?calculated:Number(x.doorSqm)||0);
 }
-export function pricedDoor(x:QuoteUnit,rates:Record<string,number>,unit?:Unit){
- if(!x.adc)return 0;
+// Pricing is per door leaf. The opening width is split evenly between the
+// selected number of doors; the price of every leaf is rounded to cents.
+export function doorLeafBreakdown(x:QuoteUnit,rates:Record<string,number>,unit?:Unit){
+ const count=Math.max(1,Math.floor(Number(x.doorCount)||1));
+ const totalWidth=Math.max(0,Number(unit?.width)||Number(x.doorWidth)*count||0);
+ const height=Math.max(0,Number(unit?.height)||Number(x.doorHeight)||0);
+ const leafWidth=totalWidth/count;
  const material=unit?unitMaterial(unit):'MFC';
  const category=material==='Veneer'?'MDF VENEER':material;
  const finish=x.doorFinish||DOOR_OPTIONS[category]?.[0]||'MFC Plain';
- const rate=unit?.doorPrices?.[finish]??rates[finish]??DEFAULT_FINISH_RATES[finish]??0;
- return doorSqm(x,unit)*Math.max(0,Number(rate)||0);
+ const rate=Math.max(0,Number(unit?.doorPrices?.[finish]??rates[finish]??DEFAULT_FINISH_RATES[finish]??0)||0);
+ const areaEach=leafWidth*height/1000000;
+ const priceEach=Math.round(areaEach*rate*100)/100;
+ return {count,leafWidth,height,areaEach,priceEach,total:Math.round(priceEach*count*100)/100,rate,finish};
+}
+export function pricedDoor(x:QuoteUnit,rates:Record<string,number>,unit?:Unit){
+ return x.adc?doorLeafBreakdown(x,rates,unit).total:0;
 }
 
 export const UNIT_HEIGHTS=[150,...Array.from({length:23},(_,i)=>(i+2)*100)];

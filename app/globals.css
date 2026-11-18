@@ -4074,3 +4074,52 @@ body main.dj-quote-page .dj-top-actions .dj-bulk-entry{
  .dj-bulk-page .dj-bulk-line-head,.dj-bulk-page .dj-bulk-line{min-width:460px}
  .dj-bulk-page .dj-bulk-line-form{grid-template-columns:1fr 1fr}
 }
+
+
+/* Bulk quotation shares the same two-column app shell as standard quotations.
+   The fixed sidebar is out of flow; assign bulk content to grid column two. */
+@media screen and (min-width:900px){
+ body main.dj-bulk-page.dj-unified-page>.dj-bulk-main{
+  display:block!important;
+  grid-column:2!important;
+  grid-row:1!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  min-height:100vh!important;
+  margin:0!important;
+  padding:var(--dj-page-pad-top) var(--dj-page-pad-x) 36px var(--dj-page-pad-left)!important;
+  box-sizing:border-box!important;
+  overflow:visible!important;
+ }
+ body main.dj-bulk-page .dj-bulk-layout{
+  width:100%!important;
+  min-width:0!important;
+  grid-template-columns:minmax(0,1fr) minmax(280px,340px)!important;
+ }
+ body main.dj-bulk-page .dj-bulk-work{min-width:0!important}
+}
+@media screen and (min-width:900px) and (max-width:1200px){
+ body main.dj-bulk-page .dj-bulk-layout{
+  grid-template-columns:minmax(0,1fr) 290px!important;
+ }
+}
+@media screen and (max-width:899px){
+ body main.dj-bulk-page.dj-unified-page{
+  display:block!important;
+  width:100%!important;
+ }
+ body main.dj-bulk-page.dj-unified-page>.dj-bulk-main{
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:18px 13px 45px!important;
+  box-sizing:border-box!important;
+ }
+ body main.dj-bulk-page .dj-bulk-layout{
+  width:100%!important;
+  grid-template-columns:minmax(0,1fr)!important;
+ }
+}

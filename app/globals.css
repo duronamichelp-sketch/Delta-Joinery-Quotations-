@@ -3684,3 +3684,20 @@ body main.dj-quote-page .dj-uplift-entry input[type="text"]{
  box-sizing:border-box!important;
 }
 body main.dj-quote-page .dj-uplift-entry span{color:#d8e8f5!important;font-weight:700!important}
+
+/* Dimension-based skirting and fillers share the existing quotation card language. */
+body main.dj-quote-page .dj-trim-builder{
+ display:grid!important;gap:12px!important;padding:15px!important;margin:10px 0!important;
+ background:rgba(6,33,52,.56)!important;border:1px solid rgba(112,190,239,.24)!important;border-radius:11px!important;
+ color:#edf7ff!important;
+}
+body main.dj-quote-page .dj-trim-fields{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;width:100%!important}
+body main.dj-quote-page .dj-trim-fields label{display:grid!important;gap:5px!important;min-width:0!important;font-size:11px!important;font-weight:650!important;color:#cde2ee!important}
+body main.dj-quote-page .dj-trim-fields input,
+body main.dj-quote-page .dj-trim-fields select{display:block!important;min-width:0!important;width:100%!important;box-sizing:border-box!important;padding:10px!important;border:1px solid rgba(112,190,239,.30)!important;border-radius:8px!important;background:#102d42!important;color:#f1f8ff!important;font-size:13px!important}
+body main.dj-quote-page .dj-trim-footer{display:flex!important;gap:10px!important;align-items:center!important;justify-content:space-between!important;flex-wrap:wrap!important;font-size:12px!important}
+body main.dj-quote-page .dj-trim-footer button{padding:10px 14px!important;border-radius:8px!important;background:#187fbd!important;color:white!important}
+body main.dj-quote-page .dj-trim-footer button:disabled{opacity:.45!important;cursor:not-allowed!important}
+body main.dj-quote-page .dj-trim-item{display:flex!important;gap:10px!important;flex-wrap:wrap!important;align-items:center!important}
+body main.dj-quote-page .dj-trim-item>.dj-trim-fields{flex:1 1 100%!important;order:2!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}
+@media(max-width:650px){body main.dj-quote-page .dj-trim-fields,body main.dj-quote-page .dj-trim-item>.dj-trim-fields{grid-template-columns:repeat(2,minmax(0,1fr))!important}}

@@ -276,7 +276,7 @@ return <main className="dj-desktop dj-quote-glass dj-unified-page dj-quote-page"
  <option value="alcove">Alcove</option><option value="media">Media Unit</option>
  <option value="desk">Desk / Office</option><option value="storage">Storage / Cabinet</option>
  <option value="other">Other custom furniture</option></select></label>
- <label>Estimated actual job cost (€)<input type="text" inputMode="decimal" aria-label="Estimated actual job cost" placeholder="Enter cost to manufacture and fit" value={q.estimatedJobCost??''} onChange={e=>{const value=e.target.value.replace(',','.');if(/^\d*(?:\.\d{0,2})?$/.test(value))setQ(a=>({...a,estimatedJobCost:value}))}}}/></label>
+ <label>Estimated actual job cost (€)<input type="text" inputMode="decimal" aria-label="Estimated actual job cost" placeholder="Enter cost to manufacture and fit" value={q.estimatedJobCost??''} onChange={e=>{const value=e.target.value.replace(',','.');if(/^\d*(?:\.\d{0,2})?$/.test(value))setQ(a=>({...a,estimatedJobCost:value}))}}/></label>
  <label>Target gross margin (%)<input type="number" aria-label="Target gross margin percentage" min="0" max="80" step="1" value={q.targetGrossMargin??30} onChange={e=>setQ(a=>({...a,targetGrossMargin:Math.max(0,Math.min(80,Number(e.target.value)||0))}))}/></label>
  </div>
  <div className="dj-price-analysis-results">

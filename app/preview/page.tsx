@@ -21,7 +21,7 @@ const [doorRates,setDoorRates]=useState<Record<string,number>>(DEFAULT_FINISH_RA
  // Resolve custom-priced entries as first-class quotation lines, without requiring a matching library item.
  // Both the on-screen preview and the downloaded PDF use this same list and totals.
  const customRow=(x:CustomLine,detail:string)=>x.customName?{label:x.customName,detail,qty:Number(x.qty)||0,price:Number(x.customPrice)||0}:null;
- const rows=(q.chosenUnits||[]).flatMap(x=>{const u=units.find(z=>z.id===x.id);const custom=customRow(x,'Units / custom');if(custom)return [custom];return u?[{label:u.name+(x.adc?' · With doors':' · Carcass only')+(x.ais?' · AIS shelves':''),detail:`${u.width} × ${u.height} × ${u.depth} mm${x.adc?` · ${x.doorFinish||'MFC'} · ${doorSqm(x,u).toFixed(3)} m² · Doors included`:''}${x.ais?` · AIS: ${x.shelfQty||0} × ${x.shelfMaterial||'MFC'} shelves (${shelfDimensions(u).width} × ${shelfDimensions(u).depth} mm)`:''}`,qty:x.qty,price:u.price+(x.adc?pricedDoor(x,doorRates,u):0)+shelvesTotal(x,u)}]:[]});
+ const rows=(q.chosenUnits||[]).flatMap(x=>{const u=units.find(z=>z.id===x.id);const custom=customRow(x,'Units / custom');if(custom)return [custom];return u?[{label:u.name+(x.adc?' · With doors':' · Carcass only')+(x.ais?' · AIS shelves':''),detail:`${u.width} × ${u.height} × ${u.depth} mm${x.adc?` · ADC: ${x.doorCount||1} × ${x.doorFinish||'MFC'} doors (${(u.width/Math.max(1,x.doorCount||1)).toFixed(1)} × ${u.height} mm each, ${doorSqm(x,u).toFixed(3)} m² total)`:''}${x.ais?` · AIS: ${x.shelfQty||0} × ${x.shelfMaterial||'MFC'} shelves (${shelfDimensions(u).width} × ${shelfDimensions(u).depth} mm)`:''}`,qty:x.qty,price:u.price+(x.adc?pricedDoor(x,doorRates,u):0)+shelvesTotal(x,u)}]:[]});
  const hw=(q.chosenHardware||[]).flatMap(x=>{const custom=customRow(x,'Hardware / custom');if(custom)return [custom];const h=hardware.find(z=>z.id===x.id);return h?[{label:h.name,detail:'Hardware',qty:x.qty,price:h.price}]:[]});
  const work=(q.chosenLabour||[]).flatMap(x=>{const custom=customRow(x,'Labour / custom');if(custom)return [custom];const l=labour.find(z=>z.id===x.id);return l?[{label:l.name,detail:`Labour / ${l.unit}`,qty:x.qty,price:l.price}]:[]});
  const er=(q.chosenElectrics||[]).flatMap(x=>{const custom=customRow(x,'Electrics / custom');if(custom)return [custom];const y=electrics.find(z=>z.id===x.id);return y?[{label:y.name,detail:'Electrics',qty:x.qty,price:y.price}]:[]});
@@ -94,7 +94,7 @@ const [doorRates,setDoorRates]=useState<Record<string,number>>(DEFAULT_FINISH_RA
       const finish=x.doorFinish||'MFC';
       const sqm=doorSqm(x);
       const rate=Number(u.doorPrices?.[finish]??doorRates[finish]??0);
-      details.push('Door: '+finish+'  |  '+sqm.toFixed(3)+' m2 x '+money(rate)+'/m2');
+      details.push('Doors: '+(x.doorCount||1)+' x '+finish+'  |  '+sqm.toFixed(3)+' m2 total x '+money(rate)+'/m2');
       details.push('Door cost: '+money(pricedDoor(x,doorRates,u)));
      }else{details.push('Carcass only')}
     }else if(item.detail){details.push(item.detail)}

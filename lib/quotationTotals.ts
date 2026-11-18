@@ -6,7 +6,7 @@ export type SavedQuoteBreakdown={key:string;label:string;amount:number};
 export type SavedQuotation={
  id:string;number?:string;date?:string;client?:string;project?:string;name?:string;savedAt?:string;sourceTaskId?:string;
  email?:string;phone?:string;address?:string;notes?:string;
- includeVat?:boolean;totalAmount?:number;subtotalAmount?:number;vatAmount?:number;
+ includeVat?:boolean;includeUplift?:boolean;upliftPercent?:number;totalAmount?:number;subtotalAmount?:number;vatAmount?:number;
  finished?:boolean;finishedAt?:string;siteImages?:{path:string;name:string}[];
  costLines?:SavedQuoteLine[];costBreakdown?:SavedQuoteBreakdown[];
  chosenUnits?:{id:string;qty:number;customName?:string;customPrice?:number;adc?:boolean;hasDoors?:boolean;doorMaterial?:string;doorCount?:number;doorSqm?:number;doorWidth?:number;doorHeight?:number;doorFinish?:string;doorCategory?:string;ais?:boolean;shelfMaterial?:UnitMaterial;shelfQty?:number}[];
@@ -39,6 +39,24 @@ const DEFAULT_CNC=[
 ];
 
 const round=(n:number)=>Math.round((Number(n)||0)*100)/100;
+
+// Allocate the uplift across individual quoted units rather than applying one
+// undisclosed lump sum. Cent remainders are distributed deterministically.
+export function distributeQuotationUplift<T extends {qty:number;amount:number}>(rows:T[],enabled?:boolean,percentage?:number):T[]{
+ const percent=enabled?Math.max(0,Math.min(1000,Number(percentage)||0)):0;
+ if(!percent)return rows.map(row=>({...row}));
+ const eligible=rows.map((row,index)=>({index,qty:Math.max(0,Math.round(Number(row.qty)||0))})).filter(x=>x.qty>0);
+ const itemCount=eligible.reduce((sum,x)=>sum+x.qty,0);
+ if(!itemCount)return rows.map(row=>({...row}));
+ const baseCents=Math.round(rows.reduce((sum,row)=>sum+(Number(row.amount)||0),0)*100);
+ const increaseCents=Math.round(baseCents*percent/100);
+ const share=Math.floor(increaseCents/itemCount);
+ let remainder=increaseCents-share*itemCount;
+ const extra=rows.map(()=>0);
+ for(const {index,qty} of eligible){const cents=share*qty+Math.min(qty,remainder);extra[index]=cents;remainder-=Math.min(qty,remainder)}
+ return rows.map((row,index)=>({...row,amount:round((Math.round((Number(row.amount)||0)*100)+extra[index])/100)}));
+}
+
 
 export function savedQuoteDetails(q:SavedQuotation){
  const units=read<Unit[]>('dj_units',[]);
@@ -87,7 +105,7 @@ export function savedQuoteDetails(q:SavedQuotation){
  for(const x of q.chosenProduction||[]){const row=production.find(z=>z.id===x.id)||cnc.find(z=>z.id===x.id&&x.id.startsWith('prod-cnc-'));if(x.customName)addLine('Production Costs',x.customName,x.qty,Number(x.customPrice)||0,'each');else if(row)addLine('Production Costs',row.name,x.qty,row.price,row.unit)}
  for(const product of q.chosenCustomProducts||[]){const price=typeof product.price==='number'?product.price:(product.lines||[]).reduce((s,l)=>s+(Number(l.price)||0),0);addLine('Custom Products',product.name,1,price,'item')}
 
- const effectiveLines=q.costLines?.length?q.costLines:lines;
+ const effectiveLines=q.costLines?.length?q.costLines:distributeQuotationUplift(lines,q.includeUplift,q.upliftPercent);
  const categoryOrder=['Units','Shelves','Hardware','Labour','Electrics','Finishes','Fillers / Plinths & Coving','Timber','Worktops','CNC Production','Production Costs','Custom Products'];
  const computedBreakdown=categoryOrder.map((label,index)=>({
   key:String(index+1),

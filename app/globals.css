@@ -3949,3 +3949,23 @@ body main.dj-quote-page .dj-unit>.dj-item-end .dj-trash{order:2!important}
 body main.dj-quote-page .dj-fold:not(.dj-fold-open) > :not(.dj-title){
  display:none!important;
 }
+
+
+/* Door and shelf quantity controls in the unit detail editor. */
+body main.dj-quote-page .dj-unit .dj-unit-quantity-label{
+ display:flex!important;align-items:center!important;gap:8px!important;
+ color:#bed7e6!important;font-size:11px!important;font-weight:650!important;
+ white-space:nowrap!important;min-width:0!important;
+}
+body main.dj-quote-page .dj-unit .dj-unit-quantity-label input{
+ display:block!important;width:70px!important;min-width:60px!important;
+ min-height:35px!important;box-sizing:border-box!important;
+ padding:7px 9px!important;border:1px solid rgba(112,190,239,.35)!important;
+ background:#0b283d!important;color:#eef8ff!important;
+ border-radius:7px!important;font-size:12px!important;
+}
+body main.dj-quote-page .dj-unit .dj-unit-quantity-label input::-webkit-inner-spin-button,
+body main.dj-quote-page .dj-unit .dj-unit-quantity-label input::-webkit-outer-spin-button{
+ -webkit-appearance:none!important;margin:0!important;
+}
+body main.dj-quote-page .dj-unit .dj-unit-quantity-label input[type=number]{appearance:textfield!important}

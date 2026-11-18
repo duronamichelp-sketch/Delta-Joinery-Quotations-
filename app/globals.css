@@ -4123,3 +4123,31 @@ body main.dj-quote-page .dj-top-actions .dj-bulk-entry{
   grid-template-columns:minmax(0,1fr)!important;
  }
 }
+
+
+/* Bulk quotation: work name / price only. */
+body main.dj-bulk-page .dj-bulk-package-head{display:flex!important;align-items:center!important;gap:12px!important}
+body main.dj-bulk-page .dj-bulk-package-head .dj-bulk-work-name{
+ flex:1 1 auto!important;min-width:0!important;width:auto!important;
+ background:transparent!important;border:1px solid transparent!important;
+ color:#f0f8fd!important;font-size:13px!important;font-weight:750!important;
+}
+body main.dj-bulk-page .dj-bulk-package-head .dj-bulk-work-name:focus{
+ border-color:rgba(112,190,239,.40)!important;background:#10364f!important;
+}
+body main.dj-bulk-page .dj-bulk-package-head .dj-bulk-work-cost{
+ width:125px!important;flex:0 0 125px!important;text-align:right!important;
+ font-weight:750!important;color:#f2f9ff!important;
+}
+body main.dj-bulk-page .dj-bulk-package-head .dj-bulk-package-price{
+ flex:none!important;min-width:115px!important;text-align:right!important;
+}
+body main.dj-bulk-page .dj-bulk-import-action input[aria-label="Work cost in euro"]{
+ flex:0 1 155px!important;min-width:120px!important;
+}
+@media(max-width:650px){
+ body main.dj-bulk-page .dj-bulk-package-head{gap:7px!important}
+ body main.dj-bulk-page .dj-bulk-package-head .dj-bulk-work-cost{width:95px!important;flex-basis:95px!important}
+ body main.dj-bulk-page .dj-bulk-package-head .dj-bulk-package-price{min-width:75px!important;font-size:12px!important}
+ body main.dj-bulk-page .dj-bulk-import-action input[aria-label="Work cost in euro"]{flex:1 1 100%!important}
+}

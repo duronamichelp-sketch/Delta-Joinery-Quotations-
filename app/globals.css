@@ -3969,3 +3969,108 @@ body main.dj-quote-page .dj-unit .dj-unit-quantity-label input::-webkit-outer-sp
  -webkit-appearance:none!important;margin:0!important;
 }
 body main.dj-quote-page .dj-unit .dj-unit-quantity-label input[type=number]{appearance:textfield!important}
+
+
+/* Delta Joinery: consolidated multi-work quotation */
+body main.dj-quote-page .dj-top-actions .dj-bulk-entry{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ min-height:40px!important;padding:9px 15px!important;border:1px solid rgba(101,192,240,.48)!important;
+ border-radius:9px!important;color:#e6f5ff!important;text-decoration:none!important;
+ background:rgba(12,53,77,.9)!important;font-size:12px!important;font-weight:750!important;white-space:nowrap!important;
+}
+.dj-bulk-page{display:flex;min-height:100vh;background:transparent;color:#e9f3f9}
+.dj-bulk-page .dj-bulk-main{min-width:0;flex:1;padding:27px clamp(13px,2.4vw,36px) 60px}
+.dj-bulk-page .dj-bulk-top{display:flex;align-items:flex-start;justify-content:space-between;gap:22px;margin-bottom:23px}
+.dj-bulk-page .dj-bulk-kicker{margin:0 0 8px;font-size:10px;font-weight:800;letter-spacing:.11em;color:#93c1dc}
+.dj-bulk-page h1{font-size:27px;margin:0 0 7px;font-weight:850;color:#f6fbff;line-height:1.2}
+.dj-bulk-page .dj-bulk-top p:not(.dj-bulk-kicker){font-size:12px;color:#acc5d4;max-width:650px;margin:0}
+.dj-bulk-page button{cursor:pointer}
+.dj-bulk-page button:disabled{opacity:.45;cursor:not-allowed}
+.dj-bulk-page .dj-bulk-actions{display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end}
+.dj-bulk-page .dj-bulk-actions button,.dj-bulk-page .dj-bulk-actions a,
+.dj-bulk-page .dj-bulk-import-action button,.dj-bulk-page .dj-bulk-line-form button,
+.dj-bulk-page .dj-bulk-package-body>button,.dj-bulk-page .dj-bulk-summary>button{
+ display:inline-flex;align-items:center;justify-content:center;min-height:39px;border-radius:8px;
+ padding:10px 14px;background:#1376ae;color:#fff;border:1px solid #3495cc;
+ font-size:12px;font-weight:800;text-decoration:none;
+}
+.dj-bulk-page .dj-bulk-secondary{background:#102f45!important;border:1px solid #37607b!important;color:#d9eaf4!important}
+.dj-bulk-page .dj-bulk-layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
+.dj-bulk-page .dj-bulk-work{display:grid;gap:14px;min-width:0}
+.dj-bulk-page .dj-bulk-card,.dj-bulk-page .dj-bulk-summary{
+ background:rgba(9,30,46,.94);border:1px solid rgba(112,190,239,.25);border-radius:12px;padding:18px;
+ box-shadow:0 10px 30px rgba(0,10,24,.13);
+}
+.dj-bulk-page .dj-bulk-card-header{display:flex;align-items:center;justify-content:space-between;gap:15px;border-bottom:1px solid rgba(112,190,239,.2);padding-bottom:11px;margin-bottom:15px}
+.dj-bulk-page .dj-bulk-card-header h2{margin:0;font-size:13px;letter-spacing:.025em;color:#eff8fd;font-weight:800}
+.dj-bulk-page .dj-bulk-card-header span{font-size:10px;color:#9dbbc9;overflow-wrap:anywhere;text-align:right}
+.dj-bulk-page .dj-bulk-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.dj-bulk-page label{font-size:11px;color:#b6d0dc;font-weight:700}
+.dj-bulk-page .dj-bulk-fields label,.dj-bulk-page .dj-bulk-line-form label,.dj-bulk-page .dj-bulk-rename{display:grid;gap:6px}
+.dj-bulk-page input:not([type=checkbox]),.dj-bulk-page select,.dj-bulk-page textarea{
+ box-sizing:border-box;width:100%;min-width:0;min-height:38px;border:1px solid rgba(112,190,239,.3);
+ background:#0c2a3e;color:#f2f9fd;border-radius:8px;padding:9px 11px;font:inherit;font-size:12px;
+}
+.dj-bulk-page input:focus,.dj-bulk-page select:focus,.dj-bulk-page textarea:focus{outline:2px solid #298ec9;outline-offset:1px}
+.dj-bulk-page textarea{resize:vertical;line-height:1.5}
+.dj-bulk-page .dj-bulk-import{padding:13px;background:rgba(8,44,65,.47);border:1px solid rgba(112,190,239,.15);border-radius:9px;margin-bottom:10px}
+.dj-bulk-page .dj-bulk-import:last-child{margin-bottom:0}
+.dj-bulk-page .dj-bulk-import strong{font-size:12px;color:#eef6fd}
+.dj-bulk-page .dj-bulk-import p{font-size:11px;line-height:1.5;color:#9eb9ca;margin:6px 0 12px}
+.dj-bulk-page .dj-bulk-import-action{display:flex;gap:9px}
+.dj-bulk-page .dj-bulk-import-action select,.dj-bulk-page .dj-bulk-import-action input{flex:1}
+.dj-bulk-page .dj-bulk-import-action button{flex:none}
+.dj-bulk-page .dj-bulk-package{border:1px solid rgba(112,190,239,.22);border-radius:10px;margin-bottom:10px;overflow:hidden;background:rgba(6,32,49,.58)}
+.dj-bulk-page .dj-bulk-package-head{display:flex;gap:12px;align-items:center;padding:10px 12px}
+.dj-bulk-page .dj-bulk-expand{flex:1;display:flex;align-items:center;text-align:left;gap:12px;border:0;background:transparent;color:#e7f6fe;padding:0;min-width:0}
+.dj-bulk-page .dj-bulk-expand>span:nth-child(2){flex:1;min-width:0}
+.dj-bulk-page .dj-bulk-index{display:grid;place-items:center;background:#174768;color:#dcf3ff;border-radius:7px;width:35px;height:35px;flex:none;font-size:12px;font-weight:800}
+.dj-bulk-page .dj-bulk-expand strong{display:block;font-size:12px;overflow-wrap:anywhere}
+.dj-bulk-page .dj-bulk-expand small{display:block;font-size:10px;color:#a7c1d0;margin-top:4px}
+.dj-bulk-page .dj-bulk-chevron{font-size:18px;color:#9cc6df}
+.dj-bulk-page .dj-bulk-package-price{font-size:14px;white-space:nowrap}
+.dj-bulk-page .dj-bulk-remove,.dj-bulk-page .dj-bulk-line button{display:grid;place-items:center;width:30px;height:30px;flex:none;color:#ffb4ae;background:rgba(102,36,36,.15);border:1px solid rgba(222,125,118,.23);border-radius:7px;font-size:19px}
+.dj-bulk-page .dj-bulk-package-body{border-top:1px solid rgba(112,190,239,.18);padding:14px;display:grid;gap:14px}
+.dj-bulk-page .dj-bulk-rename{max-width:420px}
+.dj-bulk-page .dj-bulk-line-table{min-width:0;overflow-x:auto}
+.dj-bulk-page .dj-bulk-line-head,.dj-bulk-page .dj-bulk-line{
+ display:grid;grid-template-columns:minmax(0,1fr) 54px 90px 100px;gap:10px;align-items:center;
+ padding:10px;border-bottom:1px solid rgba(112,190,239,.13);font-size:11px;
+}
+.dj-bulk-page .dj-bulk-line-head{background:#102f45;color:#9fc2d6;font-size:10px;letter-spacing:.04em;font-weight:800}
+.dj-bulk-page .dj-bulk-line-head span:not(:first-child),.dj-bulk-page .dj-bulk-line>span,.dj-bulk-page .dj-bulk-line>strong{text-align:right}
+.dj-bulk-page .dj-bulk-line:has(button){grid-template-columns:minmax(0,1fr) 54px 90px 100px 30px}
+.dj-bulk-page .dj-bulk-line>div b{display:block;font-size:11px;color:#f0f9ff}
+.dj-bulk-page .dj-bulk-line>div small{display:block;font-size:10px;color:#8bafc3;margin-top:3px}
+.dj-bulk-page .dj-bulk-line-form{display:grid;grid-template-columns:1fr 2fr 80px 100px;gap:9px}
+.dj-bulk-page .dj-bulk-line-form button{grid-column:auto;align-self:end}
+.dj-bulk-page .dj-bulk-empty{font-size:12px;color:#9db8c8;padding:13px 3px;margin:0}
+.dj-bulk-page .dj-bulk-sidebar{position:sticky;top:18px;min-width:0}
+.dj-bulk-page .dj-bulk-summary{background:rgba(5,23,38,.96)}
+.dj-bulk-page .dj-bulk-summary>p{color:#c9dfeb;font-size:11px;letter-spacing:.04em;font-weight:850;margin:0 0 6px}
+.dj-bulk-page .dj-bulk-total{display:block;font-size:30px;color:#ffce81;margin-bottom:20px}
+.dj-bulk-page .dj-bulk-total-row{display:flex;justify-content:space-between;gap:12px;font-size:11px;margin:0 0 12px}
+.dj-bulk-page .dj-bulk-total-row span{min-width:0;overflow-wrap:anywhere}
+.dj-bulk-page .dj-bulk-total-row strong{white-space:nowrap}
+.dj-bulk-page .dj-bulk-divider{border-top:1px solid #45637a;padding-top:14px}
+.dj-bulk-page .dj-bulk-grand{padding:12px;background:rgba(117,91,40,.35);border:1px solid rgba(255,206,129,.28);border-radius:8px;font-size:13px;font-weight:850}
+.dj-bulk-page .dj-bulk-vat{display:flex;align-items:center;gap:8px;margin:9px 0 14px;color:#e6f5ff}
+.dj-bulk-page .dj-bulk-summary>button{width:100%;margin-top:8px}
+.dj-bulk-page .dj-bulk-summary>small{display:block;font-size:10px;line-height:1.5;color:#88aabd;margin-top:14px}
+.dj-bulk-page .dj-bulk-notice{padding:12px;border:1px solid #377794;border-radius:9px;color:#d4f0ff;background:#10354c;font-size:12px;line-height:1.5}
+.dj-bulk-page .dj-bulk-history{display:grid;gap:7px}
+.dj-bulk-page .dj-bulk-history button{display:flex;justify-content:space-between;gap:10px;text-align:left;padding:12px;border:1px solid rgba(112,190,239,.18);border-radius:8px;background:rgba(7,39,58,.5);color:#ecf8ff}
+.dj-bulk-page .dj-bulk-history b,.dj-bulk-page .dj-bulk-history small{display:block}
+.dj-bulk-page .dj-bulk-history small{font-size:10px;color:#a8c1d0;margin-top:5px}
+.dj-bulk-page .dj-bulk-history button>strong{white-space:nowrap}
+@media(max-width:1200px){.dj-bulk-page .dj-bulk-layout{grid-template-columns:minmax(0,1fr) 300px}}
+@media(max-width:950px){.dj-bulk-page .dj-bulk-layout{grid-template-columns:minmax(0,1fr)}.dj-bulk-page .dj-bulk-sidebar{position:static}.dj-bulk-page .dj-bulk-top{flex-wrap:wrap}}
+@media(max-width:650px){
+ .dj-bulk-page .dj-bulk-main{padding:16px 11px 40px}
+ .dj-bulk-page .dj-bulk-fields{grid-template-columns:1fr}
+ .dj-bulk-page .dj-bulk-import-action{flex-wrap:wrap}
+ .dj-bulk-page .dj-bulk-import-action button{width:100%}
+ .dj-bulk-page .dj-bulk-actions{justify-content:flex-start}
+ .dj-bulk-page .dj-bulk-line-head,.dj-bulk-page .dj-bulk-line{min-width:460px}
+ .dj-bulk-page .dj-bulk-line-form{grid-template-columns:1fr 1fr}
+}

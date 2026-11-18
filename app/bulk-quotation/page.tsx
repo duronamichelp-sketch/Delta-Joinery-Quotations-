@@ -186,8 +186,8 @@ export default function BulkQuotationPage(){
    label(safeText(quote.date),110,upperBottom+5.3,8.5);
    label('WORK PACKAGES',110,upperBottom+18,7,true,slate);
    label(String(quote.works.length).padStart(2,'0'),110,upperBottom+23.3,8.5,true,charcoal);
-   y=Math.max(leftY,upperBottom+30)+6;
-   stroke(y);y+=12;
+   y=Math.max(leftY,upperBottom+27)+2;
+   stroke(y);y+=8;
 
    // Schedule: one row per work, nothing about materials or labour.
    ensure(24);
@@ -203,7 +203,7 @@ export default function BulkQuotationPage(){
    for(let i=0;i<quote.works.length;i++){
     const work=quote.works[i];
     const description=wrap(safeText(work.name),112,9);
-    const rowHeight=Math.max(14,8+description.length*4.6);
+    const rowHeight=Math.max(11,6+description.length*4.6);
     ensure(rowHeight+1);
     label(String(i+1).padStart(2,'0'),L+4,y+8.4,8,true,slate);
     let lineY=y+8.4;
@@ -212,10 +212,11 @@ export default function BulkQuotationPage(){
     y+=rowHeight;
     stroke(y);
    }
-   y+=13;
+   y+=7;
 
    // Recessed right-aligned cost ledger with restrained final total.
-   ensure(51);
+   // Reserve only the space the ledger actually uses; avoid orphaning totals.
+   ensure(quote.includeVat?43:34);
    const sumX=98;
    doc.setDrawColor(...ruleColor);doc.setLineWidth(.35);doc.line(sumX,y,R,y);
    y+=9;

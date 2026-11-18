@@ -80,6 +80,15 @@ export const UNIT_BENCHMARK={MFC:250,MDF:375,Veneer:390} as const;
 export const carcassArea=(w:number,h:number,d:number)=>(2*h*d+2*w*d+w*h)/1000000;
 const REFERENCE_AREA=carcassArea(600,720,550);
 export const sizePrice=(w:number,h:number,d:number,material:UnitMaterial='MFC')=>Math.round(carcassArea(w,h,d)/REFERENCE_AREA*UNIT_BENCHMARK[material]*100)/100;
+export type MeasuredTrimType='Skirting'|'Filler';
+// Measured panels reuse the material-specific reference area prices used by unit sizing.
+// Height and width are millimetres; this is an estimate based on current library rates.
+export function measuredTrimPrice(height:number,width:number,material:UnitMaterial='MFC'){
+ const h=Math.max(0,Number(height)||0),w=Math.max(0,Number(width)||0);
+ if(!Number.isFinite(h)||!Number.isFinite(w))return 0;
+ return Math.round((h*w/1000000)/REFERENCE_AREA*UNIT_BENCHMARK[material]*100)/100;
+}
+
 export const unitMaterial=(unit:Unit):UnitMaterial=>unit.material||( /veneer/i.test(unit.name)?'Veneer': /\bmdf\b/i.test(unit.name)?'MDF':'MFC');
 // 18 mm carcass panels; internal shelf sits between the sides and stops at the full back.
 export function shelfDimensions(unit:Unit){

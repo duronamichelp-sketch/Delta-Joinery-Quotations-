@@ -80,7 +80,7 @@ const [doorRates,setDoorRates]=useState<Record<string,number>>(DEFAULT_FINISH_RA
     }
    }
    y+=17;
-   write('Quotation breakdown',left,y,15,'bold');
+   write('01 / QUOTATION BREAKDOWN',left,y,12,'bold');
    y+=8;
    // Compact, dynamically scaled layout: all quotation lines and totals stay on one A4 page.
    const unitRows=(q.chosenUnits||[]).flatMap(x=>{const u=units.find(z=>z.id===x.id);return x.customName?[null]:u?[{x,u}]:[]});
@@ -113,23 +113,27 @@ const [doorRates,setDoorRates]=useState<Record<string,number>>(DEFAULT_FINISH_RA
    const titleStep=4.2*scale,detailStep=3.6*scale;
    const headerH=Math.max(6.2,9*scale);
    const paddingH=5*scale;
-   pdf.setFillColor(...green);pdf.rect(left,y,pageWidth,headerH,'F');
-   pdf.setTextColor(255,255,255);pdf.setFont('helvetica','bold');pdf.setFontSize(Math.max(5.5,8*scale));
-   pdf.text('ITEM / DESCRIPTION',left+4,y+headerH*.68);
-   pdf.text('QTY',142,y+headerH*.68,{align:'right'});
-   pdf.text('AMOUNT',right-4,y+headerH*.68,{align:'right'});
+   pdf.setFillColor(238,244,240);pdf.rect(left,y,pageWidth,headerH,'F');
+   pdf.setDrawColor(48,105,76);pdf.setLineWidth(.45);pdf.line(left,y,right,y);
+   pdf.setTextColor(32,65,49);pdf.setFont('helvetica','bold');pdf.setFontSize(Math.max(5.5,8*scale));
+   pdf.text('REF / DESCRIPTION',left+4,y+headerH*.68);
+   pdf.text('QTY',132,y+headerH*.68,{align:'right'});
+   pdf.text('UNIT RATE',159,y+headerH*.68,{align:'right'});
+   pdf.text('LINE TOTAL',right-4,y+headerH*.68,{align:'right'});
    y+=headerH;
    for(let index=0;index<prepared.length;index++){
     const {item,titleLines,detailLines}=prepared[index];
     const h=paddingH+titleLines.length*titleStep+detailLines.length*detailStep;
     if(index%2===1){pdf.setFillColor(248,251,249);pdf.rect(left,y,pageWidth,h,'F')}
     pdf.setFont('helvetica','bold');pdf.setFontSize(titleFont);pdf.setTextColor(...dark);
-    pdf.text(titleLines,left+4,y+titleStep);
+    pdf.text(String(index+1).padStart(2,'0'),left+4,y+titleStep);
+    pdf.text(titleLines,left+13,y+titleStep);
     pdf.setFont('helvetica','normal');pdf.setFontSize(detailFont);pdf.setTextColor(91,111,99);
     let dy=y+titleStep*titleLines.length+detailStep;
-    for(const detail of detailLines){pdf.text(detail,left+4,dy);dy+=detailStep}
+    for(const detail of detailLines){pdf.text(detail,left+13,dy);dy+=detailStep}
     pdf.setFont('helvetica','bold');pdf.setFontSize(titleFont);pdf.setTextColor(...dark);
-    pdf.text(String(item.qty),142,y+titleStep,{align:'right'});
+    pdf.text(String(item.qty),132,y+titleStep,{align:'right'});
+    pdf.text(money(item.qty>0?item.amount/item.qty:0),159,y+titleStep,{align:'right'});
     pdf.text(money(item.amount),right-4,y+titleStep,{align:'right'});
     y+=h;line(left,y,right);
    }
@@ -163,15 +167,15 @@ const [doorRates,setDoorRates]=useState<Record<string,number>>(DEFAULT_FINISH_RA
 
  return <main className="dj-preview-desktop dj-unified-page dj-preview-page min-h-screen"><DesktopSidebar active="preview"/><div className="dj-preview-body">
  <header className="no-print dj-page-header dj-preview-toolbar"><div><p className="rev-kicker-light">DELTA JOINERY</p><h1>Preview / PDF</h1><p>Review the quotation exactly as it will be exported.</p></div><div className="dj-header-actions"><Link href="/quote" className="dj-secondary-action">← Edit quotation</Link><button className="dj-primary-action" onClick={printA4}>↓ Download A4 PDF</button></div></header>
- <article id="dj-print-sheet" className="dj-quotation-paper mx-auto max-w-4xl bg-white p-7 md:p-12 shadow-sm print:shadow-none print:p-0" style={{minHeight:'90vh'}}>
- <header className="flex items-center justify-between gap-5 border-b-2 border-green-800 pb-7"><Image src="/delta-logo.png" alt="Delta Joinery" width={175} height={50} priority/><div className="text-right"><h1 className="text-xl md:text-2xl font-bold tracking-wide">QUOTATION</h1><p className="text-xs text-gray-500 mt-1">DELTA JOINERY</p><p className="text-xs font-bold text-red-700 mt-2">INTERNAL QUOTATION ONLY</p></div></header>
- <div className="grid grid-cols-2 gap-5 my-8 text-sm">
+ <article id="dj-print-sheet" className="dj-quotation-paper dj-technical-quote mx-auto max-w-4xl bg-white p-7 md:p-12 shadow-sm print:shadow-none print:p-0" style={{minHeight:'90vh'}}>
+ <header className="dj-technical-header flex items-center justify-between gap-5 border-b-2 border-green-800 pb-7"><Image src="/delta-logo.png" alt="Delta Joinery" width={175} height={50} priority/><div className="text-right"><h1 className="text-xl md:text-2xl font-bold tracking-wide">QUOTATION</h1><p className="text-xs text-gray-500 mt-1">DELTA JOINERY</p><p className="text-xs font-bold text-red-700 mt-2">INTERNAL QUOTATION ONLY</p></div></header>
+ <div className="dj-technical-meta grid grid-cols-2 gap-5 my-8 text-sm">
  <div><p className="text-xs text-gray-500 uppercase tracking-wide">Prepared for</p><p className="font-semibold mt-2">{q.client||'Client not entered'}</p>{q.project&&<p className="mt-1 text-gray-600">Project: {q.project}</p>}{q.email?.trim()&&<p className="mt-2 text-gray-600 break-words"><strong>Email:</strong> {q.email.trim()}</p>}{q.phone?.trim()&&<p className="mt-1 text-gray-600"><strong>Phone:</strong> {q.phone.trim()}</p>}{q.address?.trim()&&<p className="mt-1 text-gray-600 whitespace-pre-wrap break-words"><strong>Address:</strong> {q.address.trim()}</p>}</div>
  <div className="text-right"><p><span className="text-gray-500">Quotation No. </span><b>{q.number||'—'}</b></p><p className="mt-2"><span className="text-gray-500">Date </span>{q.date||'—'}</p>{q.name&&<p className="mt-2 text-gray-600">{q.name}</p>}</div>
  </div>
- <h2 className="font-semibold text-lg mb-3">Quotation breakdown</h2>
- <table className="w-full text-sm" style={{borderCollapse:'collapse'}}><thead><tr className="bg-green-900 text-white"><th className="text-left p-3">Description</th><th className="text-center p-3">Qty</th><th className="text-right p-3">Price</th><th className="text-right p-3">Total</th></tr></thead><tbody>{all.map((x,i)=><tr key={i} className="border-b border-gray-200"><td className="p-3"><strong>{x.label}</strong><div className="text-xs text-gray-500">{x.detail}</div></td><td className="text-center p-3">{x.qty}</td><td className="text-right p-3">{currency(x.qty>0?x.amount/x.qty:0)}</td><td className="text-right p-3 font-medium">{currency(x.amount)}</td></tr>)}{all.length===0&&<tr><td colSpan={4} className="p-8 text-center text-gray-400">No items added to this quotation</td></tr>}</tbody></table>
- <div className="flex justify-end mt-8"><div className="w-full max-w-sm border-t-2 border-green-800 pt-5">{q.includeVat&&<><div className="flex justify-between gap-4 mb-3"><span>Subtotal (excl. VAT)</span><strong>{currency(subtotal)}</strong></div><div className="flex justify-between gap-4 mb-3"><span>VAT (13.5%)</span><strong>{currency(vatAmount)}</strong></div></>}<div className="flex justify-between gap-4"><strong>Total {q.includeVat?'(VAT included)':'(excl. VAT)'}</strong><strong className="text-xl text-green-800">{currency(total)}</strong></div></div></div>
+ <div className="dj-technical-section-heading"><h2 className="font-semibold text-lg mb-3">01 / Quotation breakdown</h2><span>{all.length} line item{all.length===1?'':'s'}</span></div>
+ <table className="dj-technical-table w-full text-sm" style={{borderCollapse:'collapse'}}><thead><tr><th className="text-left p-3">REF / DESCRIPTION</th><th className="text-center p-3">QTY</th><th className="text-right p-3">UNIT RATE</th><th className="text-right p-3">LINE TOTAL</th></tr></thead><tbody>{all.map((x,i)=><tr key={i}><td className="p-3"><div className="dj-technical-item"><span className="dj-technical-ref">{String(i+1).padStart(2,'0')}</span><div><strong>{x.label}</strong><div className="dj-technical-spec">{x.detail}</div></div></div></td><td className="text-center p-3">{x.qty}</td><td className="text-right p-3">{currency(x.qty>0?x.amount/x.qty:0)}</td><td className="text-right p-3 font-medium">{currency(x.amount)}</td></tr>)}{all.length===0&&<tr><td colSpan={4} className="p-8 text-center text-gray-400">No items added to this quotation</td></tr>}</tbody></table>
+ <div className="dj-technical-summary flex justify-end mt-8"><div className="dj-technical-summary-inner w-full max-w-sm border-t-2 border-green-800 pt-5">{q.includeVat&&<><div className="flex justify-between gap-4 mb-3"><span>Subtotal (excl. VAT)</span><strong>{currency(subtotal)}</strong></div><div className="flex justify-between gap-4 mb-3"><span>VAT (13.5%)</span><strong>{currency(vatAmount)}</strong></div></>}<div className="flex justify-between gap-4"><strong>Total {q.includeVat?'(VAT included)':'(excl. VAT)'}</strong><strong className="text-xl text-green-800">{currency(total)}</strong></div></div></div>
  <div className="mt-16 border-t pt-5 text-xs text-gray-500"><p className="mt-1">{q.includeVat?'INTERNAL QUOTATION ONLY. VAT at 13.5% has been included in the final total.':'INTERNAL QUOTATION ONLY. VAT has not been included in the final total.'}</p></div>
  </article>
  <style jsx global>{`

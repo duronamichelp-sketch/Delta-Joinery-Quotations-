@@ -23,7 +23,8 @@ export const DEFAULT_CNC_MACHINE_COSTS:ProductionCost[]=[
 ];
 export const DEFAULT_PRODUCTION_COSTS:ProductionCost[]=[
  {id:'prod-panel-cutting',name:'Panel saw / sheet cutting',price:55,unit:'hour'},
- {id:'prod-edge-banding',name:'Edge banding',price:60.5,unit:'hour'}
+ {id:'prod-edge-banding',name:'Edge banding',price:60.5,unit:'hour'},
+ {id:'prod-painting-sanding',name:'Painting & Sanding',price:250,unit:'day'}
 ];
 // Keep CNC-related work in the CNC section, including legacy/custom entries
 // that were previously saved under general Production Costs.

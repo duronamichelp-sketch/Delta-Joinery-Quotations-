@@ -3672,7 +3672,7 @@ body main.dj-quote-page .dj-uplift-entry{
  align-items:center!important;
  gap:5px!important;
 }
-body main.dj-quote-page .dj-uplift-entry input[type="number"]{
+body main.dj-quote-page .dj-uplift-entry input[type="text"]{
  width:74px!important;
  min-width:0!important;
  padding:7px 8px!important;

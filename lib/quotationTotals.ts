@@ -83,7 +83,7 @@ export function savedQuoteDetails(q:SavedQuotation){
   addLine('Units',x.customName||u!.name,Number(x.qty)||0,x.customName?(Number(x.customPrice)||0):(Number(u!.price)||0),'unit');
   if(x.adc&&u){
    const doorRate=pricedDoor({...x,hasDoors:!!x.adc,doorMaterial:'MFC',doorCount:x.doorCount||1,doorSqm:x.doorSqm||0} as any,doorRates,u);
-   if(doorRate>0)addLine('Units',`${u.name} — ${x.doorFinish||'Door'}`,Number(x.qty)||0,doorRate,'door set');
+   if(doorRate>0)addLine('Doors',`${u.name} — ${x.doorFinish||'Door'}`,Number(x.qty)||0,doorRate,'door set');
   }
   if(x.ais&&u){
    const shelfRate=shelvesTotal(x,u);
@@ -106,7 +106,7 @@ export function savedQuoteDetails(q:SavedQuotation){
  for(const product of q.chosenCustomProducts||[]){const price=typeof product.price==='number'?product.price:(product.lines||[]).reduce((s,l)=>s+(Number(l.price)||0),0);addLine('Custom Products',product.name,1,price,'item')}
 
  const effectiveLines=q.costLines?.length?q.costLines:distributeQuotationUplift(lines,q.includeUplift,q.upliftPercent);
- const categoryOrder=['Units','Shelves','Hardware','Labour','Electrics','Finishes','Fillers / Plinths & Coving','Timber','Worktops','CNC Production','Production Costs','Custom Products'];
+ const categoryOrder=['Units','Doors','Shelves','Hardware','Labour','Electrics','Finishes','Fillers / Plinths & Coving','Timber','Worktops','CNC Production','Production Costs','Custom Products'];
  const computedBreakdown=categoryOrder.map((label,index)=>({
   key:String(index+1),
   label,

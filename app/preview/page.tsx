@@ -2,12 +2,13 @@
 import {useEffect,useState} from 'react';
 import Link from 'next/link';
 import DesktopSidebar from '../DesktopSidebar';
+import {distributeQuotationUplift} from '../../lib/quotationTotals';
 import Image from 'next/image';
 import {Unit,Hardware,Labour,ExtraCost,QuoteUnit,QuoteHardware,DEFAULT_HARDWARE,DEFAULT_FINISH_RATES,pricedDoor,doorSqm,shelvesTotal,shelfDimensions,currency,read,DEFAULT_PRODUCTION_COSTS,productionCostsWithDefaults,cncCostsWithDefaults} from '../../lib/data';
 type CostItem={id:string;name:string;price:number;unit:string};
 const DEFAULT_CNC:CostItem[]=[{"id":"cnc-0","name":"MDF 22 Strada Handle","price":10,"unit":"door"},{"id":"cnc-1","name":"Frame Door","price":10,"unit":"door"},{"id":"cnc-2","name":"Shaker Door","price":25,"unit":"door"},{"id":"cnc-3","name":"Grooving","price":50,"unit":"m²"},{"id":"cnc-4","name":"Decor Pieces - High Complexity","price":45,"unit":"each"},{"id":"cnc-5","name":"Decor Pieces - Medium Complexity","price":30,"unit":"each"},{"id":"cnc-6","name":"Decor Pieces - Low Complexity","price":15,"unit":"each"},{"id":"cnc-7","name":"Bent Panel","price":120,"unit":"each"},{"id":"cnc-8","name":"Bent Panel - Shaker Door","price":170,"unit":"each"},{"id":"cnc-9","name":"Bent Panel - Big Piece","price":190,"unit":"each"},{"id":"cnc-10","name":"Bent Panel - Big Piece Shaker Door","price":240,"unit":"each"},{"id":"cnc-11","name":"Built-in Handle","price":20,"unit":"door"},{"id":"cnc-12","name":"PVC Film Covering","price":20,"unit":"piece"}];
 type CustomLine={id:string;qty:number;customName?:string;customPrice?:number};
-type Q={includeVat?:boolean;name?:string;number?:string;date?:string;client?:string;project?:string;email?:string;phone?:string;address?:string;chosenUnits?:(QuoteUnit & CustomLine)[];chosenHardware?:(QuoteHardware & CustomLine)[];chosenLabour?:CustomLine[];chosenElectrics?:CustomLine[];chosenFinishes?:CustomLine[];chosenFillers?:CustomLine[];chosenTimber?:CustomLine[];chosenCnc?:CustomLine[];chosenProduction?:CustomLine[];chosenWorktops?:{id:string;name:string;qty:number;rate:number;unit:string}[];chosenCustomProducts?:{id:string;name:string;price?:number;lines?:{id:string;description:string;price:number}[]}[]};
+type Q={includeVat?:boolean;includeUplift?:boolean;upliftPercent?:number;name?:string;number?:string;date?:string;client?:string;project?:string;email?:string;phone?:string;address?:string;chosenUnits?:(QuoteUnit & CustomLine)[];chosenHardware?:(QuoteHardware & CustomLine)[];chosenLabour?:CustomLine[];chosenElectrics?:CustomLine[];chosenFinishes?:CustomLine[];chosenFillers?:CustomLine[];chosenTimber?:CustomLine[];chosenCnc?:CustomLine[];chosenProduction?:CustomLine[];chosenWorktops?:{id:string;name:string;qty:number;rate:number;unit:string}[];chosenCustomProducts?:{id:string;name:string;price?:number;lines?:{id:string;description:string;price:number}[]}[]};
 export default function Preview(){
  const [q,setQ]=useState<Q>({});
  const [timberRates,setTimberRates]=useState<Record<string,number>>({});
@@ -31,8 +32,9 @@ const [doorRates,setDoorRates]=useState<Record<string,number>>(DEFAULT_FINISH_RA
  const productionRows=(q.chosenProduction||[]).flatMap(x=>{const custom=customRow(x,'Production Costs / custom');if(custom)return [custom];const c=production.find(z=>z.id===x.id)||cnc.find(z=>z.id===x.id&&x.id.startsWith('prod-cnc-'));return c?[{label:c.name,detail:`Production Costs / ${c.unit}`,qty:x.qty,price:c.price}]:[]});
  const worktops=(q.chosenWorktops||[]).map(x=>({label:x.name,detail:`Worktops / ${x.unit}`,qty:x.qty,price:x.rate}));
  const customProducts=(q.chosenCustomProducts||[]).map(product=>({label:product.name,detail:'Custom product',qty:1,price:typeof product.price==='number'?product.price:(product.lines||[]).reduce((s,l)=>s+(Number(l.price)||0),0)}));
- const all=[...rows,...hw,...work,...er,...fr,...pr,...timber,...worktops,...cncRows,...productionRows,...customProducts];
- const subtotal=all.reduce((sum,x)=>sum+x.qty*x.price,0);
+ const beforeUplift=[...rows,...hw,...work,...er,...fr,...pr,...timber,...worktops,...cncRows,...productionRows,...customProducts];
+ const all=distributeQuotationUplift(beforeUplift.map(x=>({...x,amount:Math.round(x.qty*x.price*100)/100})),q.includeUplift,q.upliftPercent);
+ const subtotal=Math.round(all.reduce((sum,x)=>sum+x.amount,0)*100)/100;
  const vatAmount=q.includeVat?Math.round(subtotal*0.135*100)/100:0;
  const total=subtotal+vatAmount;
 
@@ -128,7 +130,7 @@ const [doorRates,setDoorRates]=useState<Record<string,number>>(DEFAULT_FINISH_RA
     for(const detail of detailLines){pdf.text(detail,left+4,dy);dy+=detailStep}
     pdf.setFont('helvetica','bold');pdf.setFontSize(titleFont);pdf.setTextColor(...dark);
     pdf.text(String(item.qty),142,y+titleStep,{align:'right'});
-    pdf.text(money(item.qty*item.price),right-4,y+titleStep,{align:'right'});
+    pdf.text(money(item.amount),right-4,y+titleStep,{align:'right'});
     y+=h;line(left,y,right);
    }
    if(prepared.length===0){y+=9;write('No items added to this quotation',left+4,y,8)}
@@ -168,7 +170,7 @@ const [doorRates,setDoorRates]=useState<Record<string,number>>(DEFAULT_FINISH_RA
  <div className="text-right"><p><span className="text-gray-500">Quotation No. </span><b>{q.number||'—'}</b></p><p className="mt-2"><span className="text-gray-500">Date </span>{q.date||'—'}</p>{q.name&&<p className="mt-2 text-gray-600">{q.name}</p>}</div>
  </div>
  <h2 className="font-semibold text-lg mb-3">Quotation breakdown</h2>
- <table className="w-full text-sm" style={{borderCollapse:'collapse'}}><thead><tr className="bg-green-900 text-white"><th className="text-left p-3">Description</th><th className="text-center p-3">Qty</th><th className="text-right p-3">Price</th><th className="text-right p-3">Total</th></tr></thead><tbody>{all.map((x,i)=><tr key={i} className="border-b border-gray-200"><td className="p-3"><strong>{x.label}</strong><div className="text-xs text-gray-500">{x.detail}</div></td><td className="text-center p-3">{x.qty}</td><td className="text-right p-3">{currency(x.price)}</td><td className="text-right p-3 font-medium">{currency(x.price*x.qty)}</td></tr>)}{all.length===0&&<tr><td colSpan={4} className="p-8 text-center text-gray-400">No items added to this quotation</td></tr>}</tbody></table>
+ <table className="w-full text-sm" style={{borderCollapse:'collapse'}}><thead><tr className="bg-green-900 text-white"><th className="text-left p-3">Description</th><th className="text-center p-3">Qty</th><th className="text-right p-3">Price</th><th className="text-right p-3">Total</th></tr></thead><tbody>{all.map((x,i)=><tr key={i} className="border-b border-gray-200"><td className="p-3"><strong>{x.label}</strong><div className="text-xs text-gray-500">{x.detail}</div></td><td className="text-center p-3">{x.qty}</td><td className="text-right p-3">{currency(x.qty>0?x.amount/x.qty:0)}</td><td className="text-right p-3 font-medium">{currency(x.amount)}</td></tr>)}{all.length===0&&<tr><td colSpan={4} className="p-8 text-center text-gray-400">No items added to this quotation</td></tr>}</tbody></table>
  <div className="flex justify-end mt-8"><div className="w-full max-w-sm border-t-2 border-green-800 pt-5">{q.includeVat&&<><div className="flex justify-between gap-4 mb-3"><span>Subtotal (excl. VAT)</span><strong>{currency(subtotal)}</strong></div><div className="flex justify-between gap-4 mb-3"><span>VAT (13.5%)</span><strong>{currency(vatAmount)}</strong></div></>}<div className="flex justify-between gap-4"><strong>Total {q.includeVat?'(VAT included)':'(excl. VAT)'}</strong><strong className="text-xl text-green-800">{currency(total)}</strong></div></div></div>
  <div className="mt-16 border-t pt-5 text-xs text-gray-500"><p className="mt-1">{q.includeVat?'INTERNAL QUOTATION ONLY. VAT at 13.5% has been included in the final total.':'INTERNAL QUOTATION ONLY. VAT has not been included in the final total.'}</p></div>
  </article>

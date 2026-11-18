@@ -8,12 +8,12 @@ import {currency,read} from '../../lib/data';
 import {savedQuoteDetails,type SavedQuotation,type SavedQuoteLine} from '../../lib/quotationTotals';
 
 type PackageLine=SavedQuoteLine & {id:string};
-type WorkPackage={id:string;name:string;sourceId?:string;sourceNumber?:string;sourceSavedAt?:string;origin:'saved'|'manual';lines:PackageLine[]};
+type WorkPackage={id:string;name:string;sourceId?:string;sourceNumber?:string;sourceSavedAt?:string;origin:'saved'|'manual';lines:PackageLine[];totalPrice?:number};
 type BulkQuotation={id:string;number:string;date:string;client:string;project:string;email:string;phone:string;address:string;notes:string;includeVat:boolean;works:WorkPackage[];updatedAt?:string};
 const money=(n:number)=>Math.round((Number(n)||0)*100)/100;
 const uid=()=>crypto.randomUUID();
 const draft=():BulkQuotation=>({id:uid(),number:'DJ-BULK-'+Date.now(),date:new Date().toISOString().slice(0,10),client:'',project:'',email:'',phone:'',address:'',notes:'',includeVat:false,works:[]});
-const packageSum=(work:WorkPackage)=>money(work.lines.reduce((sum,line)=>sum+(Number(line.amount)||0),0));
+const packageSum=(work:WorkPackage)=>money(typeof work.totalPrice==='number'&&Number.isFinite(work.totalPrice)?work.totalPrice:work.lines.reduce((sum,line)=>sum+(Number(line.amount)||0),0));
 const validSaved=(item:SavedQuotation)=>Boolean(item.id||item.number);
 function importSaved(item:SavedQuotation):WorkPackage{
  const snapshot=savedQuoteDetails(item);
@@ -40,9 +40,7 @@ export default function BulkQuotationPage(){
  const [history,setHistory]=useState<BulkQuotation[]>([]);
  const [selected,setSelected]=useState('');
  const [manualName,setManualName]=useState('');
- const [openWork,setOpenWork]=useState<string[]>([]);
- const [editing,setEditing]=useState<string|null>(null);
- const [entry,setEntry]=useState({category:'Materials',description:'',qty:'1',rate:''});
+ const [manualPrice,setManualPrice]=useState('');
  const [notice,setNotice]=useState('');
  const [saving,setSaving]=useState(false);
  const [printing,setPrinting]=useState(false);
@@ -71,27 +69,20 @@ export default function BulkQuotationPage(){
   if(!choice)return;
   const work=importSaved(choice);
   setQuote(q=>({...q,works:[...q.works,work]}));
-  setOpenWork(p=>[...p,work.id]);
   setSelected('');
-  setNotice('Imported '+work.name+' with '+work.lines.length+' breakdown lines. Original saved quotation unchanged.');
+  setNotice('Imported '+work.name+' at '+currency(packageSum(work))+'. Original saved quotation unchanged.');
  };
  const addManual=()=>{
-  const name=manualName.trim();if(!name)return;
-  const work:WorkPackage={id:uid(),name,origin:'manual',lines:[]};
-  setQuote(q=>({...q,works:[...q.works,work]}));setOpenWork(p=>[...p,work.id]);setEditing(work.id);
-  setManualName('');setNotice('Work package added. Enter its individual cost lines below.');
- };
- const addLine=(id:string)=>{
-  if(!entry.description.trim()||entry.rate.trim()===''||Number(entry.qty)<=0||!Number.isFinite(Number(entry.rate)))return;
-  const qty=Math.max(0,Number(entry.qty)),rate=Number(entry.rate);
-  const line:PackageLine={id:uid(),category:entry.category.trim()||'Other',description:entry.description.trim(),qty,rate,amount:money(qty*rate),unit:'item'};
-  updateWork(id,w=>({...w,lines:[...w.lines,line]}));
-  setEntry({category:'Materials',description:'',qty:'1',rate:''});setEditing(null);
+  const name=manualName.trim(),cost=Number(manualPrice);
+  if(!name||manualPrice.trim()===''||!Number.isFinite(cost)||cost<0)return;
+  const work:WorkPackage={id:uid(),name,origin:'manual',lines:[],totalPrice:money(cost)};
+  setQuote(q=>({...q,works:[...q.works,work]}));
+  setManualName('');setManualPrice('');setNotice('Work added to the bulk quotation.');
  };
  const removePackage=(id:string)=>{setQuote(q=>({...q,works:q.works.filter(w=>w.id!==id)}));setNotice('Work package removed from this bulk quotation only.')};
  const newBulk=()=>{
   if(quote.works.length&&!window.confirm('Start a new bulk quotation? The current draft is kept in Saved Bulk Quotations only if it has been saved.'))return;
-  setQuote(draft());setOpenWork([]);setNotice('New bulk quotation created.');
+  setQuote(draft());setNotice('New bulk quotation created.');
  };
  const saveBulk=async()=>{
   if(!account){setNotice('Cloud account is not ready. Draft is saved in this browser only.');return}
@@ -108,7 +99,7 @@ export default function BulkQuotationPage(){
  };
  const loadBulk=(id:string)=>{
   const q=history.find(x=>x.id===id);if(!q)return;
-  setQuote(q);setOpenWork(q.works.map(w=>w.id));setNotice('Loaded saved bulk quotation '+q.number);
+  setQuote(q);setNotice('Loaded saved bulk quotation '+q.number);
  };
  async function pdf(){
   if(!quote.works.length){setNotice('Add at least one work package to create the PDF.');return}
@@ -145,35 +136,20 @@ export default function BulkQuotationPage(){
    write('Date: '+quote.date,111,52,8);
    y+=9;rule(y);y+=10;
    write('WORK PACKAGES',left,y,12,true,green);y+=7;
+   // One line per work package: work name and price only.
    for(let i=0;i<quote.works.length;i++){
     const work=quote.works[i];
-    needs(20);
-    doc.setFillColor(236,244,239);doc.rect(left,y-4,maxWidth,11,'F');
-    write(String(i+1).padStart(2,'0')+'  '+work.name,left+3,y+2,10,true,green);
+    const titleLines=split(String(i+1).padStart(2,'0')+'  '+work.name,120,9);
+    const rowHeight=Math.max(13,8+titleLines.length*4.8);
+    needs(rowHeight);
+    if(i%2===0){doc.setFillColor(242,247,243);doc.rect(left,y-3,maxWidth,rowHeight,'F')}
+    let ty=y+4;
+    for(const title of titleLines){write(title,left+4,ty,9,true,ink);ty+=4.8}
     doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...green);
-    doc.text(currency(packageSum(work)),right-3,y+2,{align:'right'});
-    y+=13;
-    if(work.sourceNumber){write('Source quotation: '+work.sourceNumber,left+3,y,7,false,muted);y+=5}
-    if(!work.lines.length){write('No cost breakdown added',left+3,y,8,false,muted);y+=8;continue}
-    needs(12);
-    doc.setFillColor(247,249,247);doc.rect(left,y-3,maxWidth,8,'F');
-    write('ITEM / DESCRIPTION',left+3,y+2,7,true,ink);
-    write('QTY',135,y+2,7,true,ink);write('AMOUNT',right-3,y+2,7,true,ink);y+=9;
-    for(const line of work.lines){
-     const title=split(line.description,112,8);
-     const sub=split(line.category+(line.unit?' / '+line.unit:''),112,7);
-     const rowHeight=Math.max(10,5+title.length*4+sub.length*3.4);
-     needs(rowHeight+1);
-     let dy=y+4;
-     for(const t of title){write(t,left+3,dy,8,true);dy+=4}
-     for(const t of sub){write(t,left+3,dy,7,false,muted);dy+=3.4}
-     write(String(line.qty),135,y+4,8);
-     doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...ink);
-     doc.text(currency(line.amount),right-3,y+4,{align:'right'});
-     y+=rowHeight;rule(y);
-    }
-    y+=9;
+    doc.text(currency(packageSum(work)),right-4,y+4,{align:'right'});
+    y+=rowHeight;rule(y);
    }
+   y+=9;
    needs(37);
    rule(y);y+=8;
    write('TOTAL EXCLUDING VAT',left,y,9,true,ink);
@@ -200,7 +176,7 @@ export default function BulkQuotationPage(){
  <DesktopSidebar active="quote"/>
  <div className="dj-bulk-main">
   <header className="dj-bulk-top">
-   <div><p className="dj-bulk-kicker">DELTA JOINERY / QUOTATIONS</p><h1>Bulk Quotation</h1><p>Combine multiple work packages into one document, including their individual cost breakdowns.</p></div>
+   <div><p className="dj-bulk-kicker">DELTA JOINERY / QUOTATIONS</p><h1>Bulk Quotation</h1><p>Combine multiple works into one quotation, showing each work name and price.</p></div>
    <div className="dj-bulk-actions"><Link href="/quote" className="dj-bulk-secondary">← Standard Quotation</Link><button type="button" className="dj-bulk-secondary" onClick={newBulk}>＋ New Bulk Quotation</button><button type="button" onClick={()=>void saveBulk()} disabled={saving||!quote.works.length}>{saving?'Saving...':'Save bulk quotation'}</button></div>
   </header>
   <div className="dj-bulk-layout">
@@ -219,12 +195,12 @@ export default function BulkQuotationPage(){
     <div className="dj-bulk-card">
      <div className="dj-bulk-card-header"><h2>02 / Add work</h2><span>Saved or new</span></div>
      <div className="dj-bulk-import">
-      <div><strong>Add from Saved Quotations</strong><p>Copies the saved work name, line-by-line breakdown and pre-VAT subtotal. The original stays unchanged.</p></div>
+      <div><strong>Add from Saved Quotations</strong><p>Automatically adds the saved work name and total cost. The original quotation stays unchanged.</p></div>
       <div className="dj-bulk-import-action"><select aria-label="Select saved quotation" value={selected} onChange={e=>setSelected(e.target.value)}><option value="">Select saved quotation</option>{saved.map(item=><option key={item.id} value={item.id||item.number}>{item.project||item.name||'Unnamed work'} — {currency(typeof item.subtotalAmount==='number'?item.subtotalAmount:savedQuoteDetails(item).subtotal)}{item.finished?' (Finished)':''}</option>)}</select><button type="button" disabled={!selected} onClick={addSaved}>＋ Add from saved</button></div>
      </div>
      <div className="dj-bulk-import">
-      <div><strong>Add a new work package</strong><p>Create a new wardrobe, room or other work and add its material, labour and production cost lines.</p></div>
-      <div className="dj-bulk-import-action"><input aria-label="New work package name" placeholder="e.g. Wardrobe 3" value={manualName} onChange={e=>setManualName(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')addManual()}}/><button type="button" disabled={!manualName.trim()} onClick={addManual}>＋ Add work</button></div>
+      <div><strong>Add a new work</strong><p>Enter the work name and its total cost.</p></div>
+      <div className="dj-bulk-import-action"><input aria-label="New work name" placeholder="e.g. Wardrobe 3" value={manualName} onChange={e=>setManualName(e.target.value)}/><input aria-label="Work cost in euro" type="number" min="0" step="0.01" placeholder="Total cost (€)" value={manualPrice} onChange={e=>setManualPrice(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')addManual()}}/><button type="button" disabled={!manualName.trim()||manualPrice.trim()===''||!Number.isFinite(Number(manualPrice))||Number(manualPrice)<0} onClick={addManual}>＋ Add work</button></div>
      </div>
     </div>
     <div className="dj-bulk-card">
@@ -232,22 +208,11 @@ export default function BulkQuotationPage(){
      {!quote.works.length&&<p className="dj-bulk-empty">No works added yet. Import a saved quotation or create a new work package above.</p>}
      {quote.works.map((work,index)=><div className="dj-bulk-package" key={work.id}>
       <div className="dj-bulk-package-head">
-       <button className="dj-bulk-expand" type="button" aria-expanded={openWork.includes(work.id)} onClick={()=>setOpenWork(a=>a.includes(work.id)?a.filter(id=>id!==work.id):[...a,work.id])}>
-        <span className="dj-bulk-index">{String(index+1).padStart(2,'0')}</span>
-        <span><strong>{work.name}</strong><small>{work.origin==='saved'?'Imported from '+work.sourceNumber:'Manual work'} · {work.lines.length} cost lines</small></span>
-        <span className="dj-bulk-chevron">{openWork.includes(work.id)?'⌃':'⌄'}</span>
-       </button>
-       <strong className="dj-bulk-package-price">{currency(packageSum(work))}</strong>
+       <span className="dj-bulk-index">{String(index+1).padStart(2,'0')}</span>
+       <input className="dj-bulk-work-name" aria-label={'Work name '+(index+1)} value={work.name} onChange={e=>updateWork(work.id,w=>({...w,name:e.target.value}))}/>
+       {work.origin==='manual'?<input className="dj-bulk-work-cost" aria-label={'Work cost '+(index+1)} type="number" min="0" step="0.01" value={work.totalPrice??packageSum(work)} onChange={e=>{const val=Number(e.target.value);updateWork(work.id,w=>({...w,totalPrice:Number.isFinite(val)?money(Math.max(0,val)):0}))}}/>:<strong className="dj-bulk-package-price">{currency(packageSum(work))}</strong>}
        <button type="button" className="dj-bulk-remove" aria-label={'Remove '+work.name} onClick={()=>removePackage(work.id)}>×</button>
       </div>
-      {openWork.includes(work.id)&&<div className="dj-bulk-package-body">
-       <label className="dj-bulk-rename">Work name<input value={work.name} onChange={e=>updateWork(work.id,w=>({...w,name:e.target.value}))}/></label>
-       <div className="dj-bulk-line-table"><div className="dj-bulk-line-head"><span>DESCRIPTION</span><span>QTY</span><span>RATE</span><span>AMOUNT</span></div>
-        {work.lines.map(line=><div className="dj-bulk-line" key={line.id}><div><b>{line.description}</b><small>{line.category}{line.unit?' · '+line.unit:''}</small></div><span>{line.qty}</span><span>{currency(line.rate)}</span><strong>{currency(line.amount)}</strong>{work.origin==='manual'&&<button type="button" aria-label="Remove cost line" onClick={()=>updateWork(work.id,w=>({...w,lines:w.lines.filter(l=>l.id!==line.id)}))}>×</button>}</div>)}
-        {!work.lines.length&&<p className="dj-bulk-empty">No cost lines yet.</p>}
-       </div>
-       {work.origin==='manual'&&(editing===work.id?<div className="dj-bulk-line-form"><label>Category<input value={entry.category} onChange={e=>setEntry(a=>({...a,category:e.target.value}))}/></label><label>Description<input value={entry.description} onChange={e=>setEntry(a=>({...a,description:e.target.value}))}/></label><label>Quantity<input type="number" min="0.01" step="0.01" value={entry.qty} onChange={e=>setEntry(a=>({...a,qty:e.target.value}))}/></label><label>Unit price €<input type="number" min="0" step="0.01" value={entry.rate} onChange={e=>setEntry(a=>({...a,rate:e.target.value}))}/></label><button type="button" onClick={()=>addLine(work.id)} disabled={!entry.description.trim()||entry.rate===''||Number(entry.qty)<=0}>Add cost line</button><button className="dj-bulk-secondary" type="button" onClick={()=>setEditing(null)}>Cancel</button></div>:<button className="dj-bulk-secondary" type="button" onClick={()=>{setEditing(work.id);setEntry({category:'Materials',description:'',qty:'1',rate:''})}}>＋ Add cost line</button>)}
-      </div>}
      </div>)}
     </div>
     <div className="dj-bulk-card"><div className="dj-bulk-card-header"><h2>04 / Notes</h2></div><textarea rows={3} value={quote.notes} onChange={e=>setField('notes',e.target.value)} placeholder="Quotation notes, exclusions or clarifications"/></div>
@@ -263,7 +228,7 @@ export default function BulkQuotationPage(){
      <div className="dj-bulk-total-row dj-bulk-grand"><span>Grand total</span><strong>{currency(grand)}</strong></div>
      <button type="button" onClick={()=>void saveBulk()} disabled={saving||!quote.works.length}>{saving?'Saving...':'Save bulk quotation'}</button>
      <button type="button" onClick={()=>void pdf()} disabled={printing||!quote.works.length}>{printing?'Generating PDF...':'Download technical PDF →'}</button>
-     <small>Imported saved work amounts are taken excluding their original VAT. VAT is applied only once to the combined quotation when selected.</small>
+     <small>Only work names and costs appear in the bulk quotation and PDF. VAT is applied once to the combined subtotal when selected.</small>
     </div>
     {notice&&<p role="status" className="dj-bulk-notice">{notice}</p>}
    </aside>

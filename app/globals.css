@@ -3701,3 +3701,81 @@ body main.dj-quote-page .dj-trim-footer button:disabled{opacity:.45!important;cu
 body main.dj-quote-page .dj-trim-item{display:flex!important;gap:10px!important;flex-wrap:wrap!important;align-items:center!important}
 body main.dj-quote-page .dj-trim-item>.dj-trim-fields{flex:1 1 100%!important;order:2!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}
 @media(max-width:650px){body main.dj-quote-page .dj-trim-fields,body main.dj-quote-page .dj-trim-item>.dj-trim-fields{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+
+
+/* Technical quotation schedule – presentation only; no pricing changes. */
+body .dj-preview-page .dj-technical-quote{
+ max-width:1000px!important;
+ padding:43px 48px 46px!important;
+ font-family:Arial,Helvetica,sans-serif!important;
+ font-variant-numeric:tabular-nums!important;
+}
+body .dj-preview-page .dj-technical-header{
+ border-bottom:1px solid #8ea99a!important;
+ padding-bottom:22px!important;
+ align-items:center!important;
+}
+body .dj-preview-page .dj-technical-header h1{letter-spacing:.065em!important;font-size:23px!important;font-weight:800!important}
+body .dj-preview-page .dj-technical-meta{
+ gap:24px!important;margin:22px 0 34px!important;
+ padding:18px 19px!important;
+ border:1px solid #dce4e0!important;
+ border-left:3px solid #245a41!important;
+ background:#fbfcfb!important;
+ border-radius:4px!important;
+}
+body .dj-preview-page .dj-technical-meta p{line-height:1.55!important}
+body .dj-preview-page .dj-technical-section-heading{
+ display:flex!important;justify-content:space-between!important;align-items:baseline!important;
+ gap:14px!important;margin:0 0 11px!important;border-bottom:1px solid #b3c3ba!important;padding:0 0 9px!important;
+}
+body .dj-preview-page .dj-technical-section-heading h2{
+ margin:0!important;font-size:14px!important;letter-spacing:.045em!important;font-weight:800!important;text-transform:uppercase!important;
+}
+body .dj-preview-page .dj-technical-section-heading span{
+ color:#62766a!important;font-size:10px!important;white-space:nowrap!important;text-transform:uppercase!important;letter-spacing:.06em!important;
+}
+body .dj-preview-page table.dj-technical-table{
+ width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;font-size:12px!important;
+}
+body .dj-preview-page table.dj-technical-table th{
+ padding:12px 10px!important;background:#edf2ee!important;color:#264735!important;
+ border-top:1px solid #799785!important;border-bottom:1px solid #c6d4ca!important;
+ letter-spacing:.075em!important;font-size:10px!important;font-weight:800!important;
+}
+body .dj-preview-page table.dj-technical-table th:first-child{width:65%!important}
+body .dj-preview-page table.dj-technical-table th:nth-child(2){width:8%!important}
+body .dj-preview-page table.dj-technical-table th:nth-child(3){width:13%!important}
+body .dj-preview-page table.dj-technical-table th:nth-child(4){width:14%!important}
+body .dj-preview-page table.dj-technical-table td{
+ padding:14px 10px!important;border-bottom:1px solid #e1e8e3!important;
+ color:#1d2b24!important;vertical-align:top!important;line-height:1.42!important;
+}
+body .dj-preview-page table.dj-technical-table tbody tr:nth-child(even){background:#fafcfa!important}
+body .dj-preview-page .dj-technical-item{display:flex!important;align-items:flex-start!important;gap:11px!important;min-width:0!important}
+body .dj-preview-page .dj-technical-ref{flex:none!important;color:#65816e!important;font-family:monospace!important;font-size:11px!important;font-weight:700!important;line-height:1.6!important}
+body .dj-preview-page .dj-technical-item strong{font-size:12px!important;font-weight:750!important}
+body .dj-preview-page .dj-technical-spec{font-size:10px!important;color:#667970!important;line-height:1.55!important;margin-top:4px!important}
+body .dj-preview-page table.dj-technical-table td:nth-child(2),
+body .dj-preview-page table.dj-technical-table td:nth-child(3),
+body .dj-preview-page table.dj-technical-table td:nth-child(4){white-space:nowrap!important}
+body .dj-preview-page .dj-technical-summary{margin-top:23px!important}
+body .dj-preview-page .dj-technical-summary-inner{
+ border-top:1px solid #779481!important;padding:15px 18px!important;
+ background:#f5f8f5!important;border-radius:4px!important;max-width:370px!important;
+}
+@media(max-width:700px){
+ body .dj-preview-page .dj-technical-quote{padding:20px 12px!important}
+ body .dj-preview-page .dj-technical-meta{padding:12px!important;gap:10px!important}
+ body .dj-preview-page table.dj-technical-table th,
+ body .dj-preview-page table.dj-technical-table td{padding:9px 4px!important;font-size:10px!important}
+ body .dj-preview-page .dj-technical-item{gap:5px!important}
+ body .dj-preview-page .dj-technical-ref{font-size:9px!important}
+ body .dj-preview-page .dj-technical-item strong{font-size:10px!important}
+ body .dj-preview-page .dj-technical-spec{font-size:9px!important}
+}
+@media print{
+ body .dj-preview-page .dj-technical-quote{box-shadow:none!important;border-radius:0!important;padding:12mm!important}
+ body .dj-preview-page .dj-technical-meta{break-inside:avoid!important}
+ body .dj-preview-page table.dj-technical-table tr{break-inside:avoid!important}
+}

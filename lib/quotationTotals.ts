@@ -1,4 +1,4 @@
-import {read, type Unit,type Hardware,type Labour,type ExtraCost,DEFAULT_HARDWARE,DEFAULT_FINISH_RATES,pricedDoor,DEFAULT_PRODUCTION_COSTS,productionCostsWithDefaults,cncCostsWithDefaults,shelvesTotal,shelfDimensions,shelfPrice,type UnitMaterial} from './data';
+import {read, type Unit,type Hardware,type Labour,type ExtraCost,DEFAULT_HARDWARE,DEFAULT_FINISH_RATES,pricedDoor,DEFAULT_PRODUCTION_COSTS,productionCostsWithDefaults,cncCostsWithDefaults,shelvesTotal,shelfDimensions,shelfPrice,type UnitMaterial,measuredTrimPrice,type MeasuredTrimType} from './data';
 
 export type SavedQuoteLine={category:string;description:string;qty:number;rate:number;amount:number;unit?:string};
 export type SavedQuoteBreakdown={key:string;label:string;amount:number};
@@ -16,7 +16,7 @@ export type SavedQuotation={
  chosenProduction?:{id:string;qty:number;customName?:string;customPrice?:number}[];
  chosenElectrics?:{id:string;qty:number;customName?:string;customPrice?:number}[];
  chosenFinishes?:{id:string;qty:number;customName?:string;customPrice?:number}[];
- chosenFillers?:{id:string;qty:number;customName?:string;customPrice?:number}[];
+ chosenFillers?:{id:string;qty:number;customName?:string;customPrice?:number;trimType?:MeasuredTrimType;trimMaterial?:UnitMaterial;trimHeight?:number;trimWidth?:number}[];
  chosenTimber?:{id:string;qty:number;customName?:string;customPrice?:number}[];
  chosenWorktops?:{id:string;name:string;qty:number;rate:number;unit:string}[];
  chosenCustomProducts?:{id:string;name:string;price?:number;lines?:{id:string;description:string;price:number}[]}[];
@@ -98,7 +98,7 @@ export function savedQuoteDetails(q:SavedQuotation){
  for(const x of q.chosenLabour||[]){const row=labour.find(z=>z.id===x.id);if(x.customName)addLine('Labour',x.customName,x.qty,Number(x.customPrice)||0,'each');else if(row)addLine('Labour',row.name,x.qty,row.price,row.unit)}
  for(const x of q.chosenElectrics||[]){const row=electrics.find(z=>z.id===x.id);if(x.customName)addLine('Electrics',x.customName,x.qty,Number(x.customPrice)||0,'each');else if(row)addLine('Electrics',row.name,x.qty,row.price,'each')}
  for(const x of q.chosenFinishes||[]){const row=finishes.find(z=>z.id===x.id);if(x.customName)addLine('Finishes',x.customName,x.qty,Number(x.customPrice)||0,'each');else if(row)addLine('Finishes',row.name,x.qty,row.price,'each')}
- for(const x of q.chosenFillers||[]){const row=fillers.find(z=>z.id===x.id);if(x.customName)addLine('Fillers / Plinths & Coving',x.customName,x.qty,Number(x.customPrice)||0,'each');else if(row)addLine('Fillers / Plinths & Coving',row.name,x.qty,row.price,'each')}
+ for(const x of q.chosenFillers||[]){const row=fillers.find(z=>z.id===x.id);if(x.trimType){const material=x.trimMaterial||'MFC';addLine('Fillers / Plinths & Coving',`${x.trimType} — ${material} (${x.trimHeight||0} × ${x.trimWidth||0} mm)`,x.qty,measuredTrimPrice(x.trimHeight||0,x.trimWidth||0,material),'piece')}else if(x.customName)addLine('Fillers / Plinths & Coving',x.customName,x.qty,Number(x.customPrice)||0,'each');else if(row)addLine('Fillers / Plinths & Coving',row.name,x.qty,row.price,'each')}
  for(const x of q.chosenTimber||[]){addLine('Timber',x.customName||x.id,x.qty,x.customName?(Number(x.customPrice)||0):(timberRates[x.id]||0),'ft')}
  for(const x of q.chosenWorktops||[]){addLine('Worktops',x.name,x.qty,x.rate,x.unit)}
  for(const x of q.chosenCnc||[]){const row=cnc.find(z=>z.id===x.id);if(x.customName)addLine('CNC Production',x.customName,x.qty,Number(x.customPrice)||0,'each');else if(row)addLine('CNC Production',row.name,x.qty,row.price,row.unit)}

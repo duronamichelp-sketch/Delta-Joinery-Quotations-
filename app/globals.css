@@ -4151,3 +4151,45 @@ body main.dj-bulk-page .dj-bulk-import-action input[aria-label="Work cost in eur
  body main.dj-bulk-page .dj-bulk-package-head .dj-bulk-package-price{min-width:75px!important;font-size:12px!important}
  body main.dj-bulk-page .dj-bulk-import-action input[aria-label="Work cost in euro"]{flex:1 1 100%!important}
 }
+
+
+/* Furniture price analysis: quiet technical warnings, without changing quotation pricing. */
+body main.dj-quote-page .dj-price-analysis{
+ padding:19px!important;margin-bottom:16px!important;
+ border:1px solid rgba(112,190,239,.30)!important;
+ background:rgba(7,30,46,.94)!important;
+ border-radius:13px!important;
+ box-sizing:border-box!important;
+}
+body main.dj-quote-page .dj-price-analysis-head{
+ display:flex!important;justify-content:space-between!important;align-items:center!important;gap:12px!important;
+ padding-bottom:12px!important;border-bottom:1px solid rgba(112,190,239,.21)!important;
+}
+body main.dj-quote-page .dj-price-analysis-head small{
+ display:block!important;color:#89bbd6!important;letter-spacing:.07em!important;font-size:9px!important;
+}
+body main.dj-quote-page .dj-price-analysis-head h2{
+ margin:5px 0 0!important;font-size:16px!important;font-weight:800!important;color:#f3f9fc!important;
+}
+body main.dj-quote-page .dj-price-analysis-live{font-size:10px!important;white-space:nowrap!important;color:#bad7cb!important;font-weight:750!important}
+body main.dj-quote-page .dj-price-analysis-desc{font-size:11px!important;line-height:1.5!important;color:#a3bdcd!important;margin:10px 0 14px!important}
+body main.dj-quote-page .dj-price-analysis-fields{display:grid!important;gap:11px!important}
+body main.dj-quote-page .dj-price-analysis-fields label{display:grid!important;gap:6px!important;font-size:11px!important;color:#c7dce7!important;font-weight:650!important}
+body main.dj-quote-page .dj-price-analysis-fields input,
+body main.dj-quote-page .dj-price-analysis-fields select{
+ display:block!important;width:100%!important;min-width:0!important;box-sizing:border-box!important;
+ padding:10px!important;min-height:39px!important;background:#102f46!important;
+ border:1px solid rgba(116,188,231,.35)!important;border-radius:8px!important;
+ color:#f1f9ff!important;font-size:12px!important;font-weight:600!important;
+}
+body main.dj-quote-page .dj-price-analysis-results{display:grid!important;gap:10px!important;margin:15px 0 10px!important}
+body main.dj-quote-page .dj-price-analysis-alert{border:1px solid rgba(134,174,197,.27)!important;border-left:3px solid #7993a2!important;border-radius:8px!important;background:rgba(16,43,61,.7)!important;padding:11px 12px!important}
+body main.dj-quote-page .dj-price-analysis-alert.is-danger{border-left-color:#e08477!important}
+body main.dj-quote-page .dj-price-analysis-alert.is-warning{border-left-color:#eac57d!important}
+body main.dj-quote-page .dj-price-analysis-alert.is-good{border-left-color:#85c5a0!important}
+body main.dj-quote-page .dj-price-analysis-alert>b{display:block!important;font-size:12px!important;line-height:1.4!important;color:#f3f8fb!important}
+body main.dj-quote-page .dj-price-analysis-alert p{font-size:10.5px!important;color:#b4cad4!important;line-height:1.5!important;margin:7px 0 0!important}
+body main.dj-quote-page .dj-price-analysis-metrics{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin-top:10px!important}
+body main.dj-quote-page .dj-price-analysis-metrics span{font-size:10px!important;color:#a5becc!important;min-width:0!important}
+body main.dj-quote-page .dj-price-analysis-metrics strong{display:block!important;margin-top:3px!important;font-size:12px!important;color:#f2fafc!important;overflow-wrap:anywhere!important}
+body main.dj-quote-page .dj-price-analysis-foot{display:block!important;font-size:10px!important;color:#91adbe!important;line-height:1.55!important}

@@ -83,7 +83,7 @@ export function savedQuoteDetails(q:SavedQuotation){
   addLine('Units',x.customName||u!.name,Number(x.qty)||0,x.customName?(Number(x.customPrice)||0):(Number(u!.price)||0),'unit');
   if(x.adc&&u){
    const doorRate=pricedDoor({...x,hasDoors:!!x.adc,doorMaterial:'MFC',doorCount:x.doorCount||1,doorSqm:x.doorSqm||0} as any,doorRates,u);
-   if(doorRate>0)addLine('Doors',`${u.name} — ${x.doorFinish||'Door'}`,Number(x.qty)||0,doorRate,'door set');
+   if(doorRate>0)addLine('Doors',`${u.name} — ${Math.max(1,Number(x.doorCount)||1)} × ${x.doorFinish||'Door'} (${Math.round(u.width/Math.max(1,Number(x.doorCount)||1)*100)/100} × ${u.height} mm per door)`,Number(x.qty)||0,doorRate,'door set');
   }
   if(x.ais&&u){
    const shelfRate=shelvesTotal(x,u);

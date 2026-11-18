@@ -3779,3 +3779,167 @@ body .dj-preview-page .dj-technical-summary-inner{
  body .dj-preview-page .dj-technical-meta{break-inside:avoid!important}
  body .dj-preview-page table.dj-technical-table tr{break-inside:avoid!important}
 }
+
+
+/* Delta Joinery — concise unit editor layout (presentation only). */
+body main.dj-quote-page .dj-item.dj-unit{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr)!important;
+ gap:0!important;
+ padding:16px 18px!important;
+ margin-bottom:12px!important;
+ border-radius:12px!important;
+ align-items:stretch!important;
+}
+body main.dj-quote-page .dj-unit>.dj-unit-details{
+ display:block!important;width:100%!important;min-width:0!important;
+}
+body main.dj-quote-page .dj-unit-details>b{
+ font-size:15px!important;line-height:1.35!important;margin:0 0 4px!important;
+}
+body main.dj-quote-page .dj-unit-details>small{
+ font-size:11px!important;line-height:1.4!important;
+}
+body main.dj-quote-page .dj-unit .dj-break{
+ display:grid!important;
+ grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ gap:0!important;
+ max-width:640px!important;
+ margin:14px 0 16px!important;
+ border:1px solid rgba(112,190,239,.2)!important;
+ border-radius:9px!important;
+ background:rgba(3,23,39,.32)!important;
+ overflow:hidden!important;
+}
+body main.dj-quote-page .dj-unit .dj-break span{
+ display:block!important;
+ text-align:left!important;
+ padding:7px 11px 1px!important;
+ font-size:10px!important;
+ color:#9bb8c9!important;
+ font-weight:600!important;
+}
+body main.dj-quote-page .dj-unit .dj-break span:nth-child(even){
+ padding:0 11px 9px!important;
+ text-align:left!important;
+ font-size:12px!important;
+ color:#eaf6ff!important;
+ font-weight:750!important;
+}
+body main.dj-quote-page .dj-unit .dj-break span:nth-child(1){grid-column:1;grid-row:1}
+body main.dj-quote-page .dj-unit .dj-break span:nth-child(2){grid-column:1;grid-row:2}
+body main.dj-quote-page .dj-unit .dj-break span:nth-child(3){grid-column:2;grid-row:1;border-left:1px solid rgba(112,190,239,.16)!important}
+body main.dj-quote-page .dj-unit .dj-break span:nth-child(4){grid-column:2;grid-row:2;border-left:1px solid rgba(112,190,239,.16)!important}
+body main.dj-quote-page .dj-unit .dj-break span:nth-child(5){grid-column:3;grid-row:1;border-left:1px solid rgba(112,190,239,.16)!important}
+body main.dj-quote-page .dj-unit .dj-break span:nth-child(6){grid-column:3;grid-row:2;border-left:1px solid rgba(112,190,239,.16)!important}
+body main.dj-quote-page .dj-unit-details .dj-adc{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr)!important;
+ align-items:stretch!important;
+ gap:9px!important;
+ width:100%!important;
+ margin:0!important;
+ padding:13px 0 0!important;
+ border-top:1px solid rgba(112,190,239,.23)!important;
+}
+body main.dj-quote-page .dj-unit .dj-unit-switches{
+ display:flex!important;gap:9px!important;align-items:center!important;
+ padding:0 0 3px!important;
+}
+body main.dj-quote-page .dj-unit .dj-adc-toggle{
+ min-height:35px!important;padding:7px 12px!important;
+ border-radius:8px!important;
+}
+body main.dj-quote-page .dj-unit-details .dj-adc>.dj-adc-options{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr)!important;
+ gap:11px!important;
+ width:100%!important;
+ margin:0!important;
+ padding:13px 15px!important;
+ border:1px solid rgba(112,190,239,.2)!important;
+ border-radius:10px!important;
+ background:rgba(4,25,42,.43)!important;
+ box-sizing:border-box!important;
+}
+body main.dj-quote-page .dj-unit .dj-config-heading{
+ display:flex!important;align-items:baseline!important;justify-content:space-between!important;
+ gap:10px!important;width:100%!important;
+ padding:0 0 9px!important;
+ border-bottom:1px solid rgba(112,190,239,.15)!important;
+}
+body main.dj-quote-page .dj-unit .dj-config-heading strong{
+ color:#e7f5ff!important;font-size:12px!important;letter-spacing:.02em!important;
+}
+body main.dj-quote-page .dj-unit .dj-config-heading span{
+ color:#91aec0!important;font-size:10px!important;font-weight:500!important;
+}
+body main.dj-quote-page .dj-unit-details .dj-adc-top{
+ display:flex!important;flex-direction:row!important;
+ align-items:center!important;justify-content:flex-start!important;
+ flex-wrap:wrap!important;
+ gap:10px 16px!important;
+ min-height:0!important;
+ width:100%!important;
+}
+body main.dj-quote-page .dj-unit-details .dj-adc-categories{
+ display:flex!important;gap:6px!important;flex-wrap:wrap!important;
+}
+body main.dj-quote-page .dj-unit-details .dj-adc-chip{
+ padding:8px 11px!important;min-height:34px!important;
+ border-radius:7px!important;
+}
+body main.dj-quote-page .dj-unit-details .dj-adc-select{
+ min-height:35px!important;width:min(240px,100%)!important;
+ max-width:100%!important;
+}
+body main.dj-quote-page .dj-shelf-config .dj-adc-top>label{
+ display:flex!important;align-items:center!important;
+ gap:8px!important;font-size:11px!important;
+ color:#b9d0dc!important;
+}
+body main.dj-quote-page .dj-shelf-config .dj-adc-top>label input{
+ width:70px!important;min-height:35px!important;
+ background:#0b283d!important;color:#eef8ff!important;
+ border:1px solid rgba(112,190,239,.3)!important;border-radius:7px!important;
+ padding:6px 9px!important;
+}
+body main.dj-quote-page .dj-unit-details .dj-adc-area{
+ display:block!important;width:100%!important;
+ border:1px solid rgba(112,190,239,.14)!important;
+ border-radius:7px!important;
+ background:rgba(2,18,31,.40)!important;
+ padding:9px 12px!important;margin:0!important;
+ box-sizing:border-box!important;
+}
+body main.dj-quote-page .dj-unit-details .dj-adc-area span{
+ display:block!important;
+ padding:0!important;
+ font-size:11px!important;line-height:1.55!important;
+ color:#9ed6bd!important;
+}
+body main.dj-quote-page .dj-unit>.dj-item-end{
+ display:flex!important;flex-direction:row!important;
+ align-items:center!important;justify-content:flex-end!important;
+ flex-wrap:wrap!important;
+ min-width:0!important;align-self:auto!important;
+ gap:15px!important;
+ width:100%!important;
+ margin-top:13px!important;padding-top:12px!important;
+ border-top:1px solid rgba(112,190,239,.18)!important;
+}
+body main.dj-quote-page .dj-unit>.dj-item-end strong{
+ order:0!important;
+ margin:0 auto 0 0!important;
+ color:#f1f9ff!important;
+ font-size:18px!important;
+}
+body main.dj-quote-page .dj-unit>.dj-item-end .dj-count{order:1!important}
+body main.dj-quote-page .dj-unit>.dj-item-end .dj-trash{order:2!important}
+@media(max-width:700px){
+ body main.dj-quote-page .dj-item.dj-unit{padding:12px!important}
+ body main.dj-quote-page .dj-unit-details .dj-adc>.dj-adc-options{padding:10px!important}
+ body main.dj-quote-page .dj-unit .dj-config-heading{flex-wrap:wrap!important}
+ body main.dj-quote-page .dj-unit .dj-break{max-width:100%!important}
+ body main.dj-quote-page .dj-unit>.dj-item-end{gap:9px!important}
+}

@@ -107,69 +107,148 @@ export default function BulkQuotationPage(){
   try{
    const {jsPDF}=await import('jspdf');
    const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
-   const left=17,right=193,maxWidth=right-left;
-   const ink:[number,number,number]=[27,45,37],green:[number,number,number]=[22,82,54],muted:[number,number,number]=[89,103,96];
-   let y=18;
-   const write=(t:string,x:number,at:number,sz=9,bold=false,color=ink)=>{doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(sz);doc.setTextColor(...color);doc.text(t,x,at)};
-   const rule=(at:number)=>{doc.setDrawColor(203,214,207);doc.setLineWidth(.25);doc.line(left,at,right,at)};
-   const newPage=()=>{doc.addPage();y=19;write('DELTA JOINERY / BULK QUOTATION',left,y,9,true,green);write(quote.number,right,y,8,false,muted);y+=9;rule(y);y+=8};
-   const needs=(h:number)=>{if(y+h>270)newPage()};
-   const split=(value:string,width:number,fontSize=8)=>{
-    doc.setFontSize(fontSize);return doc.splitTextToSize(value,width) as string[];
+   const left=18,right=192,width=right-left;
+   const ink:[number,number,number]=[31,43,41];
+   const green:[number,number,number]=[25,88,60];
+   const muted:[number,number,number]=[103,119,113];
+   const border:[number,number,number]=[205,218,210];
+   const wash:[number,number,number]=[246,249,247];
+   const euro=(value:number)=>currency(value);
+   const write=(text:string,x:number,y:number,size=9,bold=false,color=ink)=>{
+    doc.setFont('helvetica',bold?'bold':'normal');
+    doc.setFontSize(size);doc.setTextColor(...color);doc.text(text,x,y);
    };
+   const rightWrite=(text:string,x:number,y:number,size=9,bold=false,color=ink)=>{
+    doc.setFont('helvetica',bold?'bold':'normal');
+    doc.setFontSize(size);doc.setTextColor(...color);doc.text(text,x,y,{align:'right'});
+   };
+   const line=(y:number)=>{doc.setDrawColor(...border);doc.setLineWidth(.3);doc.line(left,y,right,y)};
+   const split=(value:string,measure:number,size=9)=>{
+    doc.setFont('helvetica','normal');doc.setFontSize(size);
+    return doc.splitTextToSize(value||'-',measure) as string[];
+   };
+   let y=20;
+   const runningHead=()=>{
+    write('DELTA JOINERY',left,18,11,true,green);
+    rightWrite('BULK QUOTATION  /  CONTINUED',right,18,8,true,muted);
+    line(23);y=34;
+   };
+   const newPage=()=>{doc.addPage();runningHead()};
+   const ensure=(height:number)=>{if(y+height>267)newPage()};
+   const moneyLine=(label:string,amount:number,at:number,emphasise=false)=>{
+    write(label,left+4,at,emphasise?9.3:8.8,emphasise,emphasise?green:ink);
+    rightWrite(euro(amount),right-4,at,emphasise?12:9.5,true,emphasise?green:ink);
+   };
+
+   // Header: logo, title and document classification align inside the printable area.
    try{
-    const resp=await fetch('/delta-logo.png');
-    if(resp.ok){const blob=await resp.blob();const data=await new Promise<string>((resolve,reject)=>{const fr=new FileReader();fr.onload=()=>resolve(String(fr.result));fr.onerror=reject;fr.readAsDataURL(blob)});doc.addImage(data,blob.type.includes('png')?'PNG':'JPEG',left,15,44,13)}
-    else write('DELTA JOINERY',left,25,17,true,green);
-   }catch{write('DELTA JOINERY',left,25,17,true,green)}
-   doc.setFont('helvetica','bold');doc.setFontSize(18);doc.setTextColor(...ink);doc.text('BULK QUOTATION',right,23,{align:'right'});
-   write('INTERNAL QUOTATION ONLY',right,29,7,true,[150,43,43]);
-   y=39;rule(y);y+=9;
-   write('PREPARED FOR',left,y,8,true,muted);write('QUOTATION DETAILS',111,y,8,true,muted);y+=7;
-   write(quote.client||'Client not entered',left,y,11,true);
-   write(quote.number,111,y,8,true);y+=6;
-   for(const [label,value] of [['Project',quote.project],['Email',quote.email],['Phone',quote.phone],['Address',quote.address]]){
-    if(!value?.trim())continue;
-    const lines=split(label+': '+value.trim(),88,8);
-    for(const v of lines){write(v,left,y,8);y+=4.5}
+    const response=await fetch('/delta-logo.png');
+    if(response.ok){
+     const blob=await response.blob();
+     const data=await new Promise<string>((resolve,reject)=>{
+      const reader=new FileReader();
+      reader.onload=()=>resolve(String(reader.result));
+      reader.onerror=()=>reject(new Error('Logo load failed'));
+      reader.readAsDataURL(blob);
+     });
+     doc.addImage(data,blob.type.includes('png')?'PNG':'JPEG',left,17,45,15,undefined,'FAST');
+    }else write('DELTA JOINERY',left,26,17,true,green);
+   }catch{write('DELTA JOINERY',left,26,17,true,green)}
+   rightWrite('BULK QUOTATION',right,25,17,true,ink);
+   rightWrite('INTERNAL QUOTATION ONLY',right,32,7.4,true,[152,54,47]);
+   doc.setDrawColor(...green);doc.setLineWidth(.65);doc.line(left,41,right,41);
+   y=52;
+
+   // Client and document identification sit in two aligned technical panels.
+   const clientRows=[
+    ['CLIENT',quote.client.trim()||'Not specified'],
+    ['PROJECT',quote.project.trim()||'Not specified'],
+    ['EMAIL',quote.email.trim()||'N/A'],
+    ['PHONE',quote.phone.trim()||'N/A'],
+    ['ADDRESS',quote.address.trim()||'N/A']
+   ];
+   const detailsRows=[
+    ['QUOTATION NUMBER',quote.number],
+    ['ISSUE DATE',quote.date],
+    ['WORK PACKAGES',String(quote.works.length)],
+    ['DOCUMENT', 'Bulk cost schedule']
+   ];
+   const drawPanel=(x:number,panelWidth:number,title:string,rows:string[][])=>{
+    const innerWidth=panelWidth-10;
+    let yy=y+12;
+    const titleSize=8.2;
+    write(title,x+5,yy,titleSize,true,green);yy+=8;
+    for(const [label,value] of rows){
+     write(label,x+5,yy,6.8,true,muted);yy+=4.5;
+     for(const t of split(value,innerWidth,8.5)){write(t,x+5,yy,8.5,label==='CLIENT',ink);yy+=4.7}
+     yy+=3.1;
+    }
+    return yy+4;
+   };
+   const panelGap=8,panelWidth=(width-panelGap)/2;
+   const firstX=left,secondX=left+panelWidth+panelGap;
+   const bottom1=drawPanel(firstX,panelWidth,'01  /  CLIENT & PROJECT',clientRows);
+   const bottom2=drawPanel(secondX,panelWidth,'02  /  DOCUMENT CONTROL',detailsRows);
+   const panelBottom=Math.max(bottom1,bottom2);
+   doc.setDrawColor(...border);doc.setLineWidth(.3);
+   doc.roundedRect(firstX,y,panelWidth,panelBottom-y,2,2,'S');
+   doc.roundedRect(secondX,y,panelWidth,panelBottom-y,2,2,'S');
+   y=panelBottom+15;
+
+   // Work schedule deliberately shows just the name and quoted cost.
+   ensure(23);
+   write('03  /  SCHEDULE OF WORKS',left,y,11.5,true,green);
+   rightWrite(quote.works.length+' WORK'+(quote.works.length===1?'':'S'),right,y,7.5,true,muted);
+   y+=8;
+   doc.setFillColor(235,242,237);doc.rect(left,y,width,10,'F');
+   write('REF',left+4,y+6.8,7.5,true,green);
+   write('WORK DESCRIPTION',left+18,y+6.8,7.5,true,green);
+   rightWrite('QUOTED PRICE',right-4,y+6.8,7.5,true,green);
+   y+=10;
+   for(let index=0;index<quote.works.length;index++){
+    const work=quote.works[index];
+    const title=split(work.name.trim()||'Unnamed work',110,9.2);
+    const height=Math.max(13,7+title.length*4.8);
+    ensure(height+2);
+    if(index%2===0){doc.setFillColor(...wash);doc.rect(left,y,width,height,'F')}
+    write(String(index+1).padStart(2,'0'),left+4,y+8.2,8,true,muted);
+    let textY=y+8.2;
+    for(const t of title){write(t,left+18,textY,9.2,true,ink);textY+=4.8}
+    rightWrite(euro(packageSum(work)),right-4,y+8.2,10,true,ink);
+    y+=height;line(y);
    }
-   write('Date: '+quote.date,111,52,8);
-   y+=9;rule(y);y+=10;
-   write('WORK PACKAGES',left,y,12,true,green);y+=7;
-   // One line per work package: work name and price only.
-   for(let i=0;i<quote.works.length;i++){
-    const work=quote.works[i];
-    const titleLines=split(String(i+1).padStart(2,'0')+'  '+work.name,120,9);
-    const rowHeight=Math.max(13,8+titleLines.length*4.8);
-    needs(rowHeight);
-    if(i%2===0){doc.setFillColor(242,247,243);doc.rect(left,y-3,maxWidth,rowHeight,'F')}
-    let ty=y+4;
-    for(const title of titleLines){write(title,left+4,ty,9,true,ink);ty+=4.8}
-    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...green);
-    doc.text(currency(packageSum(work)),right-4,y+4,{align:'right'});
-    y+=rowHeight;rule(y);
-   }
-   y+=9;
-   needs(37);
-   rule(y);y+=8;
-   write('TOTAL EXCLUDING VAT',left,y,9,true,ink);
-   doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...ink);doc.text(currency(subtotal),right,y,{align:'right'});y+=7;
-   if(quote.includeVat){
-    write('VAT (13.5%)',left,y,9,false,ink);
-    doc.setFont('helvetica','normal');doc.text(currency(vat),right,y,{align:'right'});y+=8;
-   }
-   doc.setFillColor(236,244,239);doc.rect(left,y-5,maxWidth,14,'F');
-   write(quote.includeVat?'TOTAL INCLUDING VAT':'GRAND TOTAL (EXCL. VAT)',left+3,y+4,10,true,green);
-   doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(...green);doc.text(currency(grand),right-3,y+4,{align:'right'});y+=17;
+   y+=13;
+
+   // Summary is kept together and uses the same figures as the editor.
+   ensure(48+(quote.includeVat?8:0));
+   const summaryTop=y;
+   doc.setDrawColor(...border);doc.setLineWidth(.3);
+   doc.roundedRect(left,summaryTop,width,quote.includeVat?45:37,2,2,'S');
+   write('COST SUMMARY',left+4,summaryTop+7.5,8,true,green);
+   y=summaryTop+16;
+   moneyLine('SUBTOTAL  /  EXCLUDING VAT',subtotal,y);y+=8;
+   if(quote.includeVat){moneyLine('VAT  /  13.5%',vat,y);y+=8}
+   doc.setFillColor(231,241,234);doc.rect(left+1,y-4,width-2,13,'F');
+   moneyLine(quote.includeVat?'TOTAL  /  INCLUDING VAT':'TOTAL  /  EXCLUDING VAT',grand,y+4.4,true);
+   y=summaryTop+(quote.includeVat?45:37)+11;
+
    if(quote.notes.trim()){
-    needs(20);write('NOTES',left,y,9,true,green);y+=6;
-    for(const t of split(quote.notes,168,8)){needs(6);write(t,left,y,8);y+=5}
+    ensure(20);
+    write('04  /  NOTES',left,y,9,true,green);y+=8;
+    for(const t of split(quote.notes.trim(),width-8,8.5)){
+     ensure(6);write(t,left+4,y,8.5,false,ink);y+=5.5;
+    }
    }
-   const count=doc.getNumberOfPages();
-   for(let p=1;p<=count;p++){doc.setPage(p);rule(283);write('Delta Joinery  |  '+quote.number,left,289,7,false,muted);doc.setFontSize(7);doc.setTextColor(...muted);doc.text(p+' / '+count,right,289,{align:'right'})}
+   const totalPages=doc.getNumberOfPages();
+   for(let p=1;p<=totalPages;p++){
+    doc.setPage(p);
+    doc.setDrawColor(...border);doc.line(left,279,right,279);
+    write('DELTA JOINERY  /  INTERNAL COST DOCUMENT',left,286,7,true,muted);
+    rightWrite('PAGE '+p+' OF '+totalPages,right,286,7,true,muted);
+   }
    doc.save('Delta-Joinery-Bulk-'+quote.number.replace(/[^A-Za-z0-9_-]/g,'-')+'.pdf');
-   setNotice('Bulk quotation PDF generated.');
-  }catch(e){setNotice('PDF generation failed: '+(e instanceof Error?e.message:'Unknown error'))}
+   setNotice('Technical bulk quotation PDF generated.');
+  }catch(error){setNotice('PDF generation failed: '+(error instanceof Error?error.message:'Unknown error'))}
   finally{setPrinting(false)}
  }
  return <main className="dj-desktop dj-unified-page dj-bulk-page">

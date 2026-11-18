@@ -6,7 +6,7 @@ export type SavedQuoteBreakdown={key:string;label:string;amount:number};
 export type SavedQuotation={
  id:string;number?:string;date?:string;client?:string;project?:string;name?:string;savedAt?:string;sourceTaskId?:string;
  email?:string;phone?:string;address?:string;notes?:string;
- includeVat?:boolean;includeUplift?:boolean;upliftPercent?:number;totalAmount?:number;subtotalAmount?:number;vatAmount?:number;
+ includeVat?:boolean;includeUplift?:boolean;upliftPercent?:number|string;totalAmount?:number;subtotalAmount?:number;vatAmount?:number;
  finished?:boolean;finishedAt?:string;siteImages?:{path:string;name:string}[];
  costLines?:SavedQuoteLine[];costBreakdown?:SavedQuoteBreakdown[];
  chosenUnits?:{id:string;qty:number;customName?:string;customPrice?:number;adc?:boolean;hasDoors?:boolean;doorMaterial?:string;doorCount?:number;doorSqm?:number;doorWidth?:number;doorHeight?:number;doorFinish?:string;doorCategory?:string;ais?:boolean;shelfMaterial?:UnitMaterial;shelfQty?:number}[];
@@ -42,7 +42,7 @@ const round=(n:number)=>Math.round((Number(n)||0)*100)/100;
 
 // Allocate the uplift across individual quoted units rather than applying one
 // undisclosed lump sum. Cent remainders are distributed deterministically.
-export function distributeQuotationUplift<T extends {qty:number;amount:number}>(rows:T[],enabled?:boolean,percentage?:number):T[]{
+export function distributeQuotationUplift<T extends {qty:number;amount:number}>(rows:T[],enabled?:boolean,percentage?:number|string):T[]{
  const percent=enabled?Math.max(0,Math.min(1000,Number(percentage)||0)):0;
  if(!percent)return rows.map(row=>({...row}));
  const eligible=rows.map((row,index)=>({index,qty:Math.max(0,Math.round(Number(row.qty)||0))})).filter(x=>x.qty>0);

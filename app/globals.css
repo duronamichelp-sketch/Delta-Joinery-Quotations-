@@ -1677,6 +1677,23 @@ body .dj-glass-home .skoda-left{grid-column:1!important;grid-row:2!important}
     border:1px solid rgba(112,190,239,.34)!important;
     box-shadow:0 24px 70px rgba(0,0,0,.48)!important;
   }
+  /* Improve contrast of unit-picker headings and labels on its dark background. */
+  body main.dj-quote-page .unit-pick-dialog .unit-pick-header h2,
+  body main.dj-quote-page .unit-pick-dialog .unit-pick-heights > b,
+  body main.dj-quote-page .unit-pick-dialog .unit-pick-cols > div:nth-child(2) > h3,
+  body main.dj-quote-page .unit-pick-dialog .unit-pick-cols > div:nth-child(2) > b,
+  body main.dj-quote-page .unit-pick-dialog .unit-pick-options label {
+    color:#eaf7f0!important;
+  }
+  body main.dj-quote-page .unit-pick-dialog > p {
+    color:#dbece4!important;
+  }
+  body main.dj-quote-page .unit-pick-dialog .unit-pick-cols > div:nth-child(2) > button {
+    color:#b9efd1!important;
+  }
+  body main.dj-quote-page .unit-pick-dialog .unit-pick-header button {
+    color:#eaf7f0!important;
+  }
 
   /* ===== PREVIEW / PDF ===== */
   body .dj-preview-page>.dj-preview-body{

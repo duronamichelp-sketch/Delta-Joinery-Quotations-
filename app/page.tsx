@@ -137,16 +137,10 @@ export default function Home(){
   }
  }
  function edit(t:Task){
-  const clean=(v?:string)=>String(v||'').trim().toLowerCase();
-  const saved=savedQuotes.find(q=>clean(q.project)===clean(t.project)&&clean(q.client)===clean(t.client))
-    ||savedQuotes.find(q=>clean(q.project)===clean(t.project));
-  const taskImages=t.siteImages||[];
-  if(saved){
-   const merged=[...(saved.siteImages||[])];
-   for(const img of taskImages)if(!merged.some((x:any)=>x.path===img.path))merged.push(img);
-   localStorage.setItem('dj_quote',JSON.stringify({...saved,sourceTaskId:t.id,notes:saved.notes||t.notes||'',siteImages:merged}));
-  }else localStorage.setItem('dj_quote',JSON.stringify({client:t.client,project:t.project,date:dateToday(),number:'DJ-'+Date.now().toString(),notes:t.notes||'',sourceTaskId:t.id,siteImages:taskImages}));
-  window.location.href='/quote';
+  // Use the stable task ID after CloudSync has loaded the latest records.
+  // Navigating with a temporary dj_quote value can lose photos and details
+  // when a full-page reload replaces localStorage from Supabase.
+  window.location.href='/quote?task='+encodeURIComponent(t.id);
  }
  function status(id:string,done:boolean){
   const item=tasks.find(t=>t.id===id);if(!item)return;

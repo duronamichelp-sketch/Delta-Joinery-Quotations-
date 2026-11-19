@@ -30,8 +30,8 @@ export function quotationForUpcomingTask(task:UpcomingQuotationTask,quotes:Saved
  }
  return {
   ...(saved||{}),
-  number:saved?.number||saved?.id,
-  date:saved?.date||task.created,
+  ...(saved?{number:saved.number||saved.id}:{}),
+  ...((saved?.date||task.created)?{date:saved?.date||task.created}:{}),
   client:task.client??saved?.client??'',
   project:task.project??saved?.project??'',
   notes:task.notes??saved?.notes??'',

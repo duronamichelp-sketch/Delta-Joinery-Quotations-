@@ -236,7 +236,8 @@ export default function MaterialList(){
     }
    }
    if(origin){
-    for(const [index,id] of assigned.entries()){
+    for(let index=0;index<assigned.length;index++){
+     const id=assigned[index];
      if(validKm(active.manualKm?.[id])!==null)continue;
      const address=addressForStop(id,active.items,addresses);
      if(!address?.eircode){failed++;continue}

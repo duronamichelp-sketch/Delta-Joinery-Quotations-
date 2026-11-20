@@ -5,7 +5,7 @@ import {createClient,type SupabaseClient} from '@supabase/supabase-js';
 import DesktopSidebar from '../DesktopSidebar';
 import {useDeltaAccount} from '../CloudSync';
 import {currency,read} from '../../lib/data';
-import {savedQuoteDetails,type SavedQuotation} from '../../lib/quotationTotals';
+import {QUOTATION_MATERIAL_FIELDS,savedQuoteDetails,type SavedQuotation} from '../../lib/quotationTotals';
 
 type SiteImage={path:string;name:string};
 type Q=SavedQuotation & {id:string;siteImages?:SiteImage[]};
@@ -166,6 +166,12 @@ export default function FinishedQuotes(){
      <span><b>Total</b>{editingManual?<input type="number" min="0" step="0.01" value={manualEdit!.amount??''} onChange={e=>setManualEdit({...manualEdit!,amount:Number(e.target.value)||0})}/>:currency(amount)}</span>
     </div>
 
+    {q&&(q.internalMaterial||q.externalMaterial)&&<section className="dj-finished-original-card dj-print-details-card">
+     <h2>Materials needed</h2>
+     <div className="dj-finished-contact">
+      {QUOTATION_MATERIAL_FIELDS.map(({key,label})=>q[key]&&<span key={key}><b>{label}</b>{q[key]}</span>)}
+     </div>
+    </section>}
     {q&&(q.email||q.phone||q.address||q.notes)&&<section className="dj-finished-original-card dj-print-details-card"><h2>Original Details</h2><div className="dj-finished-contact">
      {q.email&&<span><b>Email</b>{q.email}</span>}{q.phone&&<span><b>Phone</b>{q.phone}</span>}{q.address&&<span><b>Address</b>{q.address}</span>}{q.notes&&<span className="wide"><b>Notes</b>{q.notes}</span>}
     </div></section>}
@@ -201,7 +207,7 @@ export default function FinishedQuotes(){
    <div className="dj-finished-summary"><div><span>Finished Quotations</span><strong>{finishedSaved.length+legacy.length}</strong></div><div><span>Total Finished Value</span><strong>{currency(total)}</strong></div></div>
    <input className="rev-select-row rev-search rev-search-input" aria-label="Search finished quotations" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search client or project..."/>
 
-   {filteredSaved.map(q=><button type="button" className="rev-saved-row dj-finished-list-button" key={'saved-'+q.id} onClick={()=>void editFull(q)}>
+   {filteredSaved.map(q=><button type="button" className="rev-saved-row dj-finished-list-button" key={'saved-'+q.id} onClick={()=>setSelected({kind:'saved',quote:q})}>
     <div className="rev-saved-top"><span>{q.number||'Quotation'}</span><small>Finished · Full quotation</small></div>
     <h2>{q.project||'Untitled project'}</h2>
     <p>{q.client||'No client'} · {currency(savedQuoteDetails(q).total)}</p>

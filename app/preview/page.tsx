@@ -5,10 +5,12 @@ import DesktopSidebar from '../DesktopSidebar';
 import {distributeQuotationUplift} from '../../lib/quotationTotals';
 import Image from 'next/image';
 import {Unit,Hardware,Labour,ExtraCost,QuoteUnit,QuoteHardware,DEFAULT_HARDWARE,DEFAULT_FINISH_RATES,pricedDoor,doorLeafBreakdown,doorSqm,shelvesTotal,shelfDimensions,currency,read,DEFAULT_PRODUCTION_COSTS,productionCostsWithDefaults,cncCostsWithDefaults,measuredTrimPrice,type UnitMaterial,type MeasuredTrimType} from '../../lib/data';
+import {QUOTATION_MATERIAL_FIELDS,type QuotationMaterials} from '../../lib/quotationTotals';
+
 type CostItem={id:string;name:string;price:number;unit:string};
 const DEFAULT_CNC:CostItem[]=[{"id":"cnc-0","name":"MDF 22 Strada Handle","price":10,"unit":"door"},{"id":"cnc-1","name":"Frame Door","price":10,"unit":"door"},{"id":"cnc-2","name":"Shaker Door","price":25,"unit":"door"},{"id":"cnc-3","name":"Grooving","price":50,"unit":"m²"},{"id":"cnc-4","name":"Decor Pieces - High Complexity","price":45,"unit":"each"},{"id":"cnc-5","name":"Decor Pieces - Medium Complexity","price":30,"unit":"each"},{"id":"cnc-6","name":"Decor Pieces - Low Complexity","price":15,"unit":"each"},{"id":"cnc-7","name":"Bent Panel","price":120,"unit":"each"},{"id":"cnc-8","name":"Bent Panel - Shaker Door","price":170,"unit":"each"},{"id":"cnc-9","name":"Bent Panel - Big Piece","price":190,"unit":"each"},{"id":"cnc-10","name":"Bent Panel - Big Piece Shaker Door","price":240,"unit":"each"},{"id":"cnc-11","name":"Built-in Handle","price":20,"unit":"door"},{"id":"cnc-12","name":"PVC Film Covering","price":20,"unit":"piece"}];
 type CustomLine={id:string;qty:number;customName?:string;customPrice?:number;trimType?:MeasuredTrimType;trimMaterial?:UnitMaterial;trimHeight?:number;trimWidth?:number};
-type Q={includeVat?:boolean;includeUplift?:boolean;upliftPercent?:number|string;name?:string;number?:string;date?:string;client?:string;project?:string;email?:string;phone?:string;address?:string;chosenUnits?:(QuoteUnit & CustomLine)[];chosenHardware?:(QuoteHardware & CustomLine)[];chosenLabour?:CustomLine[];chosenElectrics?:CustomLine[];chosenFinishes?:CustomLine[];chosenFillers?:CustomLine[];chosenTimber?:CustomLine[];chosenCnc?:CustomLine[];chosenProduction?:CustomLine[];chosenWorktops?:{id:string;name:string;qty:number;rate:number;unit:string}[];chosenCustomProducts?:{id:string;name:string;price?:number;lines?:{id:string;description:string;price:number}[]}[]};
+type Q=QuotationMaterials & {includeVat?:boolean;includeUplift?:boolean;upliftPercent?:number|string;name?:string;number?:string;date?:string;client?:string;project?:string;email?:string;phone?:string;address?:string;chosenUnits?:(QuoteUnit & CustomLine)[];chosenHardware?:(QuoteHardware & CustomLine)[];chosenLabour?:CustomLine[];chosenElectrics?:CustomLine[];chosenFinishes?:CustomLine[];chosenFillers?:CustomLine[];chosenTimber?:CustomLine[];chosenCnc?:CustomLine[];chosenProduction?:CustomLine[];chosenWorktops?:{id:string;name:string;qty:number;rate:number;unit:string}[];chosenCustomProducts?:{id:string;name:string;price?:number;lines?:{id:string;description:string;price:number}[]}[]};
 export default function Preview(){
  const [q,setQ]=useState<Q>({});
  const [timberRates,setTimberRates]=useState<Record<string,number>>({});
@@ -77,6 +79,12 @@ const [doorRates,setDoorRates]=useState<Record<string,number>>(DEFAULT_FINISH_RA
      const lines=pdf.splitTextToSize(label+': '+value.trim(),85) as string[];
      pdf.setFont('helvetica','normal');pdf.setFontSize(9);pdf.setTextColor(...dark);pdf.text(lines,left,y);
      y+=(lines.length-1)*4.5;
+    }
+   }
+   for(const {key,label} of QUOTATION_MATERIAL_FIELDS){
+    if(q[key]){
+     y+=7;
+     write(label+': '+q[key],left,y,9);
     }
    }
    y+=17;
@@ -173,6 +181,9 @@ const [doorRates,setDoorRates]=useState<Record<string,number>>(DEFAULT_FINISH_RA
  <div><p className="text-xs text-gray-500 uppercase tracking-wide">Prepared for</p><p className="font-semibold mt-2">{q.client||'Client not entered'}</p>{q.project&&<p className="mt-1 text-gray-600">Project: {q.project}</p>}{q.email?.trim()&&<p className="mt-2 text-gray-600 break-words"><strong>Email:</strong> {q.email.trim()}</p>}{q.phone?.trim()&&<p className="mt-1 text-gray-600"><strong>Phone:</strong> {q.phone.trim()}</p>}{q.address?.trim()&&<p className="mt-1 text-gray-600 whitespace-pre-wrap break-words"><strong>Address:</strong> {q.address.trim()}</p>}</div>
  <div className="text-right"><p><span className="text-gray-500">Quotation No. </span><b>{q.number||'—'}</b></p><p className="mt-2"><span className="text-gray-500">Date </span>{q.date||'—'}</p>{q.name&&<p className="mt-2 text-gray-600">{q.name}</p>}</div>
  </div>
+ {(q.internalMaterial||q.externalMaterial)&&<div className="mb-6 space-y-1 text-sm">
+  {QUOTATION_MATERIAL_FIELDS.map(({key,label})=>q[key]&&<p key={key}><strong>{label}:</strong> {q[key]}</p>)}
+ </div>}
  <div className="dj-technical-section-heading"><h2 className="font-semibold text-lg mb-3">01 / Quotation breakdown</h2><span>{all.length} line item{all.length===1?'':'s'}</span></div>
  <table className="dj-technical-table w-full text-sm" style={{borderCollapse:'collapse'}}><thead><tr><th className="text-left p-3">REF / DESCRIPTION</th><th className="text-center p-3">QTY</th><th className="text-right p-3">UNIT RATE</th><th className="text-right p-3">LINE TOTAL</th></tr></thead><tbody>{all.map((x,i)=><tr key={i}><td className="p-3"><div className="dj-technical-item"><span className="dj-technical-ref">{String(i+1).padStart(2,'0')}</span><div><strong>{x.label}</strong><div className="dj-technical-spec">{x.detail}</div></div></div></td><td className="text-center p-3">{x.qty}</td><td className="text-right p-3">{currency(x.qty>0?x.amount/x.qty:0)}</td><td className="text-right p-3 font-medium">{currency(x.amount)}</td></tr>)}{all.length===0&&<tr><td colSpan={4} className="p-8 text-center text-gray-400">No items added to this quotation</td></tr>}</tbody></table>
  <div className="dj-technical-summary flex justify-end mt-8"><div className="dj-technical-summary-inner w-full max-w-sm border-t-2 border-green-800 pt-5">{q.includeVat&&<><div className="flex justify-between gap-4 mb-3"><span>Subtotal (excl. VAT)</span><strong>{currency(subtotal)}</strong></div><div className="flex justify-between gap-4 mb-3"><span>VAT (13.5%)</span><strong>{currency(vatAmount)}</strong></div></>}<div className="flex justify-between gap-4"><strong>Total {q.includeVat?'(VAT included)':'(excl. VAT)'}</strong><strong className="text-xl text-green-800">{currency(total)}</strong></div></div></div>

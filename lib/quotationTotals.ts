@@ -3,7 +3,13 @@ import {read, type Unit,type Hardware,type Labour,type ExtraCost,DEFAULT_HARDWAR
 export type SavedQuoteLine={category:string;description:string;qty:number;rate:number;amount:number;unit?:string};
 export type SavedQuoteBreakdown={key:string;label:string;amount:number};
 
-export type SavedQuotation={
+export const QUOTATION_MATERIAL_FIELDS=[
+ {key:'internalMaterial',label:'Internal material'},
+ {key:'externalMaterial',label:'External material'},
+] as const;
+export type QuotationMaterials=Partial<Record<(typeof QUOTATION_MATERIAL_FIELDS)[number]['key'],UnitMaterial>>;
+
+export type SavedQuotation=QuotationMaterials & {
  id:string;number?:string;date?:string;client?:string;project?:string;name?:string;savedAt?:string;sourceTaskId?:string;
  email?:string;phone?:string;address?:string;notes?:string;
  includeVat?:boolean;includeUplift?:boolean;upliftPercent?:number|string;totalAmount?:number;subtotalAmount?:number;vatAmount?:number;

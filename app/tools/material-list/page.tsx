@@ -11,6 +11,7 @@ import {
  type Coordinates,type CachedLocation
 } from '../../../lib/materialCollections';
 import './material-list.css';
+import {sheetNameGroups,sheetNameOptions,filterSheetGroups} from '../../../lib/sheetFinishOptions';
 
 type Draft={
  id?:string;kind:MaterialKind;name:string;quantity:string;unit:string;shopId:string;
@@ -25,68 +26,6 @@ const unitLabels:Record<string,string>={pcs:'Pieces',boxes:'Boxes',packs:'Packs'
 /** Sheet material names/codes drawn from Finsa Ireland distributor catalogues.
  * These are identifiers, not a live inventory or a guarantee of availability.
  */
-const sheetNameGroups=[
- {
-  "label": "Quick picks",
-  "names": [
-   "Finsa Lissa Oak (49D)",
-   "Finsa Cambrian Oak (03R)",
-   "Finsa Lino Cancun (12G)",
-   "Oak Veneer",
-   "Finsa White (020)",
-   "Raw MDF"
-  ]
- },
- {
-  "label": "Finsa - Oak and wood effects",
-  "names": [
-   "Finsa Caledonian Oak (51S)",
-   "Finsa Dublin Oak (43X)",
-   "Finsa Roble Palma (5AR)",
-   "Finsa Roble Stella (74V)",
-   "Finsa Roble Denver (84V)",
-   "Finsa Roble Azabache (75V)",
-   "Finsa Roble Amazona (6AS)",
-   "Finsa Roble Cooper (452B)",
-   "Finsa Roble Newman (451B)",
-   "Finsa Olmo Wabi (3AR)",
-   "Finsa Hickory Frida (9AR)",
-   "Finsa Bama Beech (45A)",
-   "Finsa Nogal Siena (81V)",
-   "Finsa Nogal Valentina (1AS)"
-  ]
- },
- {
-  "label": "Finsa - Colours and textured finishes",
-  "names": [
-   "Finsa Magnolia (211)",
-   "Finsa Contempo Ivory (88V)",
-   "Finsa Natural Grey (U12)",
-   "Finsa Gris Coco (15R)",
-   "Finsa Gris Tormenta (09F)",
-   "Finsa Gris Gu (71A)",
-   "Finsa Gris Porrino (194)",
-   "Finsa Mineral Grey (40Y)",
-   "Finsa Duna (20R)",
-   "Finsa Black (231)",
-   "Finsa Blanco Super (030)"
-  ]
- },
- {
-  "label": "Veneers and other sheet materials",
-  "names": [
-   "Walnut Veneer",
-   "Ash Veneer",
-   "Birch Veneer",
-   "Beech Veneer",
-   "Moisture Resistant MDF",
-   "Birch Plywood",
-   "Hardwood Plywood",
-   "Plain Chipboard"
-  ]
- }
-] as const;
-const sheetNameOptions=new Set<string>(sheetNameGroups.flatMap(group=>group.names));
 const customSheetValue='__custom_sheet_name__';
 const sortAddresses=(all:SavedAddress[])=>[...all].sort((a,b)=>a.name.localeCompare(b.name));
 let previousGeoRequest=0;
@@ -130,6 +69,7 @@ export default function MaterialList(){
  const [newTitle,setNewTitle]=useState('');
  const [newOpen,setNewOpen]=useState(false);
  const [draft,setDraft]=useState<Draft>(()=>blank());
+ const [sheetSearch,setSheetSearch]=useState('');
  const [notice,setNotice]=useState('');
  const [sorting,setSorting]=useState(false);
  const draggedStop=useRef<string|null>(null);
@@ -137,6 +77,7 @@ export default function MaterialList(){
  const editorRef=useRef<HTMLDivElement|null>(null);
  const active=collections.find(c=>c.id===activeId)||null;
  const orderedAddresses=sortAddresses(addresses);
+ const visibleSheetGroups=filterSheetGroups(sheetSearch,draft.name);
 
  useEffect(()=>{
   const load=()=>{
@@ -203,9 +144,10 @@ export default function MaterialList(){
   patch(active.id,c=>({...c,title}));
  }
  function selectCollection(id:string){
-  setActiveId(id);setDraft(blank());setNotice('');
+  setActiveId(id);setDraft(blank());setSheetSearch('');setNotice('');
  }
  function kindChange(kind:MaterialKind){
+  setSheetSearch('');
   setDraft(prev=>({...prev,kind,unit:defaultUnit(kind),customSheetName:kind==='sheet'&&Boolean(prev.name)&&!sheetNameOptions.has(prev.name)}));
  }
  function saveItem(e:FormEvent){
@@ -234,7 +176,7 @@ export default function MaterialList(){
    notes:draft.notes.trim(),collected:existing?.collected||false
   };
   patch(active.id,c=>({...c,items:draft.id?c.items.map(i=>i.id===item.id?item:i):[...c.items,item]}));
-  setDraft(blank(draft.kind,draft.shopId));
+  setDraft(blank(draft.kind,draft.shopId));setSheetSearch('');
   setNotice(draft.id?'Material updated.':'Material added to the collection.');
  }
  function editItem(item:MaterialItem){
@@ -245,6 +187,7 @@ export default function MaterialList(){
   const kind=item.kind==='general'?'product':item.kind;
   setDraft({id:item.id,kind,name:item.name,quantity:String(item.quantity),unit:item.unit||defaultUnit(kind),
    shopId:item.shopId===NO_SHOP?'':item.shopId,length,height:item.height||'',width:item.width||'',thickness,rollLength:item.rollLength||'',notes:item.notes||'',customSheetName:kind==='sheet'&&!sheetNameOptions.has(item.name)});
+  setSheetSearch('');
   editorRef.current?.scrollIntoView({behavior:'smooth',block:'start'});
  }
  function removeItem(item:MaterialItem){
@@ -392,15 +335,19 @@ export default function MaterialList(){
          <div className="dj-ml-grid">
           <label className="dj-ml-field dj-ml-full">Name
            {draft.kind==='sheet'?<>
+            <input type="search" aria-label="Search Finsa sheet finishes by name or code"
+             placeholder="Search Finsa finishes (e.g. Olmo Sabi or 4AR)"
+             value={sheetSearch} onChange={e=>setSheetSearch(e.target.value)}/>
             <select aria-label="Sheet material or finish" required
              value={draft.customSheetName?customSheetValue:draft.name}
-             onChange={e=>{const chosen=e.target.value;setDraft(d=>({...d,customSheetName:chosen===customSheetValue,name:chosen===customSheetValue?'':chosen}))}}>
+             onChange={e=>{const chosen=e.target.value;setSheetSearch('');setDraft(d=>({...d,customSheetName:chosen===customSheetValue,name:chosen===customSheetValue?'':chosen}))}}>
              <option value="" disabled>Select a sheet material / finish</option>
-             {sheetNameGroups.map(group=><optgroup key={group.label} label={group.label}>
+             {visibleSheetGroups.map(group=><optgroup key={group.label} label={group.label}>
               {group.names.map(name=><option key={name} value={name}>{name}</option>)}
              </optgroup>)}
              <option value={customSheetValue}>Other / Custom name...</option>
             </select>
+            <small className="dj-ml-helper">{visibleSheetGroups.reduce((n,g)=>n+g.names.length,0)} matching finishes from {sheetNameOptions.size} options. Select a finish or choose Other / Custom.</small>
             {draft.customSheetName&&<input required maxLength={160} autoFocus
              aria-label="Custom sheet material name" placeholder="Enter sheet material or finish"
              value={draft.name} onChange={e=>setDraft(d=>({...d,name:e.target.value}))}/>}

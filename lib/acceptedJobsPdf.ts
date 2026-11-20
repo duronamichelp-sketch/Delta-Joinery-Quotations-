@@ -73,7 +73,7 @@ export async function saveAcceptedJobPdf(job:AcceptedJob,getImageUrl:Resolver):P
   if(y+height>bottom)nextPage();
  }
  function heading(name:string){
-  space(13);doc.setFillColor(...rgba.light);doc.setDrawColor(...rgba.border);
+  space(name.startsWith('REFERENCE IMAGES')?66:27);doc.setFillColor(...rgba.light);doc.setDrawColor(...rgba.border);
   doc.rect(margin,y,usable,8,'FD');
   doc.setFont('helvetica','bold');doc.setFontSize(10.5);setColour(rgba.ink);
   doc.text(name,margin+3,y+5.5);y+=11;
@@ -87,20 +87,20 @@ export async function saveAcceptedJobPdf(job:AcceptedJob,getImageUrl:Resolver):P
   let index=0;
   while(index<lines){
    const take=Math.min(maxChunk,lines-index);
-   const rowHeight=Math.max(15,10+take*4.2);
-   space(rowHeight+2);
+   const rowHeight=Math.max(12,8+take*4);
+   space(rowHeight+1.4);
    const renderCell=(x:number,label:string,text:string[],chunkStart:number)=>{
     doc.setDrawColor(...rgba.border);doc.rect(x,y,colWidth,rowHeight);
     doc.setFont('helvetica','bold');doc.setFontSize(7.7);setColour(rgba.muted);
     const title=label+(chunkStart?' (continued)':'');
-    doc.text(doc.splitTextToSize(title,colWidth-8)[0],x+3,y+5);
+    doc.text(doc.splitTextToSize(title,colWidth-8)[0],x+3,y+4.5);
     doc.setFont('helvetica','normal');doc.setFontSize(9.4);setColour(rgba.ink);
     const slice=text.slice(index,index+take);
-    if(slice.length)doc.text(slice,x+3,y+10,{lineHeightFactor:1.17});
+    if(slice.length)doc.text(slice,x+3,y+9,{lineHeightFactor:1.17});
    };
    renderCell(margin,a[0],pa,index);
    if(b)renderCell(margin+colWidth+gap,b[0],pb,index);
-   y+=rowHeight+2;index+=take;
+   y+=rowHeight+1.4;index+=take;
   }
  }
  function sectionText(text:string){
@@ -119,7 +119,7 @@ export async function saveAcceptedJobPdf(job:AcceptedJob,getImageUrl:Resolver):P
    return;
   }
   for(const na of naTypes)if(na.notApplicable)sorted.push({label:na.label,data:'',filename:'N/A'});
-  const boxW=(usable-4)/2,boxH=65;
+  const boxW=(usable-4)/2,boxH=54;
   for(let i=0;i<sorted.length;i+=2){
    space(boxH+3);
    for(let col=0;col<2;col++){
@@ -159,7 +159,7 @@ export async function saveAcceptedJobPdf(job:AcceptedJob,getImageUrl:Resolver):P
   for(const group of ['Measurements','Construction & materials','Hardware & fittings','Finish & installation'] as const){
    const groupFields=fields.filter(field=>field.group===group);
    if(!groupFields.length)continue;
-   space(8);
+   space(20);
    doc.setFont('helvetica','bold');doc.setFontSize(9.2);setColour(rgba.ink);
    doc.text(group.toUpperCase(),margin,y+4);y+=7;
    for(let j=0;j<groupFields.length;j+=2){

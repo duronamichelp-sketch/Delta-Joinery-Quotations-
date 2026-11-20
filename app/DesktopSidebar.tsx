@@ -4,7 +4,7 @@ import {useState} from 'react';
 import {usePathname} from 'next/navigation';
 import {useDeltaAccount} from './CloudSync';
 
-export default function DesktopSidebar({active}:{active:'home'|'quote'|'quotes'|'finished'|'library'|'preview'|'hours'|'tools'}){
+export default function DesktopSidebar({active}:{active:'home'|'quote'|'quotes'|'finished'|'library'|'preview'|'hours'|'accepted'|'tools'}){
   const account=useDeltaAccount();
   const pathname=usePathname();
   const [expanded,setExpanded]=useState(false);
@@ -21,6 +21,7 @@ export default function DesktopSidebar({active}:{active:'home'|'quote'|'quotes'|
       <Link className={active==='finished'?'current':''} href="/finished-quotes">✓ <span>Finished Quotations</span></Link>
       <Link className={active==='library'?'current':''} href="/units">▣ <span>Price Library</span></Link>
       <Link className={active==='hours'?'current':''} href="/hours">◷ <span>My Hours</span></Link>
+      <Link className={active==='accepted'?'current':''} href="/accepted-jobs">▣ <span>Accepted Jobs</span></Link>
       <button
         type="button"
         className={'dj-tools-toggle '+(toolsOpen?'current':'')}

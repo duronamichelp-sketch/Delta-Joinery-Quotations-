@@ -1,5 +1,5 @@
-export type MaterialKind='timber'|'product'|'general';
-export type MaterialUnit='pcs'|'boxes'|'packs'|'sets'|'bottles'|'tubes'|'tubs'|'rolls'|'bags'|'sheets'|'metres'|'litres'|'kg';
+export type MaterialKind='sheet'|'timber'|'edging'|'product'|'general'; // 'general' preserves earlier saved entries.
+export type MaterialUnit='pcs'|'boxes'|'packs'|'sets'|'bottles'|'tubes'|'tubs'|'rolls'|'bags'|'sheets'|'lengths'|'metres'|'litres'|'kg';
 export type SavedAddress={id:string;name:string;eircode:string};
 export type Coordinates={lat:number;lng:number};
 export type CachedLocation=Coordinates & {eircode:string};
@@ -7,7 +7,8 @@ export type CachedLocation=Coordinates & {eircode:string};
 export type MaterialItem={
  id:string;kind:MaterialKind;name:string;quantity:number;unit:string;shopId:string;
  shopName?:string;shopEircode?:string;
- length?:string;lengthUnit?:'ft'|'mm';width?:string;thickness?:string;
+ length?:string;lengthUnit?:'ft'|'mm';height?:string;width?:string;thickness?:string;thicknessUnit?:'in'|'mm';
+ rollLength?:string;rollLengthUnit?:'m'|'ft';
  notes?:string;collected?:boolean;
 };
 export type MaterialCollection={
@@ -18,7 +19,7 @@ export type MaterialCollection={
 };
 export const MATERIALS_KEY='dj_material_collections';
 export const NO_SHOP='__unassigned';
-export const UNITS:MaterialUnit[]=['pcs','boxes','packs','sets','bottles','tubes','tubs','rolls','bags','sheets','metres','litres','kg'];
+export const UNITS:MaterialUnit[]=['pcs','boxes','packs','sets','bottles','tubes','tubs','rolls','bags','sheets','lengths','metres','litres','kg'];
 
 export function createCollection(title:string):MaterialCollection{
  const now=new Date().toISOString();
@@ -83,11 +84,16 @@ export function addressForStop(id:string,items:MaterialItem[],addresses:SavedAdd
 }
 export function itemDescription(item:MaterialItem):string{
  const amount=`${item.quantity} ${item.unit||'pcs'}`;
- if(item.kind!=='timber')return amount;
- const dimensions=[
-  item.length?`${item.length} ${item.lengthUnit||'ft'} L`:'',
-  item.width?`${item.width} mm W`:'',
-  item.thickness?`${item.thickness} mm T`:''
- ].filter(Boolean).join(' × ');
- return dimensions?`${amount} · ${dimensions}`:amount;
+ if(item.kind==='product'||item.kind==='general')return amount;
+ let dimensions:string[]=[];
+ if(item.kind==='sheet'){
+  dimensions=[item.height?`${item.height} mm H`:'',item.width?`${item.width} mm W`:'',item.thickness?`${item.thickness} mm T`:''];
+ }else if(item.kind==='edging'){
+  dimensions=[item.thickness?`${item.thickness} mm T`:'',item.width?`${item.width} mm W`:'',item.rollLength?`${item.rollLength} ${item.rollLengthUnit||'m'} per roll`:''];
+ }else{
+  // Previously saved timber without thicknessUnit was measured in mm.
+  dimensions=[item.length?`${item.length} ${item.lengthUnit||'ft'} L`:'',item.thickness?`${item.thickness} ${item.thicknessUnit||'mm'} T`:'',item.width?`${item.width} mm W`:''];
+ }
+ const detail=dimensions.filter(Boolean).join(' × ');
+ return detail?`${amount} · ${detail}`:amount;
 }

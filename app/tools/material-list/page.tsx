@@ -14,13 +14,80 @@ import './material-list.css';
 
 type Draft={
  id?:string;kind:MaterialKind;name:string;quantity:string;unit:string;shopId:string;
- length:string;height:string;width:string;thickness:string;rollLength:string;notes:string;
+ length:string;height:string;width:string;thickness:string;rollLength:string;notes:string;customSheetName:boolean;
 };
 const defaultUnit=(kind:MaterialKind)=>kind==='sheet'?'sheets':kind==='timber'?'lengths':kind==='edging'?'rolls':kind==='product'?'boxes':'pcs';
-const blank=(kind:MaterialKind='sheet',shopId=''):Draft=>({kind,name:'',quantity:'1',unit:defaultUnit(kind),shopId,length:'',height:'',width:'',thickness:'',rollLength:'',notes:''});
+const blank=(kind:MaterialKind='sheet',shopId=''):Draft=>({kind,name:'',quantity:'1',unit:defaultUnit(kind),shopId,length:'',height:'',width:'',thickness:'',rollLength:'',notes:'',customSheetName:false});
 const kindLabel:Record<MaterialKind,string>={sheet:'Sheets',timber:'Timber',edging:'Edging',product:'Products',general:'Products'};
 const kindOptions:MaterialKind[]=['sheet','timber','edging','product'];
 const unitLabels:Record<string,string>={pcs:'Pieces',boxes:'Boxes',packs:'Packs',sets:'Sets',bottles:'Bottles',tubes:'Tubes',tubs:'Tubs',rolls:'Rolls',bags:'Bags',sheets:'Sheets',lengths:'Lengths',metres:'Metres',litres:'Litres',kg:'Kilograms'};
+
+/** Sheet material names/codes drawn from Finsa Ireland distributor catalogues.
+ * These are identifiers, not a live inventory or a guarantee of availability.
+ */
+const sheetNameGroups=[
+ {
+  "label": "Quick picks",
+  "names": [
+   "Finsa Lissa Oak (49D)",
+   "Finsa Cambrian Oak (03R)",
+   "Finsa Lino Cancun (12G)",
+   "Oak Veneer",
+   "Finsa White (020)",
+   "Raw MDF"
+  ]
+ },
+ {
+  "label": "Finsa - Oak and wood effects",
+  "names": [
+   "Finsa Caledonian Oak (51S)",
+   "Finsa Dublin Oak (43X)",
+   "Finsa Roble Palma (5AR)",
+   "Finsa Roble Stella (74V)",
+   "Finsa Roble Denver (84V)",
+   "Finsa Roble Azabache (75V)",
+   "Finsa Roble Amazona (6AS)",
+   "Finsa Roble Cooper (452B)",
+   "Finsa Roble Newman (451B)",
+   "Finsa Olmo Wabi (3AR)",
+   "Finsa Hickory Frida (9AR)",
+   "Finsa Bama Beech (45A)",
+   "Finsa Nogal Siena (81V)",
+   "Finsa Nogal Valentina (1AS)"
+  ]
+ },
+ {
+  "label": "Finsa - Colours and textured finishes",
+  "names": [
+   "Finsa Magnolia (211)",
+   "Finsa Contempo Ivory (88V)",
+   "Finsa Natural Grey (U12)",
+   "Finsa Gris Coco (15R)",
+   "Finsa Gris Tormenta (09F)",
+   "Finsa Gris Gu (71A)",
+   "Finsa Gris Porrino (194)",
+   "Finsa Mineral Grey (40Y)",
+   "Finsa Duna (20R)",
+   "Finsa Black (231)",
+   "Finsa Blanco Super (030)"
+  ]
+ },
+ {
+  "label": "Veneers and other sheet materials",
+  "names": [
+   "Walnut Veneer",
+   "Ash Veneer",
+   "Birch Veneer",
+   "Beech Veneer",
+   "Moisture Resistant MDF",
+   "Birch Plywood",
+   "Hardwood Plywood",
+   "Plain Chipboard"
+  ]
+ }
+] as const;
+const sheetNameOptions=new Set<string>(sheetNameGroups.flatMap(group=>group.names));
+const customSheetValue='__custom_sheet_name__';
 const sortAddresses=(all:SavedAddress[])=>[...all].sort((a,b)=>a.name.localeCompare(b.name));
 let previousGeoRequest=0;
 const lookupEircode=async(address:SavedAddress,cache:Record<string,CachedLocation>):Promise<Coordinates|null>=>{
@@ -139,7 +206,7 @@ export default function MaterialList(){
   setActiveId(id);setDraft(blank());setNotice('');
  }
  function kindChange(kind:MaterialKind){
-  setDraft(prev=>({...prev,kind,unit:defaultUnit(kind)}));
+  setDraft(prev=>({...prev,kind,unit:defaultUnit(kind),customSheetName:kind==='sheet'&&Boolean(prev.name)&&!sheetNameOptions.has(prev.name)}));
  }
  function saveItem(e:FormEvent){
   e.preventDefault();
@@ -177,7 +244,7 @@ export default function MaterialList(){
   const thickness=oldTimber&&item.thickness&&item.thicknessUnit!=='in'?String(Number((Number(item.thickness)/25.4).toFixed(4))):item.thickness||'';
   const kind=item.kind==='general'?'product':item.kind;
   setDraft({id:item.id,kind,name:item.name,quantity:String(item.quantity),unit:item.unit||defaultUnit(kind),
-   shopId:item.shopId===NO_SHOP?'':item.shopId,length,height:item.height||'',width:item.width||'',thickness,rollLength:item.rollLength||'',notes:item.notes||''});
+   shopId:item.shopId===NO_SHOP?'':item.shopId,length,height:item.height||'',width:item.width||'',thickness,rollLength:item.rollLength||'',notes:item.notes||'',customSheetName:kind==='sheet'&&!sheetNameOptions.has(item.name)});
   editorRef.current?.scrollIntoView({behavior:'smooth',block:'start'});
  }
  function removeItem(item:MaterialItem){
@@ -324,9 +391,22 @@ export default function MaterialList(){
           <button key={kind} type="button" className={draft.kind===kind?'active':''} onClick={()=>kindChange(kind)}>{kindLabel[kind]}</button>)}</div>
          <div className="dj-ml-grid">
           <label className="dj-ml-field dj-ml-full">Name
-           <input required maxLength={160}
-            placeholder={draft.kind==='sheet'?'e.g. Birch plywood':draft.kind==='timber'?'e.g. American White Oak':draft.kind==='edging'?'e.g. Oak veneer edging':'e.g. Cabinet legs or wood glue'}
-            value={draft.name} onChange={e=>setDraft(d=>({...d,name:e.target.value}))}/></label>
+           {draft.kind==='sheet'?<>
+            <select aria-label="Sheet material or finish" required
+             value={draft.customSheetName?customSheetValue:draft.name}
+             onChange={e=>{const chosen=e.target.value;setDraft(d=>({...d,customSheetName:chosen===customSheetValue,name:chosen===customSheetValue?'':chosen}))}}>
+             <option value="" disabled>Select a sheet material / finish</option>
+             {sheetNameGroups.map(group=><optgroup key={group.label} label={group.label}>
+              {group.names.map(name=><option key={name} value={name}>{name}</option>)}
+             </optgroup>)}
+             <option value={customSheetValue}>Other / Custom name...</option>
+            </select>
+            {draft.customSheetName&&<input required maxLength={160} autoFocus
+             aria-label="Custom sheet material name" placeholder="Enter sheet material or finish"
+             value={draft.name} onChange={e=>setDraft(d=>({...d,name:e.target.value}))}/>}
+           </>:<input required maxLength={160}
+            placeholder={draft.kind==='timber'?'e.g. American White Oak':draft.kind==='edging'?'e.g. Oak veneer edging':'e.g. Cabinet legs or wood glue'}
+            value={draft.name} onChange={e=>setDraft(d=>({...d,name:e.target.value}))}/>}</label>
           <label className="dj-ml-field">Quantity {draft.kind==='product'?'':('('+defaultUnit(draft.kind)+')')}
            <input type="number" min=".01" step="any" required value={draft.quantity}
             onChange={e=>setDraft(d=>({...d,quantity:e.target.value}))}/></label>

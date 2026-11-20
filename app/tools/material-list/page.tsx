@@ -14,13 +14,13 @@ import './material-list.css';
 
 type Draft={
  id?:string;kind:MaterialKind;name:string;quantity:string;unit:string;shopId:string;
- length:string;lengthUnit:'ft'|'mm';width:string;thickness:string;notes:string;
+ length:string;height:string;width:string;thickness:string;rollLength:string;notes:string;
 };
-const blank=(kind:MaterialKind='timber',shopId=''):Draft=>({
- kind,name:'',quantity:'1',unit:kind==='product'?'boxes':'pcs',
- shopId,length:'',lengthUnit:'ft',width:'',thickness:'',notes:''
-});
-const kindLabel:Record<MaterialKind,string>={timber:'Timber',product:'Product / fittings',general:'General supplies'};
+const defaultUnit=(kind:MaterialKind)=>kind==='sheet'?'sheets':kind==='timber'?'lengths':kind==='edging'?'rolls':kind==='product'?'boxes':'pcs';
+const blank=(kind:MaterialKind='sheet',shopId=''):Draft=>({kind,name:'',quantity:'1',unit:defaultUnit(kind),shopId,length:'',height:'',width:'',thickness:'',rollLength:'',notes:''});
+const kindLabel:Record<MaterialKind,string>={sheet:'Sheets',timber:'Timber',edging:'Edging',product:'Products',general:'Products'};
+const kindOptions:MaterialKind[]=['sheet','timber','edging','product'];
+const unitLabels:Record<string,string>={pcs:'Pieces',boxes:'Boxes',packs:'Packs',sets:'Sets',bottles:'Bottles',tubes:'Tubes',tubs:'Tubs',rolls:'Rolls',bags:'Bags',sheets:'Sheets',lengths:'Lengths',metres:'Metres',litres:'Litres',kg:'Kilograms'};
 const sortAddresses=(all:SavedAddress[])=>[...all].sort((a,b)=>a.name.localeCompare(b.name));
 let previousGeoRequest=0;
 const lookupEircode=async(address:SavedAddress,cache:Record<string,CachedLocation>):Promise<Coordinates|null>=>{
@@ -139,39 +139,45 @@ export default function MaterialList(){
   setActiveId(id);setDraft(blank());setNotice('');
  }
  function kindChange(kind:MaterialKind){
-  setDraft(prev=>({...prev,kind,unit:kind==='product'?'boxes':'pcs'}));
+  setDraft(prev=>({...prev,kind,unit:defaultUnit(kind)}));
  }
  function saveItem(e:FormEvent){
   e.preventDefault();
   if(!active)return;
-  const name=draft.name.trim();
-  const quantity=Number(draft.quantity);
-  if(!name||!Number.isFinite(quantity)||quantity<=0){setNotice('Enter a name and a quantity greater than zero.');return}
-  if(draft.kind==='timber'&&[draft.length,draft.width,draft.thickness].some(v=>!Number.isFinite(Number(v))||Number(v)<=0)){
-   setNotice('Timber requires length, width and thickness.');return;
+  const name=draft.name.trim(),quantity=Number(draft.quantity);
+  if(!name||draft.quantity.trim()===''||!Number.isFinite(quantity)||quantity<=0){setNotice('Enter a name and a quantity greater than zero.');return}
+  const required=draft.kind==='sheet'?[draft.height,draft.width,draft.thickness]:
+   draft.kind==='timber'?[draft.thickness,draft.length]:
+   draft.kind==='edging'?[draft.thickness,draft.width,draft.rollLength]:[];
+  if(required.some(v=>v.trim()===''||!Number.isFinite(Number(v))||Number(v)<=0)){
+   setNotice(draft.kind==='sheet'?'Sheets require height, width and thickness in mm.':
+    draft.kind==='timber'?'Timber requires thickness in inches and length in feet.':
+    'Edging requires thickness and width in mm plus roll length in metres.');return;
   }
-  const supplier=addresses.find(a=>a.id===draft.shopId);
-  const existing=active.items.find(i=>i.id===draft.id);
+  const supplier=addresses.find(a=>a.id===draft.shopId),existing=active.items.find(i=>i.id===draft.id);
   const item:MaterialItem={
-   id:draft.id||crypto.randomUUID(),kind:draft.kind,name,
-   quantity,unit:draft.unit.trim()||'pcs',
+   ...(existing&&existing.kind===draft.kind?existing:{}),
+   id:draft.id||crypto.randomUUID(),kind:draft.kind,name,quantity,
+   unit:draft.kind==='product'?(draft.unit.trim()||'pcs'):defaultUnit(draft.kind),
    shopId:draft.shopId||NO_SHOP,shopName:supplier?.name||existing?.shopName||'',
    shopEircode:supplier?.eircode||existing?.shopEircode||'',
-   ...(draft.kind==='timber'?{
-    length:draft.length, lengthUnit:draft.lengthUnit,width:draft.width,thickness:draft.thickness
-   }:{}),
+   ...(draft.kind==='sheet'?{height:draft.height,width:draft.width,thickness:draft.thickness,thicknessUnit:'mm' as const}:{}),
+   ...(draft.kind==='timber'?{length:draft.length,lengthUnit:'ft' as const,thickness:draft.thickness,thicknessUnit:'in' as const}:{}),
+   ...(draft.kind==='edging'?{thickness:draft.thickness,thicknessUnit:'mm' as const,width:draft.width,rollLength:draft.rollLength,rollLengthUnit:'m' as const}:{}),
    notes:draft.notes.trim(),collected:existing?.collected||false
   };
-  patch(active.id,c=>({...c,items:draft.id?
-   c.items.map(i=>i.id===item.id?item:i):[...c.items,item]}));
+  patch(active.id,c=>({...c,items:draft.id?c.items.map(i=>i.id===item.id?item:i):[...c.items,item]}));
   setDraft(blank(draft.kind,draft.shopId));
   setNotice(draft.id?'Material updated.':'Material added to the collection.');
  }
  function editItem(item:MaterialItem){
-  setDraft({id:item.id,kind:item.kind,name:item.name,quantity:String(item.quantity),unit:item.unit||'pcs',
-   shopId:item.shopId===NO_SHOP?'':item.shopId,
-   length:item.length||'',lengthUnit:item.lengthUnit||'ft',width:item.width||'',thickness:item.thickness||'',
-   notes:item.notes||''});
+  // Older timber measurements are converted only for editing, never relabelled in saved lists.
+  const oldTimber=item.kind==='timber';
+  const length=oldTimber&&item.length&&item.lengthUnit==='mm'?String(Number((Number(item.length)/304.8).toFixed(4))):item.length||'';
+  const thickness=oldTimber&&item.thickness&&item.thicknessUnit!=='in'?String(Number((Number(item.thickness)/25.4).toFixed(4))):item.thickness||'';
+  const kind=item.kind==='general'?'product':item.kind;
+  setDraft({id:item.id,kind,name:item.name,quantity:String(item.quantity),unit:item.unit||defaultUnit(kind),
+   shopId:item.shopId===NO_SHOP?'':item.shopId,length,height:item.height||'',width:item.width||'',thickness,rollLength:item.rollLength||'',notes:item.notes||''});
   editorRef.current?.scrollIntoView({behavior:'smooth',block:'start'});
  }
  function removeItem(item:MaterialItem){
@@ -293,7 +299,7 @@ export default function MaterialList(){
     </aside>
     <div className="dj-ml-stack">
      {!active?<section className="dj-ml-panel dj-ml-fallback"><h2>Start a collection list</h2>
-      <p className="dj-ml-panel-sub">Create your first collection to add timber, fittings, adhesives and other supplies. No example items will be inserted into your saved data.</p></section>:<>
+      <p className="dj-ml-panel-sub">Create your first collection to add sheets, timber, edging and products. No example items will be inserted into your saved data.</p></section>:<>
       <section className="dj-ml-panel">
        <div className="dj-ml-heading"><div>
         <h2>{active.title}</h2><small>Created {formatWhen(active.createdAt)} · Auto-saved to Delta Joinery</small>
@@ -312,33 +318,50 @@ export default function MaterialList(){
       <div className="dj-ml-editor">
        <section className="dj-ml-panel" ref={editorRef} id="dj-ml-material-editor">
         <div className="dj-ml-panel-title"><h2>{draft.id?'Edit material':'Add material'}</h2></div>
-        <p className="dj-ml-panel-sub">One form for timber, boxed fittings and general supplies.</p>
+        <p className="dj-ml-panel-sub">Choose Sheets, Timber, Edging or Products. Each has its own measurements.</p>
         <form onSubmit={saveItem}>
-         <div className="dj-ml-kind">{(['timber','product','general'] as MaterialKind[]).map(kind=>
+         <div className="dj-ml-kind">{kindOptions.map(kind=>
           <button key={kind} type="button" className={draft.kind===kind?'active':''} onClick={()=>kindChange(kind)}>{kindLabel[kind]}</button>)}</div>
          <div className="dj-ml-grid">
-          <label className="dj-ml-field dj-ml-full">Material / product name
-           <input required maxLength={160} placeholder={draft.kind==='timber'?'e.g. American White Oak':draft.kind==='product'?'e.g. Adjustable cabinet legs':'e.g. Wood glue'}
+          <label className="dj-ml-field dj-ml-full">Name
+           <input required maxLength={160}
+            placeholder={draft.kind==='sheet'?'e.g. Birch plywood':draft.kind==='timber'?'e.g. American White Oak':draft.kind==='edging'?'e.g. Oak veneer edging':'e.g. Cabinet legs or wood glue'}
             value={draft.name} onChange={e=>setDraft(d=>({...d,name:e.target.value}))}/></label>
-          <label className="dj-ml-field">Quantity
+          <label className="dj-ml-field">Quantity {draft.kind==='product'?'':('('+defaultUnit(draft.kind)+')')}
            <input type="number" min=".01" step="any" required value={draft.quantity}
             onChange={e=>setDraft(d=>({...d,quantity:e.target.value}))}/></label>
-          <label className="dj-ml-field">Unit
+          {draft.kind==='product'&&<label className="dj-ml-field">Unit
            <select value={draft.unit} onChange={e=>setDraft(d=>({...d,unit:e.target.value}))}>
-            {UNITS.map(u=><option key={u} value={u}>{u}</option>)}</select></label>
-          {draft.kind==='timber'&&<>
-           <label className="dj-ml-field">Length
-            <input type="number" min=".01" step="any" required placeholder="12" value={draft.length}
-             onChange={e=>setDraft(d=>({...d,length:e.target.value}))}/></label>
-           <label className="dj-ml-field">Length unit
-            <select value={draft.lengthUnit} onChange={e=>setDraft(d=>({...d,lengthUnit:e.target.value as 'ft'|'mm'}))}>
-             <option value="ft">Feet (ft)</option><option value="mm">Millimetres (mm)</option></select></label>
+            {UNITS.map(u=><option key={u} value={u}>{unitLabels[u]||u}</option>)}</select></label>}
+          {draft.kind==='sheet'&&<>
+           <label className="dj-ml-field">Height (mm)
+            <input type="number" min=".01" step="any" required placeholder="2440" value={draft.height}
+             onChange={e=>setDraft(d=>({...d,height:e.target.value}))}/></label>
            <label className="dj-ml-field">Width (mm)
-            <input type="number" min=".01" step="any" required placeholder="100" value={draft.width}
+            <input type="number" min=".01" step="any" required placeholder="1220" value={draft.width}
              onChange={e=>setDraft(d=>({...d,width:e.target.value}))}/></label>
            <label className="dj-ml-field">Thickness (mm)
-            <input type="number" min=".01" step="any" required placeholder="25" value={draft.thickness}
+            <input type="number" min=".01" step="any" required placeholder="18" value={draft.thickness}
              onChange={e=>setDraft(d=>({...d,thickness:e.target.value}))}/></label>
+          </>}
+          {draft.kind==='timber'&&<>
+           <label className="dj-ml-field">Thickness (inches)
+            <input type="number" min=".01" step="any" required placeholder="1" value={draft.thickness}
+             onChange={e=>setDraft(d=>({...d,thickness:e.target.value}))}/></label>
+           <label className="dj-ml-field">Length (feet)
+            <input type="number" min=".01" step="any" required placeholder="12" value={draft.length}
+             onChange={e=>setDraft(d=>({...d,length:e.target.value}))}/></label>
+          </>}
+          {draft.kind==='edging'&&<>
+           <label className="dj-ml-field">Thickness (mm)
+            <input type="number" min=".01" step="any" required placeholder="0.6" value={draft.thickness}
+             onChange={e=>setDraft(d=>({...d,thickness:e.target.value}))}/></label>
+           <label className="dj-ml-field">Width (mm)
+            <input type="number" min=".01" step="any" required placeholder="22" value={draft.width}
+             onChange={e=>setDraft(d=>({...d,width:e.target.value}))}/></label>
+           <label className="dj-ml-field">Roll length (metres)
+            <input type="number" min=".01" step="any" required placeholder="50" value={draft.rollLength}
+             onChange={e=>setDraft(d=>({...d,rollLength:e.target.value}))}/></label>
           </>}
           <label className="dj-ml-field dj-ml-full">Collect from · saved Addresses
            <select value={draft.shopId} onChange={e=>setDraft(d=>({...d,shopId:e.target.value}))}>

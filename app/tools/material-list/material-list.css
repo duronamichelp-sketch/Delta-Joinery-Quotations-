@@ -31,8 +31,8 @@
 .dj-ml-metrics{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 .dj-ml-metric{border-radius:7px;border:1px solid #324d62;background:#0a2031;padding:8px 12px;color:#c0d2dd;font-size:12px}.dj-ml-metric b{color:white;font-size:14px}
 .dj-ml-editor{display:grid;grid-template-columns:minmax(270px,.75fr) minmax(0,1.25fr);gap:16px;align-items:start}
-.dj-ml-kind{display:flex;gap:6px;flex-wrap:wrap;margin:15px 0}
-.dj-ml-kind button{flex:1;min-width:85px;border:1px solid #365970;border-radius:9px;background:#102a3d;color:#c1d2de;font-weight:750;padding:10px 8px;font-size:12px;cursor:pointer}
+.dj-ml-kind{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:15px 0}
+.dj-ml-kind button{min-width:0;border:1px solid #365970;border-radius:9px;background:#102a3d;color:#c1d2de;font-weight:750;padding:10px 8px;font-size:12px;cursor:pointer}
 .dj-ml-kind button.active{background:#1b5275;border-color:#4da2db;color:white}
 .dj-ml-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .dj-ml-full{grid-column:1 / -1}
@@ -71,7 +71,7 @@
 .dj-ml-brand-footer{color:#829caf;font-size:11px;margin:12px 0 0}
 .dj-ml-fallback{display:grid;gap:13px}
 @media(max-width:1100px){.dj-ml-main{grid-template-columns:215px minmax(0,1fr)}.dj-ml-editor{grid-template-columns:1fr}.dj-ml-collections{position:static}}
-@media(max-width:730px){.dj-ml-wrap{padding:18px 13px 105px}.dj-ml-main{grid-template-columns:1fr}.dj-ml-top{margin-bottom:15px}.dj-ml-panel{padding:15px}.dj-ml-editor{grid-template-columns:1fr}.dj-ml-toolbar{grid-template-columns:1fr}.dj-ml-heading h2{font-size:18px}.dj-ml-stop-head{align-items:start}.dj-ml-grip{display:none}.dj-ml-stop-actions{width:100%;justify-content:flex-end}.dj-ml-item-buttons{justify-content:flex-end}.dj-ml-item{flex-wrap:wrap}.dj-ml-collections .dj-ml-list{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}}
+@media(max-width:730px){.dj-ml-wrap{padding:18px 13px 105px}.dj-ml-main{grid-template-columns:1fr}.dj-ml-top{margin-bottom:15px}.dj-ml-panel{padding:15px}.dj-ml-editor{grid-template-columns:1fr}.dj-ml-toolbar{grid-template-columns:1fr}.dj-ml-heading h2{font-size:18px}.dj-ml-stop-head{align-items:start}.dj-ml-grip{display:none}.dj-ml-stop-actions{width:100%;justify-content:flex-end}.dj-ml-item-buttons{justify-content:flex-end}.dj-ml-item{flex-wrap:wrap}.dj-ml-collections .dj-ml-list{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}.dj-ml-kind{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media print{
  @page{size:A4 portrait;margin:12mm}
  .dj-ml-page.rev-shell,.dj-ml-page .rev-phone,.dj-ml-page .dj-ml-wrap,.dj-ml-page .dj-ml-main,.dj-ml-page .dj-ml-stack{display:block!important;position:static!important;overflow:visible!important;width:100%!important;max-width:none!important;min-height:0!important;height:auto!important;margin:0!important;padding:0!important;box-shadow:none!important;border:0!important;background:#fff!important}

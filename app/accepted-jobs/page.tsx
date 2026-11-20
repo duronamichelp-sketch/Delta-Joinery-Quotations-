@@ -56,7 +56,7 @@ export default function AcceptedJobs(){
  useEffect(()=>{
   if(!draft||!account||!imageKey){setImageUrls({});return}
   let dead=false;
-  const paths=[...new Set(imageKey.split('|').filter(Boolean))];
+  const paths=Array.from(new Set(imageKey.split('|').filter(Boolean)));
   void Promise.all(paths.map(async path=>{
    try{return [path,await account.getQuotationImageUrl(path)] as const}
    catch{return [path,''] as const}
